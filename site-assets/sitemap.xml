@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://freef1.vercel.app/</loc>
+  </url>
+  <url>
+    <loc>https://freef1.vercel.app/cockpit.html</loc>
+  </url>
+  <url>
+    <loc>https://freef1.vercel.app/schedule.html</loc>
+  </url>
+  <url>
+    <loc>https://freef1.vercel.app/standings.html</loc>
+  </url>
+  <url>
+    <loc>https://freef1.vercel.app/drivers.html</loc>
+  </url>
+  <url>
+    <loc>https://freef1.vercel.app/teams.html</loc>
+  </url>
+  <url>
+    <loc>https://freef1.vercel.app/live-timing.html</loc>
+  </url>
+  <url>
+    <loc>https://freef1.vercel.app/help.html</loc>
+  </url>
+  <url>
+    <loc>https://freef1.vercel.app/info</loc>
+  </url>
+  <url>
+    <loc>https://freef1.vercel.app/discord</loc>
+  </url>
+</urlset>

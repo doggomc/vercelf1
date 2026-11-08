@@ -1,0 +1,110 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "framework": null,
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "cleanUrls": false,
+  "redirects": [
+    { "source": "/news", "destination": "/", "statusCode": 302 },
+    { "source": "/news/", "destination": "/", "statusCode": 302 },
+    { "source": "/help", "destination": "/help.html", "statusCode": 301 },
+    { "source": "/help/", "destination": "/help.html", "statusCode": 301 },
+    { "source": "/cockpit", "destination": "/cockpit.html", "statusCode": 301 },
+    { "source": "/cockpit/", "destination": "/cockpit.html", "statusCode": 301 },
+    { "source": "/schedule", "destination": "/schedule.html", "statusCode": 301 },
+    { "source": "/schedule/", "destination": "/schedule.html", "statusCode": 301 },
+    { "source": "/standings", "destination": "/standings.html", "statusCode": 301 },
+    { "source": "/standings/", "destination": "/standings.html", "statusCode": 301 },
+    { "source": "/drivers", "destination": "/drivers.html", "statusCode": 301 },
+    { "source": "/drivers/", "destination": "/drivers.html", "statusCode": 301 },
+    { "source": "/teams", "destination": "/teams.html", "statusCode": 301 },
+    { "source": "/teams/", "destination": "/teams.html", "statusCode": 301 },
+    { "source": "/live-timing", "destination": "/live-timing.html", "statusCode": 301 },
+    { "source": "/live-timing/", "destination": "/live-timing.html", "statusCode": 301 }
+  ],
+  "rewrites": [
+    { "source": "/info", "destination": "/index.html" },
+    { "source": "/info/", "destination": "/index.html" },
+    { "source": "/discord", "destination": "/index.html" },
+    { "source": "/discord/", "destination": "/index.html" },
+    { "source": "/replays", "destination": "/index.html" },
+    { "source": "/replays/", "destination": "/index.html" },
+    { "source": "/drivers/:slug", "destination": "/drivers/:slug/index.html" },
+    { "source": "/drivers/:slug/", "destination": "/drivers/:slug/index.html" },
+    { "source": "/teams/:slug", "destination": "/teams/:slug/index.html" },
+    { "source": "/teams/:slug/", "destination": "/teams/:slug/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" },
+        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains" },
+        { "key": "X-Permitted-Cross-Domain-Policies", "value": "none" },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: https://media.formula1.com https://upload.wikimedia.org https://a.espncdn.com; connect-src 'self' https://f1admin.onrender.com https://api.openf1.org https://api.jolpi.ca https: wss://freef1-viewer-counter.calvinbotha1julie.workers.dev wss://livetiming.formula1.com; frame-src https:; frame-ancestors 'self'; media-src 'self' data: https:"
+        }
+      ]
+    },
+    {
+      "source": "/bundles/:path*",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/assets/:path*",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/fonts.css",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/(.*\\.html)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/info",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/info/",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/discord",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/discord/",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    }
+  ]
+}
