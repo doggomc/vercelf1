@@ -16,7 +16,7 @@ const escapeHtml = (value: string) => value.replace(/[&<>"]/g, (char) =>
 
 const SITE_ORIGIN = (
   process.env.SITE_URL
-  || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'https://freef1.vercel.app')
+  || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'https://freef1-live.vercel.app')
 ).replace(/\/+$/, '');
 
 function teamPage(template: string, team: TeamProfileFacts): string {

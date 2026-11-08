@@ -45,13 +45,6 @@ const ALLOW = 'autoplay; fullscreen; encrypted-media; picture-in-picture';
 const STRIPPED_SANDBOX = 'allow-scripts allow-same-origin allow-presentation';
 const STREAM_API = BACKEND_API;
 
-function toCacheableEmbedSrc(url: string): string {
-  const idx = url.indexOf('/api/stream/weellz-embed?');
-  if (idx < 0) return url;
-  const qIdx = url.indexOf('?', idx);
-  return `${url.slice(0, qIdx)}#${url.slice(qIdx + 1)}`;
-}
-
 export function strippedPlayerUrl(streamId: string, apiBase = STREAM_API): string {
   const base = String(apiBase || '').replace(/\/+$/, '');
   return `${base}/api/stream/weellz-embed?stream=${encodeURIComponent(streamId)}`;
@@ -579,7 +572,7 @@ export function init(ctx: any) {
 
     const f = document.createElement('iframe');
     const nextUrl = tileUrl(stream.streamId, id !== audio, stream.pasted);
-    f.src = toCacheableEmbedSrc(nextUrl);
+    f.src = nextUrl;
     f.dataset.state = id === audio ? 'on' : 'off';
     f.allow = ALLOW;
     f.setAttribute('allow', ALLOW);

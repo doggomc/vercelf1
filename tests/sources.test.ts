@@ -255,7 +255,7 @@ describe('stream source link pools', () => {
     expect(app).toContain('/api/stream/ppv-embed?slug=');
     expect(app).toContain("url.includes('/api/stream/ppv-embed')");
     expect(app).toContain('const STREAM_API = BACKEND_API;');
-    expect(app).toContain('toCacheableWeellzSrc');
+    expect(app).not.toContain('/api/stream/weellz-embed#');
 
     const vercelRaw = readFileSync(new URL('../vercel.json', import.meta.url), 'utf8');
     const vercel = JSON.parse(vercelRaw);

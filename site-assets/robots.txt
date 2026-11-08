@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://freef1.vercel.app/sitemap.xml
+Sitemap: https://freef1-live.vercel.app/sitemap.xml

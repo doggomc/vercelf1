@@ -48,7 +48,7 @@ function gridFromCache(): Driver[] | null {
 
 const SITE_ORIGIN = (
   process.env.SITE_URL
-  || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'https://freef1.vercel.app')
+  || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'https://freef1-live.vercel.app')
 ).replace(/\/+$/, '');
 
 function driverPage(template: string, driver: Driver): string {

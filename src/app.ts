@@ -1947,16 +1947,9 @@ function isStrippedEmbed(url: string): boolean {
    sends only our domain — enough to look embedded, and no path or query ever leaves the site.
    Stripped weellz/embdlol embeds run inside an explicit sandbox with no-referrer so popup/navigation
    attempts are browser-blocked and direct HLS segment requests send no Referer. */
-function toCacheableWeellzSrc(url: string): string {
-  const idx = url.indexOf('/api/stream/weellz-embed?');
-  if (idx < 0) return url;
-  const qIdx = url.indexOf('?', idx);
-  return `${url.slice(0, qIdx)}#${url.slice(qIdx + 1)}`;
-}
-
 function makeStreamIframe(url, rp) {
   const f = document.createElement("iframe");
-  f.src = toCacheableWeellzSrc(url);
+  f.src = url;
   f.allow = IFRAME_ALLOW;
   f.setAttribute('allow', IFRAME_ALLOW);
   f.allowFullscreen = true;
@@ -2671,7 +2664,7 @@ function syncDocumentMeta(route) {
   const path = route === 'home' ? '/' : '/' + route;
   const baseOrigin = typeof location !== 'undefined' && /^https?:/i.test(location.protocol)
     ? location.origin
-    : 'https://freef1.vercel.app';
+    : 'https://freef1-live.vercel.app';
   const url = baseOrigin + path;
   const canonical = document.querySelector('link[rel="canonical"]');
   if (canonical) canonical.setAttribute('href', url);

@@ -112,11 +112,11 @@ const WEELO_STATE = '/api/stream/weelo'; // joined to deps.backend
 /* taifood publishes its per-race ids on a CDN without CORS headers, so f1admin relays the list. */
 const TAIFOOD_LIST = '/api/stream/taifood';
 const EMBDLOL_RELAY = '/api/stream/embdlol';
-/* weellz.live builds its live channel links from weelo.live/players/events.json (+ fallback
-   v.weellz.live/players/events.json), racinglap.net/api/status.json, and weelo.live/feed/events.json. */
+/* weellz.live builds its live channel links from weelo.live/players/events.json,
+   racinglap.net/api/status.json, and weelo.live/feed/events.json.
+   weelo.live blocks /players/* when a third-party Referer header is sent, so requests omit Referer. */
 export const WEELLZ_PLAYER_BASE = 'https://weellz.live/beta?stream=';
 const WEELLZ_PLAYERS_FEED = 'https://weelo.live/players/events.json';
-const WEELLZ_PLAYERS_ALT = 'https://v.weellz.live/players/events.json';
 const WEELLZ_STATUS_FEED = 'https://racinglap.net/api/status.json';
 const WEELO_EVENTS = 'https://weelo.live/feed/events.json';
 const PPV_STREAMS = 'https://api.ppv.st/api/streams';
@@ -579,7 +579,11 @@ export function parseWeellzFeeds(
 }
 
 async function fetchJsonNoStore(deps: CatalogueDeps, url: string, timeoutMs = 5000): Promise<any> {
-  const response = await deps.fetchWithTimeout(url, { cache: 'no-store', headers: { Accept: 'application/json' } }, timeoutMs);
+  const response = await deps.fetchWithTimeout(url, {
+    cache: 'no-store',
+    referrerPolicy: 'no-referrer',
+    headers: { Accept: 'application/json' },
+  }, timeoutMs);
   if (!response.ok) throw new Error(`${url} ${response.status}`);
   return response.json();
 }
@@ -589,9 +593,7 @@ async function fetchWeellz(deps: CatalogueDeps): Promise<{
   weeloEvents: Record<string, { label: string; lang: string; live: boolean }>;
 }> {
   const [playersJson, statusJson, feedJson] = await Promise.all([
-    fetchJsonNoStore(deps, WEELLZ_PLAYERS_FEED, 5000)
-      .catch(() => fetchJsonNoStore(deps, WEELLZ_PLAYERS_ALT, 4000))
-      .catch(() => null),
+    fetchJsonNoStore(deps, WEELLZ_PLAYERS_FEED, 5000).catch(() => null),
     fetchJsonNoStore(deps, WEELLZ_STATUS_FEED, 4000).catch(() => null),
     fetchJsonNoStore(deps, WEELO_EVENTS, 5000).catch(() => null),
   ]);

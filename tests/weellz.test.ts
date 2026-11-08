@@ -151,10 +151,12 @@ describe('weellz.live feed resolution & 3-minute refresh', () => {
 
   it('refreshes weellz.live links immediately on every 3-minute refresh call without TTL staleness', async () => {
     let skyToken = 'sky_tick_1';
+    let playersReferrerPolicy = '';
     const deps: CatalogueDeps = {
       backend: 'https://f1admin.example',
-      fetchWithTimeout: async (url: string) => {
+      fetchWithTimeout: async (url: string, init?: RequestInit) => {
         if (url.includes('/players/events.json')) {
+          playersReferrerPolicy = String(init?.referrerPolicy || '');
           return new Response(
             JSON.stringify({
               events: [
@@ -183,6 +185,7 @@ describe('weellz.live feed resolution & 3-minute refresh', () => {
     };
 
     const first = await refreshWeeloCatalogues(deps);
+    expect(playersReferrerPolicy).toBe('no-referrer');
     expect(first.weellz?.slots.skyweelo?.stream).toBe('sky_tick_1');
     expect(first.weelo.sky_tick_1).toBe('online');
 
