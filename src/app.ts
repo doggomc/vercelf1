@@ -2701,6 +2701,24 @@ function showView(route, { push = true, scroll = true } = {}) {
   }
   activeView = route;
   clearTimeout(viewSwapTimer);
+  const startVT = !reduceMotion && typeof (document as Document & { startViewTransition?: (cb: () => void) => unknown }).startViewTransition === 'function'
+    ? (document as Document & { startViewTransition: (cb: () => void) => unknown }).startViewTransition.bind(document)
+    : null;
+  if (startVT) {
+    startVT(() => {
+      if (prev) {
+        prev.hidden = true;
+        prev.classList.remove('is-leaving', 'is-active');
+      }
+      next.hidden = false;
+      if (scroll) scrollTo({ top: 0, behavior: 'instant' });
+      next.classList.add('is-active');
+      if (route !== 'home') revealNow(next);
+      document.body.classList.remove('view-swapping');
+      onScroll();
+    });
+    return;
+  }
   document.body.classList.add('view-swapping');
   prev?.classList.add('is-leaving');
   prev?.classList.remove('is-active');
