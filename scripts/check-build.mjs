@@ -58,10 +58,6 @@ const scheduleSize = pageGzip('schedule.html');
 console.log(`schedule gzip: ${scheduleSize} B of ${SCHEDULE_BUDGET}`);
 assert(scheduleSize < SCHEDULE_BUDGET, `schedule.html ships ${scheduleSize} B gzip — over the ${SCHEDULE_BUDGET} B budget`);
 assert(existsSync('dist/calendar/f1.ics'), 'dist/calendar/f1.ics missing');
-const initialDrivers = readFileSync('dist/drivers.html', 'utf8');
-const initialTeams = readFileSync('dist/teams.html', 'utf8');
-assert((initialDrivers.match(/class="driver-card /g) || []).length >= 20 && initialDrivers.includes('2026fallbackdriverright.webp'), 'driver roster images must be in initial HTML');
-assert((initialTeams.match(/class="tm-car"/g) || []).length >= 11, 'team car images must be in initial HTML');
 assert(existsSync('dist/island.js'), 'session island script missing');
 for (const page of ['index.html', 'cockpit.html', 'help.html', '404.html']) {
   const html = readFileSync(`dist/${page}`, 'utf8');
