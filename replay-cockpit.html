@@ -50,6 +50,19 @@
       border-radius: 12px;
     }
   }
+  /* Replay controls belong below the video, not inside a fixed-height theater.
+     Keep the private live cockpit's fullscreen layout unchanged. */
+  body.theater.replay-page { overflow-x: hidden; overflow-y: auto; }
+  body.theater.replay-page #watch { position: relative; inset: auto; min-height: 100vh; padding: 20px 0 48px; }
+  body.theater.replay-page .wrap.watch-grid { width: min(100%, 1200px); height: auto; padding: 0 24px; overflow: visible; }
+  body.theater.replay-page .watch-main { height: auto; padding: 0; align-items: stretch; justify-content: flex-start; }
+  body.theater.replay-page .wplayer,
+  body.theater.replay-page .wplayer-actions { width: 100%; max-width: 100%; flex: none; }
+  body.theater.replay-page .wplayer { border-radius: 12px; }
+  @media (max-width: 760px) {
+    body.theater.replay-page #watch { padding-top: 12px; }
+    body.theater.replay-page .wrap.watch-grid { padding: 0 12px; }
+  }
   .replay-help { margin: 14px 2px 0; color: #aaaeb7; font: 400 13px/1.55 var(--font-body); }
   .replay-controls { padding: 20px 0 40px; display:grid; gap:16px; }
   .replay-controls h2 { font-size:14px; color:#aaa; margin:0 0 10px; }
@@ -58,7 +71,7 @@
   .replay-buttons button[aria-pressed="true"] { background:#fff; color:#111; border-color:#fff; }
 </style>
 </head>
-<body class="theater theater-no-sources" data-page="private-cockpit">
+<body class="theater theater-no-sources replay-page" data-page="private-cockpit">
 <a class="skip-link" href="#watch">Skip to stream</a>
 
 <div class="vignette" aria-hidden="true"></div>
@@ -109,11 +122,10 @@
           <div class="wplayer-actions-main" id="stageActions">
             <span class="btn sm theater-online mono" id="theaterOnline" role="status" aria-live="polite" hidden><i aria-hidden="true"></i><b id="theaterOnlineCount">—</b> online</span>
             <button class="btn sm" id="reloadFeedBtn" type="button">Reload</button>
-            <a class="btn sm" id="replayDirectBtn" target="_blank" rel="noopener noreferrer" hidden>Open player ↗</a>
             <a class="btn sm" id="backStreamsBtn" href="/replays.html">← Replays</a>
           </div>
         </div>
-        <p class="replay-help" id="replayHelp" hidden>If the player is still loading, try another feed, reload, or open the player directly. Playback depends on the provider.</p>
+        <p class="replay-help" id="replayHelp" hidden>If the player is still loading, try another feed or reload. Playback depends on the provider.</p>
         <div class="replay-controls" id="replayControls"></div>
       </div>
     </div>

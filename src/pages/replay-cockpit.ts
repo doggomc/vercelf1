@@ -18,7 +18,6 @@ function display() {
   $('watchSessionCountdown').textContent=seriesNames[event.series]; $('watchSessionMeta').textContent=`${event.season} · ${event.circuit}`;
   $('loader').hidden=true; $('noStream').classList.remove('visible');
   window.clearTimeout(helpTimer); $('replayHelp').hidden=true;
-  const direct=$('replayDirectBtn') as HTMLAnchorElement; direct.hidden=!url; if(url) direct.href=url;
   $('stageBox').querySelector('iframe')?.remove();
   if(url){const frame=document.createElement('iframe'); const playerUrl=new URL(url); playerUrl.searchParams.set('autoplay','1'); frame.src=playerUrl.href; frame.loading='eager';frame.title=`${event.country} Grand Prix ${session.name}`;frame.allow='autoplay; fullscreen; picture-in-picture; encrypted-media';frame.allowFullscreen=true;frame.referrerPolicy='origin';frame.className='is-ready';$('stageBox').append(frame); helpTimer=window.setTimeout(()=>{if(frame.isConnected&&!document.getElementById('partialOutageStage')) $('replayHelp').hidden=false;},12000);}
   const controls=$('replayControls');controls.replaceChildren();
