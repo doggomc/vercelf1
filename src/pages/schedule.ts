@@ -135,10 +135,10 @@ function renderDrawer(
     ? `<div class="sc-drawer-foot">${winnerLine}${actions}</div>`
     : '';
 
-  return `<div class="sc-drawer-inner">
+  return `<div class="sc-drawer-clip"><div class="sc-drawer-inner">
     <ul class="sc-sess-list">${rows}</ul>
     ${foot}
-  </div>`;
+  </div></div>`;
 }
 
 let activeClockTarget: number | null = null;
@@ -225,8 +225,9 @@ function render(): void {
             <p class="sc-dates">${esc(dates)}</p>
             <div class="sc-status">${badge}</div>
           </div>
+          <span class="sc-chev" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
         </button>
-        <div class="sc-drawer" id="sc-drawer-${event.round}" ${isOpen ? '' : 'hidden'}>
+        <div class="sc-drawer" id="sc-drawer-${event.round}" ${isOpen ? '' : 'inert'} aria-hidden="${!isOpen}">
           ${renderDrawer(event, state, now, nextTs)}
         </div>
       </article>
@@ -246,7 +247,10 @@ $('roundList')?.addEventListener('click', (event) => {
   const nextOpen = !openRounds.has(round);
   if (nextOpen) openRounds.add(round); else openRounds.delete(round);
   btn.setAttribute('aria-expanded', String(nextOpen));
-  if (drawer) drawer.hidden = !nextOpen;
+  if (drawer) {
+    drawer.toggleAttribute('inert', !nextOpen);
+    drawer.setAttribute('aria-hidden', String(!nextOpen));
+  }
   card?.classList.toggle('is-open', nextOpen);
 });
 
