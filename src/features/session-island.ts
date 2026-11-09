@@ -4,12 +4,17 @@ import { findLiveSession, findNextSession, sessionShortName } from '../services/
 export function initSessionIsland(): void {
   const right = document.querySelector<HTMLElement>('nav.nav .nav-right');
   if (!right || document.getElementById('sessionIsland')) return;
-  const style = document.createElement('link'); style.rel = 'stylesheet'; style.href = '/session-island.css'; document.head.append(style);
+  const style = document.createElement('link'); style.rel = 'stylesheet'; style.href = '/session-island.css';
   const holder = document.createElement('div'); holder.className = 'session-island-slot';
   const link = document.createElement('a'); link.id = 'sessionIsland'; link.className = 'session-island'; link.href = '/schedule.html';
   link.innerHTML = `<span class="si-compact" aria-hidden="true"><span class="si-badge">F1</span><span class="si-name"></span><span class="si-relative"></span></span>
     <span class="si-expanded" aria-hidden="true"><span class="si-timer-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 13V9m-2-7h4m-2 0v3m5 2 1.5-1.5"/></svg></span><span class="si-copy"><span class="si-title"></span><span class="si-date"></span></span><span class="si-count"><span class="si-clock"></span><span class="si-bar"><span></span></span></span></span>`;
-  holder.append(link); right.insertBefore(holder, right.querySelector('.nav-toggle'));
+  holder.append(link);
+  // Do not expose unstyled content while the CSS is loading (or if it fails).
+  style.addEventListener('load', () => {
+    if (!document.getElementById('sessionIsland')) right.insertBefore(holder, right.querySelector('.nav-toggle'));
+  }, { once: true });
+  document.head.append(style);
   const el = (selector: string) => link.querySelector<HTMLElement>(selector)!;
   const dateFormat = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
   const pad = (n: number) => String(n).padStart(2, '0');
