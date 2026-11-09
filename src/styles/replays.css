@@ -34,13 +34,17 @@
 .rp-section-heading { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin-bottom: 20px; }
 .rp-section-heading h2 { font-family: var(--font-display); font-size: 24px; margin-top: 5px; }
 .rp-section-heading > span { font-size: 12px; color: var(--fg-4); }
+/* The thumb keeps real rounded ends at every tab width; it does not scale its corners. */
+#filters .os-tabs-glider { transform: translate3d(3px,0,0); transition: transform .32s cubic-bezier(.22,1,.36,1), width .32s cubic-bezier(.22,1,.36,1), opacity .18s; }
+.rp-grid { transition: opacity .15s ease, transform .15s ease; }
+.rp-grid.is-switching { opacity: 0; transform: translate3d(calc(var(--rp-direction, 1) * -10px),0,0); }
 .rp-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; align-items: start; }
 .rp-card { overflow: hidden; background: var(--card); border: 1px solid var(--line); border-radius: 16px; animation: osCardIn .36s both; animation-delay: var(--stagger); transition: border-color .2s, transform .2s; }
 .rp-card:hover { border-color: var(--line-2); transform: translateY(-2px); }
 .rp-card-top { display: flex; align-items: center; justify-content: space-between; padding: 17px 20px 13px; }
 .rp-round { color: var(--fg-4); font-size: 10px; font-weight: 750; letter-spacing: .1em; }
 .rp-flag { width: 30px; height: 20px; object-fit: cover; border-radius: 4px; }
-.rp-card-heading { position: relative; isolation: isolate; display: flex; align-items: flex-end; min-height: 128px; overflow: hidden; margin: 0 12px; padding: 20px 16px 16px; border-radius: 10px; background: linear-gradient(130deg,#252529,#171719); }
+.rp-card-heading { position: relative; isolation: isolate; display: flex; align-items: flex-end; aspect-ratio: 16 / 9; min-height: 128px; overflow: hidden; margin: 0 12px; padding: 20px 16px 16px; border-radius: 10px; background: linear-gradient(130deg,#252529,#171719); }
 .rp-card-heading::after { content: ''; position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg,rgba(14,15,17,.93),rgba(14,15,17,.58) 62%,rgba(14,15,17,.20)), linear-gradient(0deg,rgba(14,15,17,.72),transparent 75%); }
 .rp-card-heading h3 { max-width: 22ch; font-family: var(--font-display); font-size: 19px; line-height: 1.2; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.6); }
 .rp-card-heading p { font-size: 12px; color: #d0d0d2; margin-top: 6px; text-shadow: 0 1px 6px #000; }
@@ -64,4 +68,4 @@
   .rp-card-heading { min-height: 142px; }
   #filters .os-filter { padding: 0 10px; font-size: 12px; }
 }
-@media (prefers-reduced-motion: reduce) { .rp-feature,.rp-feature img,.rp-card,.rp-circuit,.rp-pill { animation: none; transition: none; } }
+@media (prefers-reduced-motion: reduce) { .rp-feature,.rp-feature img,.rp-card,.rp-circuit,.rp-pill,.rp-grid,#filters .os-tabs-glider { animation: none; transition: none; } }
