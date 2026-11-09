@@ -1,5 +1,6 @@
 import '../interaction-guard';
 import { initShell } from '../ui/shell';
+import { initPageGate } from '../features/page-gate';
 import '../viewer-counter';
 import { parsePrivateCockpitParams } from '../lib/other-streams';
 
@@ -100,6 +101,7 @@ function isLocalDevHost(): boolean {
 }
 
 function mountStream(useFallback = false): void {
+  if (document.getElementById('partialOutageStage')) return;
   if (!resolved || !stageBox) {
     showMissingState();
     return;
@@ -150,6 +152,7 @@ function mountStream(useFallback = false): void {
 }
 
 if (!resolved) {
+  void initPageGate();
   showMissingState();
 } else {
   document.title = `${resolved.title} — Private Cockpit · FreeF1`;
@@ -163,7 +166,7 @@ if (!resolved) {
   if (titleEl) titleEl.textContent = resolved.title;
   if (metaEl) metaEl.textContent = resolved.subtitle;
 
-  mountStream(false);
+  void initPageGate().then(() => mountStream(false));
 }
 
 reloadBtn?.addEventListener('click', () => mountStream(false));

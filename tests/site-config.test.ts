@@ -24,6 +24,12 @@ describe('untrusted configuration', () => {
     expect(resolvePageCategory('team', '/teams/ferrari/')).toBe('teams');
     expect(resolvePageCategory('live-timing', '/live-timing.html')).toBe('live-timing');
     expect(resolvePageCategory(undefined, '/help.html')).toBe('help');
+    expect(resolvePageCategory('other', '/other.html')).toBe('other');
+    expect(resolvePageCategory('replays', '/replays.html')).toBe('replays');
+    expect(resolvePageCategory('other-streams', '/other-streams.html')).toBe('other-streams');
+    expect(resolvePageCategory('private-cockpit', '/replay-cockpit.html')).toBe('replays');
+    expect(resolvePageCategory('private-cockpit', '/private-cockpit.html')).toBe('other-streams');
+    expect(parseSiteConfig({ pages: { disabled: ['other', 'replays', 'other-streams'] } }).pages.disabled).toEqual(['other', 'replays', 'other-streams']);
   });
   it('builds Partial Outage markup with Home and Discord actions', () => {
     const html = outageMarkup('standings');

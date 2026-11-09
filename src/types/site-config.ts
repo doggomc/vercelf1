@@ -5,6 +5,9 @@ export type ControllablePageId =
   | 'live-timing'
   | 'drivers'
   | 'teams'
+  | 'other'
+  | 'replays'
+  | 'other-streams'
   | 'help';
 
 const VALID_PAGE_IDS = new Set<ControllablePageId>([
@@ -14,6 +17,9 @@ const VALID_PAGE_IDS = new Set<ControllablePageId>([
   'live-timing',
   'drivers',
   'teams',
+  'other',
+  'replays',
+  'other-streams',
   'help',
 ]);
 

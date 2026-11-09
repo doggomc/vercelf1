@@ -9,6 +9,9 @@ const LABELS: Record<ControllablePageId, string> = {
   'live-timing': 'Live timing',
   drivers: 'Drivers',
   teams: 'Teams',
+  other: 'Other',
+  replays: 'Replays',
+  'other-streams': 'Other streams',
   help: 'Help',
 };
 
@@ -16,6 +19,9 @@ export function resolvePageCategory(
   pageAttr: string | undefined = typeof document !== 'undefined' ? document.body?.dataset?.page : undefined,
   pathname: string = typeof location !== 'undefined' ? location.pathname : '/',
 ): ControllablePageId | null {
+  const route = pathname.replace(/^\/|\.html$|\/+$/g, '');
+  if (route === 'replay-cockpit') return 'replays';
+  if (route === 'private-cockpit') return 'other-streams';
   const key = (pageAttr || pathname.replace(/^\/|\.html$|\/+$/g, '').split('/')[0] || '').trim().toLowerCase();
   if (!key || key === 'home' || key === 'index') return null;
   if (key === 'driver' || key === 'drivers') return 'drivers';
@@ -64,7 +70,7 @@ export function applyPageGate(config: SiteConfig | null, { fresh = false }: { fr
     if (prevTitle === null) prevTitle = document.title;
     document.title = `Partial Outage — ${LABELS[category]} · FreeF1`;
     document.querySelectorAll<HTMLVideoElement>('main video').forEach((v) => v.pause());
-    document.querySelectorAll<HTMLIFrameElement>('#playerArea iframe, #multiGrid iframe').forEach((f) => {
+    document.querySelectorAll<HTMLIFrameElement>('#playerArea iframe, #multiGrid iframe, #stageBox iframe').forEach((f) => {
       if (f.src && f.src !== 'about:blank') { f.src = 'about:blank'; parkedStream = true; }
     });
     if (main) main.hidden = true;
@@ -83,15 +89,27 @@ export function applyPageGate(config: SiteConfig | null, { fresh = false }: { fr
     existing.remove();
     if (main) main.hidden = false;
     if (prevTitle !== null) { document.title = prevTitle; prevTitle = null; }
-    if (parkedStream) { parkedStream = false; location.reload(); }
+    if (parkedStream || /\/(?:private|replay)-cockpit(?:\.html)?\/?$/.test(location.pathname)) { parkedStream = false; location.reload(); }
   }
   return false;
 }
 
-let started = false;
-export function initPageGate(): void {
-  if (started || typeof window === 'undefined') return;
-  started = true;
+let gateReady: Promise<void> | null = null;
+export function initPageGate(): Promise<void> {
+  if (gateReady) return gateReady;
+  if (typeof window === 'undefined') return Promise.resolve();
+
+  let resolveReady!: () => void;
+  gateReady = new Promise<void>(resolve => { resolveReady = resolve; });
+  let ready = false;
+  const markReady = () => {
+    if (ready) return;
+    ready = true;
+    clearTimeout(readyTimer);
+    resolveReady();
+  };
+  // Fail open if Race Control cannot be reached. Cached outages still apply first.
+  const readyTimer = window.setTimeout(markReady, 2500);
   try {
     const cached = JSON.parse(localStorage.getItem(SITE_CONFIG_CACHE_KEY) || 'null');
     if (cached && Date.now() - Number(cached.savedAt) < 300_000) {
@@ -100,36 +118,57 @@ export function initPageGate(): void {
   } catch { /* ignore */ }
 
   let es: EventSource | null = null;
+  let fallbackInFlight = false;
   let fallbackDone = false;
+  let retryTimer = 0;
+  let retryDelay = 1000;
+  let stopped = false;
   const saveAndApply = (raw: unknown) => {
     const snap = toGateSnapshot(raw);
     if (!snap) return;
     try { localStorage.setItem(SITE_CONFIG_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), config: raw })); } catch { /* ignore */ }
     applyPageGate(snap, { fresh: true });
+    markReady();
   };
   const fetchOnce = async () => {
-    if (fallbackDone) return;
-    fallbackDone = true;
+    if (fallbackDone || fallbackInFlight) return;
+    fallbackInFlight = true;
     try {
-      const r = await fetch(`${BACKEND_API}/api/site/config`, { credentials: 'omit' });
-      if (r.ok) saveAndApply(await r.json());
-    } catch { /* fail open */ }
+      const r = await fetch(`${BACKEND_API}/api/site/config`, { credentials: 'omit', cache: 'no-store' });
+      if (r.ok) { saveAndApply(await r.json()); fallbackDone = true; }
+    } catch { /* fail open and allow a later retry */ }
+    finally { fallbackInFlight = false; markReady(); }
   };
-  const close = () => { es?.close(); es = null; };
+  const close = () => { es?.close(); es = null; window.clearTimeout(retryTimer); retryTimer = 0; };
+  const scheduleRetry = () => {
+    if (stopped || retryTimer || document.visibilityState === 'hidden') return;
+    retryTimer = window.setTimeout(() => { retryTimer = 0; connect(); }, retryDelay);
+    retryDelay = Math.min(retryDelay * 2, 30000);
+  };
   const connect = () => {
-    if (es || document.visibilityState === 'hidden') return;
+    if (stopped || es || document.visibilityState === 'hidden') return;
     if (typeof EventSource !== 'function') { void fetchOnce(); return; }
     try {
-      es = new EventSource(`${BACKEND_API}/api/site/updates`);
-      es.addEventListener('config', (e) => {
-        try { saveAndApply(JSON.parse((e as MessageEvent).data)); } catch { /* ignore */ }
+      const source = new EventSource(`${BACKEND_API}/api/site/updates`);
+      es = source;
+      source.addEventListener('config', (e) => {
+        if (es !== source) return;
+        try { saveAndApply(JSON.parse((e as MessageEvent).data)); retryDelay = 1000; fallbackDone = false; } catch { /* ignore */ }
       });
-      es.onerror = () => { close(); void fetchOnce(); };
-    } catch { void fetchOnce(); }
+      source.onerror = () => {
+        if (es !== source) return;
+        void fetchOnce();
+        // Native EventSource reconnects itself while CONNECTING; only replace a
+        // permanently closed connection so transient failures keep retrying.
+        if (source.readyState === EventSource.CLOSED) { close(); scheduleRetry(); }
+      };
+    } catch { void fetchOnce(); scheduleRetry(); }
   };
   connect();
-  addEventListener('pagehide', close);
+  addEventListener('pagehide', () => { stopped = true; close(); });
+  addEventListener('pageshow', () => { if (stopped) { stopped = false; retryDelay = 1000; connect(); } });
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && !es) connect();
+    if (document.visibilityState === 'visible' && !es) { stopped = false; connect(); }
   });
+  return gateReady;
 }

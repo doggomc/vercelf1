@@ -2164,7 +2164,7 @@ function load() {
     showNoStream({ blocked: false });
     return;
   }
-  if (!isStreamAvailable(currentSession) && !catalogues.weellz?.anyLive && !directWeeloSelected && !directEmbSelected) {
+  if (!isCustom() && !isStreamAvailable(currentSession) && !catalogues.weellz?.anyLive && !directWeeloSelected && !directEmbSelected) {
     showNoStream({ blocked: false });
     return;
   }

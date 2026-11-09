@@ -1,11 +1,14 @@
 import { initShell } from '../ui/shell';
+import { initPageGate } from '../features/page-gate';
 import '../viewer-counter';
 import { fetchWeekends, safeSource, seriesNames, weekendTitle, type Weekend, type Event, type Session } from '../lib/replays-feed';
 initShell({ nav:false, transitions:false });
+const gateReady = initPageGate();
 const $ = (id:string) => document.getElementById(id)!;
 let weekends: Weekend[]=[]; let event: Event | undefined; let session: Session | undefined; let sourceIndex=0;
 const params=new URLSearchParams(location.search);
 function display() {
+  if (document.getElementById('partialOutageStage')) return;
   if(!event||!session)return;
   const sources=session.replay.sources.filter(s=>safeSource(s.url)); if(sourceIndex>=sources.length)sourceIndex=0;
   const source=sources[sourceIndex]; const url=source&&safeSource(source.url);
@@ -23,4 +26,4 @@ function display() {
 }
 $('reloadFeedBtn').addEventListener('click',display);
 $('nsRetryBtn').addEventListener('click',()=>location.reload());
-fetchWeekends().then(data=>{weekends=data;event=data.flatMap(w=>w.events).find(e=>e.id===params.get('e'));session=event?.sessions.find(s=>s.key===params.get('s'));if(!event||!session)throw Error('Not found');display();}).catch(()=>{$('loader').hidden=true;$('noStream').style.display='';$('noStreamTitle').textContent='Replay unavailable';$('noStreamText').textContent='This session could not be loaded. Return to replays or try again.';});
+fetchWeekends().then(async data=>{weekends=data;event=data.flatMap(w=>w.events).find(e=>e.id===params.get('e'));session=event?.sessions.find(s=>s.key===params.get('s'));if(!event||!session)throw Error('Not found');await gateReady;display();}).catch(()=>{$('loader').hidden=true;$('noStream').style.display='';$('noStreamTitle').textContent='Replay unavailable';$('noStreamText').textContent='This session could not be loaded. Return to replays or try again.';});
