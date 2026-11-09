@@ -1,0 +1,46 @@
+/* A lightweight, expandable status island. The slot reserves its compact width. */
+.session-island-slot { position: relative; width: 160px; height: 38px; flex: 0 0 160px; z-index: 3; }
+.session-island {
+  position: absolute; right: 0; top: 0; width: 160px; height: 38px;
+  overflow: hidden; box-sizing: border-box; display: block;
+  color: #fff; text-decoration: none; border: 1px solid #ffffff24; border-radius: 19px;
+  background: #121318; box-shadow: 0 5px 18px #0005, inset 0 1px #ffffff10;
+  font: 600 11px/1.2 Inter, system-ui, sans-serif;
+  transition: width .42s cubic-bezier(.2,.9,.2,1), height .42s cubic-bezier(.2,.9,.2,1), border-radius .42s cubic-bezier(.2,.9,.2,1), border-color .2s, box-shadow .2s;
+  animation: sessionIslandIn .5s cubic-bezier(.2,.9,.2,1) both;
+}
+.session-island-line { display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 8px; white-space: nowrap; }
+.session-island-badge { display: grid; place-items: center; flex: none; padding: 0 7px; height: 24px; border-radius: 999px; color: white; background: #e10600; font-size: 10px; font-weight: 800; }
+.session-island-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: #dedee3; }
+.session-island-time { margin-left: auto; color: #aaaeb8; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.session-island.is-scheduled .session-island-time { color: #ff918a; }
+.session-island-detail { display: flex; flex-direction: column; gap: 4px; padding: 4px 14px 13px; opacity: 0; transform: translateY(-5px); transition: opacity .18s, transform .25s; pointer-events: none; white-space: nowrap; }
+.session-island-event { font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; }
+.session-island-date { color: #a5a8b2; font-weight: 500; }
+.session-island-cta { color: #ff9b94; margin-top: 3px; }
+.session-island.is-expanded, .session-island:focus-visible { width: 240px; height: 112px; border-radius: 18px; border-color: #ffffff48; box-shadow: 0 16px 35px #000a, 0 0 20px #e1060024; outline: none; }
+.session-island.is-expanded .session-island-detail, .session-island:focus-visible .session-island-detail { opacity: 1; transform: none; transition-delay: .1s; }
+.session-island:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+@keyframes sessionIslandIn { from { opacity: 0; transform: translateY(-6px) scale(.95); } to { opacity: 1; transform: none; } }
+@media (max-width: 1150px) { .session-island-slot { width: 114px; flex-basis: 114px; } .session-island { width: 114px; } .session-island-name { display: none; } }
+@media (max-width: 380px) { .session-island-slot { width: 100px; flex-basis: 100px; } .session-island { width: 100px; } }
+@media (prefers-reduced-motion: reduce) { .session-island, .session-island-detail { animation: none; transition: none; transform: none; } }
+/* Reserve room for the island on compact headers without covering navigation. */
+@media (min-width: 901px) and (max-width: 1250px) {
+  nav.nav:has(.session-island) .nav-inner { gap: 8px; }
+  nav.nav:has(.session-island) .nav-links { gap: 0; margin-right: 4px; }
+  nav.nav:has(.session-island) .nav-links a { padding-inline: 6px; font-size: 12px; }
+}
+@media (max-width: 1150px) { nav.nav:has(.session-island) .nav-pill { display: none; } }
+@media (max-width: 350px) { nav.nav:has(.session-island) .brand-text { display: none; } }
+
+@media (hover: hover) {
+  .session-island:hover { width: 240px; height: 112px; border-radius: 18px; border-color: #ffffff48; box-shadow: 0 16px 35px #000a, 0 0 20px #e1060024; }
+  .session-island:hover .session-island-detail { opacity: 1; transform: none; transition-delay: .1s; }
+}
+@media (min-width: 351px) and (max-width: 900px) {
+  .session-island-slot { width: 140px; flex-basis: 140px; }
+  .session-island { width: 140px; }
+  .session-island-name { display: block; }
+}
+@media (max-width: 350px) { .session-island.is-expanded, .session-island:focus-visible { width: 220px; } }

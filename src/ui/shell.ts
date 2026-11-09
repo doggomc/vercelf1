@@ -41,7 +41,7 @@ function bindNav(): void {
   const setOpen = (open: boolean) => {
     menu?.classList.toggle('open', open);
     toggle?.setAttribute('aria-expanded', String(open));
-    toggle?.setAttribute('aria-label', `${open ? 'Close' : 'Open'} navigation`);
+    toggle?.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
   };
 
   toggle?.addEventListener('click', () => setOpen(!menu?.classList.contains('open')));
@@ -86,6 +86,9 @@ function bindTransitions(): void {
 export function initShell(options: ShellOptions = {}): void {
   const { nav = true, transitions = true } = options;
   markCurrentLink(document);
+  if (nav || document.body.dataset.page === 'cockpit') {
+    const s = document.createElement('script'); s.type = 'module'; s.src = import.meta.env.DEV ? '/src/features/session-island.ts' : '/island.js'; document.head.append(s);
+  }
   addEventListener('pointerdown', prefetch, { passive: true });
   document.querySelector('.nav')?.addEventListener('pointerover', prefetch, { passive: true });
   if (nav) {

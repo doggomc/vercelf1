@@ -313,14 +313,17 @@ export default defineConfig({
     cssCodeSplit: true,
     rollupOptions: {
       output: {
+        entryFileNames: chunk => chunk.name === 'session-island-entry' ? 'island.js' : 'bundles/[name]-[hash].js',
         // Bundle two small synchronous player-support modules together to save
         // a cold-load request without adding the player to other pages.
         manualChunks(id) {
           const path = id.replaceAll('\\', '/');
           if (/\/src\/(?:interaction-guard|types\/site-config)\.ts$/.test(path)) return 'cockpit-support';
+          if (/\/src\/data\/(?:driver-flags|flags)\.ts$/.test(path)) return 'flag-data';
         },
       },
       input: {
+        'session-island-entry': resolve(ROOT, 'src/features/session-island.ts'),
         /* Separate pages, separate stylesheets: the public pages load layout.css
            and a few hundred bytes of shell, the cockpit loads the player runtime. */
         index: resolve(ROOT, 'index.html'),
