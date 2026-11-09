@@ -27,9 +27,7 @@ export type StandingRow = {
   Constructors?: Array<{ name: string; constructorId: string }>;
 };
 
-/** Anything the API sends is data, not markup. */
-export const esc = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, (char) =>
-  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] as string));
+export { esc, driverSlug } from '../lib/driver-format';
 
 /**
  * The colour a team races in, falling back to the neutral grey for anyone the
@@ -58,9 +56,6 @@ export function gapToLeader(points: string, leaderPoints: string): string {
   if (!Number.isFinite(gap)) return '\u2014';
   return gap > 0 ? `-${gap}` : '\u2014';
 }
-
-/** "Antonelli" on a card, "andrea-kimi-antonelli" in the URL. */
-export const driverSlug = (driver: DriverRef) => slugify(`${driver.givenName} ${driver.familyName}`);
 
 /** "Red Bull" or "Red Bull Racing" → "red-bull-racing" in /teams/<slug>/. */
 export const teamSlug = (apiOrDisplayName: string) => slugify(teamName(apiOrDisplayName));

@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import { driverPages } from './scripts/driver-pages';
 import { teamPages } from './scripts/team-pages';
+import { gridPrerender } from './scripts/grid-prerender';
 import { resolve, extname, join, relative, sep } from 'node:path';
 import { createReadStream } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -294,7 +295,7 @@ function dedupeRootAssets(): Plugin {
 
 export default defineConfig({
   publicDir: false,
-  plugins: [serveStaticFolders(), dedupeRootAssets(), driverPages(), teamPages()],
+  plugins: [serveStaticFolders(), dedupeRootAssets(), gridPrerender(), driverPages(), teamPages()],
   server: {
     host: '0.0.0.0', port: 4173,
     allowedHosts: ['.e2b.app', 'localhost'],
