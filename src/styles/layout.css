@@ -1857,3 +1857,25 @@ a.tp-mini-who:hover .tp-mini-name { text-decoration: underline; text-underline-o
 .hero-card .hero-watch:hover { color: #fff; background: #ffffff1c; }
 .hero-card .hero-watch:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 @media (max-width: 380px) { .hero-card { padding: 16px; } .hero-card .countdown { gap: 5px; } .hero-card .countdown .unit .n { font-size: 20px; } }
+
+/* Weekend schedule: a vertically stacked local-time timeline. */
+.hero-week { padding: 20px; border: 0; border-radius: 16px; background: #18191d; box-shadow: none; }
+.hero-week-head { align-items: center; min-height: 24px; padding: 0; }
+.hero-week-head .week-label { display: inline-flex; align-items: center; min-height: 20px; padding: 0 6px; border-radius: 6px; background: #e3e4f21f; color: #cecfd2; font-size: 11px; line-height: 16px; font-weight: 700; text-transform: uppercase; }
+.hero-week-head #heroWeekNote { color: #96999e; font-size: 12px; line-height: 16px; }
+.session-strip { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; margin: 12px 0 0; padding: 0; list-style: none; }
+.session-row { min-width: 0; min-height: 54px; display: flex; align-items: center; gap: 12px; padding: 0 12px 0 6px; border-radius: 12px; }
+.session-row.next { background: #1c2b42; }
+.session-row.live { background: #3d1b1a; }
+.session-row.done { opacity: .55; }
+.session-day { flex: none; display: grid; place-content: center; width: 38px; height: 38px; border-radius: 10px; background: #e3e4f20d; color: #cecfd2; text-align: center; line-height: 1; }
+.session-day span { font-size: 10px; line-height: 10px; font-weight: 650; text-transform: uppercase; }
+.session-day b { margin-top: 2px; font-size: 15px; line-height: 15px; font-weight: 700; }
+.session-row.next .session-day { background: #85b8ff24; color: #669df1; }
+.session-row.live .session-day { background: #f8716824; color: #ff9d97; }
+.session-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.session-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; font-size: 14px; line-height: 20px; font-weight: 650; }
+.session-time { color: #96999e; font-size: 12px; line-height: 16px; }
+.session-relative { flex: none; color: #85b8ff; font-size: 12px; line-height: 16px; font-weight: 650; white-space: nowrap; }
+.session-row.live .session-relative { color: #ff9d97; }
+@media (max-width: 380px) { .hero-week { padding: 16px; } .session-row { gap: 8px; padding-right: 6px; } }

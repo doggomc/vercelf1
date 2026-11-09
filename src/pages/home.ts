@@ -3,7 +3,7 @@ import { initShell } from '../ui/shell';
 import '../viewer-counter';
 import {
   countdownParts, findFocusEvent, findLiveSession, findNextSession,
-  formatDay, formatFull, formatTime, sessionPhase, type SessionInfo,
+  formatFull, formatTime, sessionPhase, type SessionInfo,
 } from '../services/weekend';
 
 initShell();
@@ -140,7 +140,7 @@ function paintNextCard(info: SessionInfo | null, liveInfo: SessionInfo | null): 
     tag.textContent = `Round ${info.event.round}`;
     tag.className = 'next-round';
   }
-  if (local) local.textContent = `${formatFull(info.session.ts)} your time`;
+  if (local) local.textContent = formatFull(info.session.ts);
   $('countdown')?.setAttribute('aria-label', `${info.session.name} starts in`);
   countdownTarget = info.session.ts;
   paintCountdown();
@@ -185,25 +185,32 @@ document.addEventListener('visibilitychange', () => {
 
 /* ── This weekend's sessions ────────────────────────────────────────────── */
 
+const weekendDay = new Intl.DateTimeFormat(undefined, { weekday: 'short' });
+const weekendNumber = new Intl.DateTimeFormat(undefined, { day: 'numeric' });
+function sessionRelative(ts: number, now: number): string {
+  const minutes = Math.max(0, Math.ceil((ts - now) / 60_000));
+  if (minutes >= 1440) { const days = Math.floor(minutes / 1440); return `in ${days} ${days === 1 ? 'day' : 'days'}`; }
+  if (minutes >= 60) { const hours = Math.floor(minutes / 60); return `in ${hours} ${hours === 1 ? 'hour' : 'hours'}`; }
+  return `in ${minutes} min`;
+}
+
 function paintSessionStrip(): void {
   const strip = $('sessionStrip');
   if (!strip) return;
-  const event = focus;
-  if (!event) { strip.innerHTML = ''; return; }
-
   const now = Date.now();
-  const nextInfo = findNextSession(now);
-  const nextTs = nextInfo?.session.ts ?? null;
+  const event = findFocusEvent(now);
+  if (!event) { strip.replaceChildren(); return; }
+  const nextTs = findNextSession(now)?.session.ts ?? null;
 
   strip.innerHTML = event.sessions.map((session) => {
     const phase = sessionPhase(session, now, nextTs);
-    const classes = ['session-tile', phase === 'next' ? 'next' : '', phase === 'live' ? 'live' : '', phase === 'done' ? 'done' : '']
-      .filter(Boolean).join(' ');
-    return `<div class="${classes}">
-      <span class="name">${escapeHtml(session.name)}</span>
-      <span class="when">${phase === 'live' ? 'On air' : formatTime(session.ts)}</span>
-      <span class="day">${formatDay(session.ts)}</span>
-    </div>`;
+    const status = phase === 'next' ? sessionRelative(session.ts, now) : phase === 'live' ? 'On air' : '';
+    const iso = new Date(session.ts).toISOString();
+    return `<li class="session-row ${phase}">
+      <time class="session-day" datetime="${iso}"><span>${escapeHtml(weekendDay.format(session.ts))}</span><b>${escapeHtml(weekendNumber.format(session.ts))}</b></time>
+      <span class="session-copy"><span class="session-name">${escapeHtml(session.name)}</span><time class="session-time" datetime="${iso}">${escapeHtml(formatTime(session.ts))}</time></span>
+      ${status ? `<span class="session-relative">${escapeHtml(status)}</span>` : ''}
+    </li>`;
   }).join('');
 }
 
