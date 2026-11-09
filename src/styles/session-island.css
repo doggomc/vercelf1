@@ -62,11 +62,11 @@
 }
 
 /* Reserve the counter's space before the socket starts and regardless of its value. */
-nav.nav .pill.viewer { box-sizing: border-box; width: 126px; flex: 0 0 126px; justify-content: center; }
+nav.nav .pill.viewer { box-sizing: border-box; width: 116px; flex: 0 0 116px; justify-content: center; }
 nav.nav .pill.viewer[hidden] { display: inline-flex !important; visibility: hidden; }
-nav.nav .pill.viewer #viewerCount { display: inline-block; width: 6ch; flex: 0 0 6ch; text-align: center; overflow: hidden; text-overflow: ellipsis; }
+nav.nav .pill.viewer #viewerCount { display: inline-block; max-width: 6ch; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 480px) {
-  nav.nav .pill.viewer { width: 80px; flex-basis: 80px; }
+  nav.nav .pill.viewer { width: 76px; flex-basis: 76px; }
   .session-island-slot { left: 39%; }
 }
 @media (max-width: 350px) { .session-island-slot { left: 37%; } }
