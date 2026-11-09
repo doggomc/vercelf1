@@ -1,0 +1,62 @@
+/* A compact capsule that morphs into a single-line timing display. */
+.session-island-slot { position: relative; width: 180px; height: 40px; flex: 0 0 180px; z-index: 3; }
+.session-island {
+  position: absolute; top: 0; right: 0; width: 180px; height: 40px;
+  display: block; overflow: hidden; box-sizing: border-box; border-radius: 20px;
+  background: #000; color: #fff; text-decoration: none;
+  box-shadow: 0 0 0 1px #ffffff1a, 0 8px 24px -8px #000c;
+  font: 600 12px/1.2 Inter, system-ui, sans-serif;
+  transition: width .55s cubic-bezier(.22, 1, .36, 1), height .55s cubic-bezier(.22, 1, .36, 1), border-radius .55s cubic-bezier(.22, 1, .36, 1), box-shadow .4s;
+}
+.si-compact, .si-expanded { position: absolute; inset: 0; display: flex; align-items: center; white-space: nowrap; transition: opacity .18s ease, transform .3s ease; }
+.si-compact { gap: 8px; padding: 0 12px 0 8px; opacity: 1; }
+.si-badge { display: grid; place-items: center; min-width: 32px; height: 24px; padding: 0 7px; box-sizing: border-box; border-radius: 999px; background: #e10600; color: #fff; font-size: 11px; font-weight: 800; }
+.si-name { overflow: hidden; text-overflow: ellipsis; color: #ffffffbf; }
+.si-relative { margin-left: auto; color: #fff; font-size: 12px; font-variant-numeric: tabular-nums; }
+.si-expanded { gap: 12px; padding: 0 14px; opacity: 0; transform: scale(.97); pointer-events: none; }
+.si-timer-icon { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; color: #f4b400; background: #f59e0b26; }
+.si-timer-icon svg { width: 18px; height: 18px; }
+.si-copy { min-width: 0; display: flex; flex-direction: column; gap: 3px; flex: 1; text-align: left; }
+.si-title, .si-date { overflow: hidden; text-overflow: ellipsis; }
+.si-title { font-size: 13px; font-weight: 700; }
+.si-date { font-size: 11px; font-weight: 500; color: #aaa; }
+.si-count { display: flex; align-items: flex-end; flex-direction: column; gap: 6px; min-width: 92px; }
+.si-clock { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.si-bar { width: 92px; height: 3px; background: #ffffff24; border-radius: 99px; overflow: hidden; }
+.si-bar > span { display: block; height: 100%; background: #e5b528; border-radius: inherit; }
+.session-island.is-expanded, .session-island:focus-visible { width: 350px; height: 56px; border-radius: 28px; box-shadow: 0 0 0 1px #ffffff20, 0 20px 48px -12px #000; }
+.session-island.is-expanded .si-compact, .session-island:focus-visible .si-compact { opacity: 0; transform: scale(.97); }
+.session-island.is-expanded .si-expanded, .session-island:focus-visible .si-expanded { opacity: 1; transform: none; transition-delay: .12s; }
+.session-island:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+@media (hover: hover) {
+  .session-island:hover { width: 350px; height: 56px; border-radius: 28px; box-shadow: 0 0 0 1px #ffffff20, 0 20px 48px -12px #000; }
+  .session-island:hover .si-compact { opacity: 0; transform: scale(.97); }
+  .session-island:hover .si-expanded { opacity: 1; transform: none; transition-delay: .12s; }
+}
+@media (min-width: 901px) and (max-width: 1250px) {
+  nav.nav:has(.session-island) .nav-inner { gap: 8px; }
+  nav.nav:has(.session-island) .nav-links { gap: 0; margin-right: 4px; }
+  nav.nav:has(.session-island) .nav-links a { padding-inline: 6px; font-size: 12px; }
+  .session-island-slot { width: 120px; flex-basis: 120px; }
+  .session-island { width: 120px; }
+  .si-name { display: none; }
+}
+@media (max-width: 1150px) { nav.nav:has(.session-island) .nav-pill { display: none; } }
+@media (max-width: 900px) {
+  .session-island-slot { position: absolute; top: 50%; left: 50%; width: 180px; height: 40px; transform: translate(-50%, -50%); }
+  .session-island { right: 50%; transform: translateX(50%); }
+  .session-island.is-expanded, .session-island:focus-visible { width: min(350px, calc(100vw - 32px)); }
+}
+@media (max-width: 399px) { .session-island-slot, .session-island { width: 120px; } .si-name { display: none; } }
+@media (prefers-reduced-motion: reduce) { .session-island, .si-compact, .si-expanded { transition: none !important; } }
+@media (max-width: 350px) {
+  nav.nav:has(.session-island) .brand-text { display: none; }
+  .session-island-slot, .session-island { width: 108px; }
+}
+@media (max-width: 350px) {
+  .session-island-slot { left: 44%; }
+  .session-island.is-expanded, .session-island:focus-visible { width: min(260px, calc(100vw - 32px)); }
+  .si-expanded { gap: 8px; padding-inline: 10px; }
+  .si-count, .si-bar { min-width: 78px; width: 78px; }
+  .si-clock { font-size: 12px; }
+}

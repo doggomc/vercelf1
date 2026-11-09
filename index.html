@@ -84,14 +84,14 @@
       <div class="hero-rail">
       <aside class="hero-card rise rise-2" aria-label="Next session countdown">
         <div class="hero-card-head">
-          <span class="eyebrow">Up next</span>
-          <span class="tag" id="nextTag">—</span>
+          <span class="next-label">Next session</span>
+          <span class="next-round" id="nextTag">—</span>
         </div>
         <div class="hero-card-body">
-          <p class="next-gp visually-hidden" id="nextGrandPrix">—</p>
           <p class="next-name" id="nextSessionName">—</p>
           <p class="next-session" id="nextSession">Loading…</p>
-          <div class="countdown" id="countdown" aria-live="off">
+          <p class="next-local" id="nextLocal">—</p>
+          <div class="countdown" id="countdown" role="timer" aria-live="off" aria-label="Time until the next session">
             <span class="unit"><span class="n" data-unit="d">--</span><span class="l">Days</span></span>
             <span class="unit"><span class="n" data-unit="h">--</span><span class="l">Hrs</span></span>
             <span class="unit"><span class="n" data-unit="m">--</span><span class="l">Min</span></span>
@@ -99,17 +99,16 @@
           </div>
         </div>
         <div class="hero-card-foot">
-          <span id="nextLocal">—</span>
-          <a class="hero-watch" href="/cockpit.html">Watch</a>
+          <a class="hero-watch" href="/cockpit.html"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13L19 12 8 5.5Z"/></svg>Watch</a>
         </div>
       </aside>
 
       <div class="hero-week" id="heroWeek">
         <div class="hero-week-head">
-          <span class="eyebrow">This weekend</span>
-          <span id="heroWeekNote"></span>
+          <span class="week-label">This weekend</span>
+          <span id="heroWeekNote">Your local time</span>
         </div>
-        <div class="session-strip" id="sessionStrip"></div>
+        <ol class="session-strip" id="sessionStrip" aria-label="Weekend schedule"></ol>
       </div>
       </div>
     </div>

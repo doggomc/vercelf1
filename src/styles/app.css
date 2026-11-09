@@ -1,3 +1,4 @@
+@import './session-island.css';
 @import './outage.css';
 
 /* The hidden attribute must always win. Class rules that set display (grid, inline-flex, flex)
@@ -6760,9 +6761,9 @@ html.has-mvx body {
 
 
 /* Cockpit controls: shared directory-style surfaces and restrained motion. */
-#watch .watch-head .eyebrow { display: inline-flex; align-items: center; gap: 8px; color: #a0a1a9; font: 700 11px/1 'Inter', system-ui, sans-serif; letter-spacing: .04em; text-transform: none; }
+#watch .watch-head .eyebrow { display: inline-flex; align-items: center; gap: 8px; }
 #watch .watch-head .eyebrow::before { content: ''; width: 3px; height: 13px; border-radius: 4px; background: var(--team, #e10600); }
-#watch .watch-head h2 { margin-top: 13px; font-family: 'Inter', system-ui, sans-serif; font-style: normal; font-weight: 800; text-transform: none; letter-spacing: -.045em; }
+#watch .watch-head h2 { margin-top: 13px; }
 #watch .watch-head .rule { display: none; }
 #watch .wplayer { border-radius: 18px; overflow: hidden; box-shadow: 0 0 0 1px #ffffff1c, 0 20px 65px #0005; }
 #watch .wplayer-bar { background: #15161a; border-bottom: 1px solid #ffffff12; }
@@ -6785,7 +6786,7 @@ html.has-mvx body {
 #watch .side-h { color: #9b9da5; font-weight: 600; }
 #watch .side-link:hover { background: #1d1f24; border-color: #ffffff32; transform: translateY(-2px); }
 #watch .side-link svg { padding: 7px; width: 32px; height: 32px; border: 1px solid #ffffff19; border-radius: 10px; background: #ffffff08; }
-@media (max-width: 760px) { #watch .wsources { padding: 16px; } #watch .watch-head h2 { font-size: clamp(2rem, 8vw, 2.7rem); } }
+@media (max-width: 760px) { #watch .wsources { padding: 16px; } }
 @media (prefers-reduced-motion: reduce) { #watch .wplayer-actions .btn, #watch .side-link, #watch .side-link svg, #watch .wsource-list .chip, #watch .wtabs::before { animation: none; transition: none; } }
 
 /* The two cockpit menus use the same quiet cards and white selected pill. */
@@ -6801,3 +6802,73 @@ html.has-mvx body {
 #raceTimesOverlay .select-menu { border-radius: 14px; background: #191a1e; }
 #teamSelectOverlay .livery-custom { border-radius: 16px; }
 @media (prefers-reduced-motion: reduce) { #raceTimesOverlay .sheet-head .x, #teamSelectOverlay .sheet-head .x { transition: none; } }
+
+/* Cockpit refresh: a restrained illuminated console, scoped to the main live cockpit. */
+body[data-page="cockpit"] #watch .watch-head .eyebrow::before {
+  width: 7px; height: 7px; border-radius: 50%; box-shadow: 0 0 16px var(--team, #e10600);
+  animation: cockpitBeacon 2.8s ease-in-out infinite;
+}
+body[data-page="cockpit"] #watch .wplayer {
+  box-shadow: 0 0 0 1px #ffffff24, 0 22px 70px #0009, 0 0 44px color-mix(in srgb, var(--team, #e10600) 12%, transparent);
+}
+body[data-page="cockpit"] #watch .wplayer-bar {
+  position: relative;
+  background: linear-gradient(105deg, #1e1b20 0%, #15161c 48%, #111217 100%);
+}
+body[data-page="cockpit"] #watch .wplayer-bar::after {
+  content: ''; position: absolute; inset: auto 0 0; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, var(--team, #e10600), transparent 42%);
+  opacity: .8;
+}
+body[data-page="cockpit"] #watch .wplayer-actions,
+body[data-page="cockpit"] #watch .wsources,
+body[data-page="cockpit"] #watch .side-card {
+  background: linear-gradient(145deg, #202127, #14151a 70%);
+  border-color: #ffffff20;
+  box-shadow: 0 18px 40px #0004, inset 0 1px #ffffff09;
+}
+body[data-page="cockpit"] #watch .wplayer-actions { padding: 15px 18px; }
+body[data-page="cockpit"] #watch .watch-session-eyebrow { letter-spacing: .1em; }
+body[data-page="cockpit"] #watch .watch-session-dot.is-live { box-shadow: 0 0 12px #f87168a8; }
+body[data-page="cockpit"] #watch .wsources-head h2 { letter-spacing: -.035em; }
+body[data-page="cockpit"] #watch .wsources-count { color: #c5c7d2; background: #ffffff12; }
+body[data-page="cockpit"] #watch .wtabs { border-radius: 14px; }
+body[data-page="cockpit"] #watch .wsource-list > button.chip,
+body[data-page="cockpit"] #watch .wsource-list .special-row button.chip {
+  transition: transform .22s var(--ease), background-color .22s var(--ease), box-shadow .22s var(--ease), color .22s var(--ease);
+}
+body[data-page="cockpit"] #watch .wsource-list > button.chip:hover,
+body[data-page="cockpit"] #watch .wsource-list .special-row button.chip:hover {
+  transform: translateY(-2px); box-shadow: inset 0 0 0 1px #ffffff44, 0 6px 18px #0004;
+}
+body[data-page="cockpit"] #watch .wsource-list > button.chip.active,
+body[data-page="cockpit"] #watch .wsource-list .special-row button.chip.active {
+  background: linear-gradient(130deg, color-mix(in srgb, var(--team, #e10600) 25%, #22232b), #202128);
+  box-shadow: inset 0 0 0 1px var(--team, #e10600), 0 4px 18px color-mix(in srgb, var(--team, #e10600) 15%, transparent);
+}
+body[data-page="cockpit"] #watch .wplayer-actions .btn:hover { transform: translateY(-2px); }
+body[data-page="cockpit"] #watch .wplayer-actions .btn:active { transform: scale(.97); }
+body[data-page="cockpit"] #watch .side-link { transition: transform .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease), background .25s var(--ease); }
+body[data-page="cockpit"] #watch .side-link:hover { transform: translateY(-3px); border-color: #ffffff45; box-shadow: 0 16px 34px #0006; }
+body[data-page="cockpit"] #watch .side-link:hover svg { transform: translate(3px, -3px) rotate(5deg); }
+body[data-page="cockpit"]:not(.theater) #watch .wplayer { animation: cockpitRise .5s var(--ease) both; }
+body[data-page="cockpit"]:not(.theater) #watch .wplayer-actions { animation: cockpitRise .5s var(--ease) .06s both; }
+body[data-page="cockpit"]:not(.theater) #watch .wsources { animation: cockpitRise .5s var(--ease) .12s both; }
+@keyframes cockpitRise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes cockpitBeacon { 0%, 100% { opacity: .65; } 50% { opacity: 1; box-shadow: 0 0 20px var(--team, #e10600); } }
+@media (prefers-reduced-motion: reduce) {
+  body[data-page="cockpit"] #watch .watch-head .eyebrow::before,
+  body[data-page="cockpit"]:not(.theater) #watch .wplayer,
+  body[data-page="cockpit"]:not(.theater) #watch .wplayer-actions,
+  body[data-page="cockpit"]:not(.theater) #watch .wsources { animation: none; }
+  body[data-page="cockpit"] #watch .wplayer-actions .btn,
+  body[data-page="cockpit"] #watch .wsource-list > button.chip,
+  body[data-page="cockpit"] #watch .wsource-list .special-row button.chip,
+  body[data-page="cockpit"] #watch .side-link,
+  body[data-page="cockpit"] #watch .side-link svg { transition: none; animation: none; }
+  body[data-page="cockpit"] #watch .wplayer-actions .btn:hover,
+  body[data-page="cockpit"] #watch .wsource-list > button.chip:hover,
+  body[data-page="cockpit"] #watch .wsource-list .special-row button.chip:hover,
+  body[data-page="cockpit"] #watch .side-link:hover,
+  body[data-page="cockpit"] #watch .side-link:hover svg { transform: none; }
+}

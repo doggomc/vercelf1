@@ -1,3 +1,4 @@
+@import './session-island.css';
 @import './outage.css';
 
 /* ═══════════════ SITE SHELL ═══════════════
@@ -1835,3 +1836,47 @@ a.tp-mini-who:hover .tp-mini-name { text-decoration: underline; text-underline-o
 .lt-chev { color: var(--fg-3); flex: none; transition: transform .22s var(--ease); }
 .lt-faq-item[open] .lt-chev { transform: rotate(180deg); }
 .lt-faq-a { padding: 0 0 16px; font-size: 14px; line-height: 1.6; color: var(--fg-2); max-width: 68ch; }
+
+/* Next-session timing card: compact status, local time, four timing tiles, full-width action. */
+.hero-card { padding: 20px; border-radius: 16px; background: #18191d; }
+.hero-card .hero-card-head { padding: 0; min-height: 24px; border: 0; }
+.hero-card .next-label { display: inline-flex; align-items: center; height: 20px; padding: 0 6px; border-radius: 6px; background: #1c2b42; color: #85b8ff; font-size: 11px; line-height: 16px; font-weight: 700; text-transform: uppercase; }
+.hero-card .next-round { color: #96999e; font-size: 12px; line-height: 16px; }
+.hero-card .next-round.is-live { color: #ff9d97; }
+.hero-card .hero-card-body { padding: 16px 0 0; }
+.hero-card .next-name { font: 600 20px/24px var(--font-body); letter-spacing: -.015em; }
+.hero-card .next-session { margin-top: 5px; font-size: 14px; line-height: 20px; font-weight: 600; letter-spacing: 0; color: #ced0d4; }
+.hero-card .next-local { margin: 2px 0 0; color: #96999e; font-size: 13px; line-height: 20px; }
+.hero-card .countdown { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 20px; }
+.hero-card .countdown .unit { min-width: 0; padding: 10px 2px 8px; border-radius: 10px; background: #0a0b0d; box-shadow: inset 0 0 0 1px #e3e4f212; }
+.hero-card .countdown .unit .n { display: flex; justify-content: center; align-items: center; overflow: hidden; font-family: var(--font-number); font-size: clamp(20px, 2.3vw, 28px); font-weight: 400; letter-spacing: -.04em; line-height: 36px; color: #fff; }
+.hero-card .count-digit { display: inline-block; }
+.hero-card .countdown .unit .l { margin-top: 0; color: #96999e; font-size: 11px; line-height: 14px; font-weight: 500; letter-spacing: 0; text-transform: lowercase; }
+.hero-card .hero-card-foot { padding: 20px 0 0; border: 0; display: block; }
+.hero-card .hero-watch { width: 100%; min-height: 36px; justify-content: center; padding: 0 14px; border: 0; border-radius: 999px; color: #ced0d4; background: #ceced912; font-size: 14px; }
+.hero-card .hero-watch svg { width: 16px; height: 16px; }
+.hero-card .hero-watch:hover { color: #fff; background: #ffffff1c; }
+.hero-card .hero-watch:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+@media (max-width: 380px) { .hero-card { padding: 16px; } .hero-card .countdown { gap: 5px; } .hero-card .countdown .unit .n { font-size: 20px; } }
+
+/* Weekend schedule: a vertically stacked local-time timeline. */
+.hero-week { padding: 20px; border: 0; border-radius: 16px; background: #18191d; box-shadow: none; }
+.hero-week-head { align-items: center; min-height: 24px; padding: 0; }
+.hero-week-head .week-label { display: inline-flex; align-items: center; min-height: 20px; padding: 0 6px; border-radius: 6px; background: #e3e4f21f; color: #cecfd2; font-size: 11px; line-height: 16px; font-weight: 700; text-transform: uppercase; }
+.hero-week-head #heroWeekNote { color: #96999e; font-size: 12px; line-height: 16px; }
+.session-strip { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; margin: 12px 0 0; padding: 0; list-style: none; }
+.session-row { min-width: 0; min-height: 54px; display: flex; align-items: center; gap: 12px; padding: 0 12px 0 6px; border-radius: 12px; }
+.session-row.next { background: #1c2b42; }
+.session-row.live { background: #3d1b1a; }
+.session-row.done { opacity: .55; }
+.session-day { flex: none; display: grid; place-content: center; width: 38px; height: 38px; border-radius: 10px; background: #e3e4f20d; color: #cecfd2; text-align: center; line-height: 1; }
+.session-day span { font-size: 10px; line-height: 10px; font-weight: 650; text-transform: uppercase; }
+.session-day b { margin-top: 2px; font-size: 15px; line-height: 15px; font-weight: 700; }
+.session-row.next .session-day { background: #85b8ff24; color: #669df1; }
+.session-row.live .session-day { background: #f8716824; color: #ff9d97; }
+.session-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.session-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; font-size: 14px; line-height: 20px; font-weight: 650; }
+.session-time { color: #96999e; font-size: 12px; line-height: 16px; }
+.session-relative { flex: none; color: #85b8ff; font-size: 12px; line-height: 16px; font-weight: 650; white-space: nowrap; }
+.session-row.live .session-relative { color: #ff9d97; }
+@media (max-width: 380px) { .hero-week { padding: 16px; } .session-row { gap: 8px; padding-right: 6px; } }

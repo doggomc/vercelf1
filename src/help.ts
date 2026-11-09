@@ -801,3 +801,8 @@ import { $ } from './services/dom';
     } else if (!state.token) stopEventStream();
   });
 })();
+
+const islandScript = document.createElement('script');
+islandScript.type = 'module';
+islandScript.src = import.meta.env.DEV ? '/src/features/session-island.ts' : '/island.js';
+document.head.append(islandScript);

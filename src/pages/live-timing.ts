@@ -54,6 +54,7 @@ type RowDom = {
 
 let builtMode: 'race' | 'prac' | null = null;
 let rowsHost: HTMLDivElement | null = null;
+const rowSwitchAnimations = new WeakMap<HTMLDivElement, Animation>();
 const rowDomMap = new Map<string, RowDom>();
 
 function ensureTowerShell(isRace: boolean): void {
@@ -128,6 +129,15 @@ function setStatusIndicator(text: string, mode: 'live' | 'idle' | 'connecting' |
 function paintSnapshot(snap: TimingSnapshot): void {
   const sessionId = `${snap.source}:${snap.sessionKey ?? snap.sessionName}`;
   const sameSession = sessionId === activeSessionId;
+  const animateSwitch = Boolean(activeSessionId) && !sameSession && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const previousPositions = new Map<string, number>();
+  if (animateSwitch && rowsHost) {
+    const top = rowsHost.getBoundingClientRect().top;
+    for (const [num, dom] of rowDomMap) {
+      if (dom.el.style.display !== 'none') previousPositions.set(num, dom.el.getBoundingClientRect().top - top);
+      rowSwitchAnimations.get(dom.el)?.cancel();
+    }
+  }
   activeSessionId = sessionId;
   activeSnap = snap;
   setStatusIndicator(snap.statusText, snap.isLive ? 'live' : 'idle');
@@ -171,7 +181,20 @@ function paintSnapshot(snap: TimingSnapshot): void {
       seen.add(row.num);
       const dom = getOrCreateRow(row, snap.isRace);
       dom.el.style.display = '';
-      dom.el.style.transform = `translateY(${idx * ROW_H}px)`;
+      const targetY = idx * ROW_H;
+      dom.el.style.transform = `translateY(${targetY}px)`;
+      if (animateSwitch && typeof dom.el.animate === 'function') {
+        const previousY = previousPositions.get(row.num);
+        const animation = dom.el.animate(
+          previousY === undefined
+            ? [{ transform: `translateY(${targetY + 10}px)`, opacity: 0 }, { transform: `translateY(${targetY}px)`, opacity: row.isOut ? .48 : 1 }]
+            : Math.abs(previousY - targetY) < 1
+              ? [{ opacity: .65 }, { opacity: row.isOut ? .48 : 1 }]
+              : [{ transform: `translateY(${previousY}px)` }, { transform: `translateY(${targetY}px)` }],
+          { duration: 550, easing: 'cubic-bezier(.22, 1, .36, 1)' },
+        );
+        rowSwitchAnimations.set(dom.el, animation);
+      }
       const numericPos = Number(row.pos);
       if (sameSession && Number.isFinite(numericPos) && dom.lastPos !== null && dom.lastPos !== numericPos) {
         dom.el.classList.remove('flash-up', 'flash-down');
@@ -440,6 +463,7 @@ async function loadOpenF1Bundle(session: OpenF1Session, bypassCache = false): Pr
   return bundle;
 }
 
+let sessionTabsSignature = '';
 function renderSessionTabs(activeKey: number | 'live'): void {
   const bar = $('ltSessionsBar');
   const tabs = $('ltSessionTabs');
@@ -450,6 +474,16 @@ function renderSessionTabs(activeKey: number | 'live'): void {
     return;
   }
   bar.hidden = false;
+  const signature = `${hasLiveWs}:${weekendSessions.map(s => `${s.session_key}:${s.session_name}`).join('|')}`;
+  if (signature === sessionTabsSignature && tabs.childElementCount) {
+    tabs.querySelectorAll<HTMLButtonElement>('[data-session-key]').forEach(button => {
+      const active = button.dataset.sessionKey === String(activeKey);
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', String(active));
+    });
+    return;
+  }
+  sessionTabsSignature = signature;
   const liveBtn = hasLiveWs
     ? `<button class="tab ${activeKey === 'live' ? 'active' : ''}" type="button" role="tab" aria-selected="${activeKey === 'live'}" data-session-key="live">Live feed</button>`
     : '';
@@ -464,6 +498,7 @@ $('ltSessionTabs')?.addEventListener('click', (ev) => {
   if (!btn) return;
   const raw = btn.dataset.sessionKey;
   if (raw === 'live') {
+    if (pinnedSessionKey === 'live') return;
     pinnedSessionKey = 'live';
     const wsSnap = snapshotFromF1State(f1Client.state);
     if (wsSnap) {
@@ -474,14 +509,14 @@ $('ltSessionTabs')?.addEventListener('click', (ev) => {
   }
   const key = Number(raw);
   const target = weekendSessions.find((s) => s.session_key === key);
-  if (!target) return;
+  if (!target || (pinnedSessionKey === key && activeSnap?.source === 'openf1' && activeSnap.sessionKey === key)) return;
   pinnedSessionKey = key;
   renderSessionTabs(key);
   setStatusIndicator(`Loading ${target.session_name}…`, 'connecting');
   loadOpenF1Bundle(target).then((bundle) => {
     if (pinnedSessionKey === key) paintSnapshot(snapshotFromOpenF1(bundle));
   }).catch(() => {
-    setStatusIndicator(`Could not load ${target.session_name}`, 'error');
+    if (pinnedSessionKey === key) setStatusIndicator(`Could not load ${target.session_name}`, 'error');
   });
 });
 

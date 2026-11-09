@@ -3,7 +3,7 @@ import { initShell } from '../ui/shell';
 import '../viewer-counter';
 import {
   countdownParts, findFocusEvent, findLiveSession, findNextSession,
-  formatDay, formatFull, formatTime, sessionPhase, type SessionInfo,
+  formatFull, formatTime, sessionPhase, type SessionInfo,
 } from '../services/weekend';
 
 initShell();
@@ -100,7 +100,6 @@ if (focus) {
 let countdownTarget: number | null = null;
 
 function paintNextCard(info: SessionInfo | null, liveInfo: SessionInfo | null): void {
-  const gp = $('nextGrandPrix');
   const name = $('nextSessionName');
   const session = $('nextSession');
   const tag = $('nextTag');
@@ -108,9 +107,8 @@ function paintNextCard(info: SessionInfo | null, liveInfo: SessionInfo | null): 
 
   /* The card reads top to bottom as name, then session: the name is the loud line,
      the session a quiet one directly beneath it. */
-  const set = (eventName: string, gpName: string, sessionName: string, live: boolean) => {
+  const set = (eventName: string, sessionName: string, live: boolean) => {
     if (name) name.textContent = eventName;
-    if (gp) gp.textContent = gpName;
     if (session) {
       session.textContent = sessionName;
       session.classList.toggle('is-live', live);
@@ -118,29 +116,32 @@ function paintNextCard(info: SessionInfo | null, liveInfo: SessionInfo | null): 
   };
 
   if (liveInfo) {
-    set(liveInfo.event.name, liveInfo.event.name, `${liveInfo.session.name} — on air`, true);
-    if (tag) { tag.textContent = 'Live now'; tag.className = 'tag tag-accent'; }
+    set(liveInfo.event.name, `${liveInfo.session.name} — on air`, true);
+    if (tag) { tag.textContent = 'Live now'; tag.className = 'next-round is-live'; }
     if (local) local.textContent = `Started ${formatTime(liveInfo.session.ts)}`;
+    $('countdown')?.setAttribute('aria-label', `${liveInfo.session.name} is scheduled now`);
     countdownTarget = null;
     paintCountdown();
     return;
   }
 
   if (!info) {
-    set('Season complete', 'Season complete', 'See you next year', false);
-    if (tag) { tag.textContent = '—'; tag.className = 'tag'; }
+    set('Season complete', 'See you next year', false);
+    if (tag) { tag.textContent = '—'; tag.className = 'next-round'; }
     if (local) local.textContent = '';
+    $('countdown')?.setAttribute('aria-label', 'No upcoming session');
     countdownTarget = null;
     paintCountdown();
     return;
   }
 
-  set(info.event.name, info.event.name, info.session.name, false);
+  set(info.event.name, info.session.name, false);
   if (tag) {
     tag.textContent = `Round ${info.event.round}`;
-    tag.className = 'tag';
+    tag.className = 'next-round';
   }
   if (local) local.textContent = formatFull(info.session.ts);
+  $('countdown')?.setAttribute('aria-label', `${info.session.name} starts in`);
   countdownTarget = info.session.ts;
   paintCountdown();
 }
@@ -155,7 +156,18 @@ function paintCountdown(): void {
     const el = root.querySelector<HTMLElement>(`[data-unit="${unit}"]`);
     if (!el) return;
     const label = value === null ? '--' : String(value).padStart(2, '0');
-    if (el.textContent !== label) el.textContent = label;
+    if (el.textContent === label) return;
+    const old = el.textContent || '';
+    if (el.children.length !== label.length) {
+      el.replaceChildren(...[...label].map(char => { const digit = document.createElement('span'); digit.className = 'count-digit'; digit.textContent = char; return digit; }));
+      return;
+    }
+    [...label].forEach((char, i) => {
+      const digit = el.children[i] as HTMLElement;
+      if (digit.textContent === char) return;
+      digit.textContent = char;
+      if (old && !matchMedia('(prefers-reduced-motion: reduce)').matches) digit.animate([{ opacity: .35, transform: 'translateY(5px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 250, easing: 'ease-out' });
+    });
   };
   set('d', countdownTarget === null ? null : parts.days);
   set('h', countdownTarget === null ? null : parts.hours);
@@ -173,25 +185,32 @@ document.addEventListener('visibilitychange', () => {
 
 /* ── This weekend's sessions ────────────────────────────────────────────── */
 
+const weekendDay = new Intl.DateTimeFormat(undefined, { weekday: 'short' });
+const weekendNumber = new Intl.DateTimeFormat(undefined, { day: 'numeric' });
+function sessionRelative(ts: number, now: number): string {
+  const minutes = Math.max(0, Math.ceil((ts - now) / 60_000));
+  if (minutes >= 1440) { const days = Math.floor(minutes / 1440); return `in ${days} ${days === 1 ? 'day' : 'days'}`; }
+  if (minutes >= 60) { const hours = Math.floor(minutes / 60); return `in ${hours} ${hours === 1 ? 'hour' : 'hours'}`; }
+  return `in ${minutes} min`;
+}
+
 function paintSessionStrip(): void {
   const strip = $('sessionStrip');
   if (!strip) return;
-  const event = focus;
-  if (!event) { strip.innerHTML = ''; return; }
-
   const now = Date.now();
-  const nextInfo = findNextSession(now);
-  const nextTs = nextInfo?.session.ts ?? null;
+  const event = findFocusEvent(now);
+  if (!event) { strip.replaceChildren(); return; }
+  const nextTs = findNextSession(now)?.session.ts ?? null;
 
   strip.innerHTML = event.sessions.map((session) => {
     const phase = sessionPhase(session, now, nextTs);
-    const classes = ['session-tile', phase === 'next' ? 'next' : '', phase === 'live' ? 'live' : '', phase === 'done' ? 'done' : '']
-      .filter(Boolean).join(' ');
-    return `<div class="${classes}">
-      <span class="name">${escapeHtml(session.name)}</span>
-      <span class="when">${phase === 'live' ? 'On air' : formatTime(session.ts)}</span>
-      <span class="day">${formatDay(session.ts)}</span>
-    </div>`;
+    const status = phase === 'next' ? sessionRelative(session.ts, now) : phase === 'live' ? 'On air' : '';
+    const iso = new Date(session.ts).toISOString();
+    return `<li class="session-row ${phase}">
+      <time class="session-day" datetime="${iso}"><span>${escapeHtml(weekendDay.format(session.ts))}</span><b>${escapeHtml(weekendNumber.format(session.ts))}</b></time>
+      <span class="session-copy"><span class="session-name">${escapeHtml(session.name)}</span><time class="session-time" datetime="${iso}">${escapeHtml(formatTime(session.ts))}</time></span>
+      ${status ? `<span class="session-relative">${escapeHtml(status)}</span>` : ''}
+    </li>`;
   }).join('');
 }
 
