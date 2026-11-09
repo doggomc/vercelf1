@@ -25,7 +25,7 @@ export interface SiteConfig {
   maintenance?: Maintenance;
   pages?: PageControl;
   streamOverride?: StreamOverride;
-  sources?: { disabled: string[]; overrides?: Record<string, { label?: string; url?: string }> };
+  sources?: { disabled: string[]; overrides?: Record<string, { label?: string; url?: string }>; custom?: { id: string; label: string; url: string; tab: 'en' | 'other' }[]; order?: string[] };
   streamWindow?: StreamWindow;
   news?: unknown[];
 }
@@ -69,6 +69,16 @@ export function parseSiteConfig(value: unknown): SiteConfig | null {
       if (label || /^https:\/\//i.test(url)) overrides[id] = { ...(label ? { label } : {}), ...(/^https:\/\//i.test(url) ? { url } : {}) };
     }
     result.sources.overrides = overrides;
+    result.sources.order = Array.isArray(value.sources.order) ? [...new Set(value.sources.order.filter((id): id is string => typeof id === 'string' && /^[a-z0-9-]{1,80}$/.test(id)).slice(0, 200))] : [];
+    result.sources.custom = [];
+    if (Array.isArray(value.sources.custom)) for (const item of value.sources.custom.slice(0, 50)) {
+      if (!record(item) || typeof item.id !== 'string' || result.sources.custom.some(source => source.id === item.id) || !/^custom-[a-z0-9-]{1,60}$/.test(item.id) || typeof item.label !== 'string' || !item.label.trim() || typeof item.url !== 'string') continue;
+      try {
+        const url = new URL(item.url);
+        if (url.protocol !== 'https:' || url.username || url.password || url.href.length > 500) continue;
+        result.sources.custom.push({ id:item.id, label:item.label.trim().slice(0,40), url:url.href, tab:item.tab === 'other' ? 'other' : 'en' });
+      } catch { /* ignore malformed custom sources */ }
+    }
   }
   if (record(value.streamWindow) && typeof value.streamWindow.active === 'boolean') {
     const w = value.streamWindow;

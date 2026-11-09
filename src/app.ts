@@ -2299,6 +2299,7 @@ function applySourceConfig(payload) {
   void import('./features/chips').then(({ applySourceConfig: apply }) => apply(payload, {
     sources,
     current: () => currentSource,
+    setCurrent: (index) => { currentSource = index; },
     usable: (source) => Boolean(source) && sourceEnabled(source),
     normalize: normalizeCurrentSource,
     render: () => { renderButtons(); updateHeader(); },

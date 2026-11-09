@@ -9,4 +9,5 @@ export interface StreamSource {
   hidden?: boolean;
   /* Race Control pasted an address for this chip; it is played exactly as given. */
   custom?: boolean;
+  managedCustom?: boolean;
 }
