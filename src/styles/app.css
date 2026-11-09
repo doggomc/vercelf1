@@ -1,3 +1,4 @@
+@import './session-island.css';
 @import './outage.css';
 
 /* The hidden attribute must always win. Class rules that set display (grid, inline-flex, flex)

@@ -75,10 +75,6 @@
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=60, must-revalidate" }]
     },
     {
-      "source": "/session-island.css",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=60, must-revalidate" }]
-    },
-    {
       "source": "/fonts.css",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=3600, must-revalidate" }

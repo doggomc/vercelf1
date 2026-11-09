@@ -58,7 +58,12 @@ const scheduleSize = pageGzip('schedule.html');
 console.log(`schedule gzip: ${scheduleSize} B of ${SCHEDULE_BUDGET}`);
 assert(scheduleSize < SCHEDULE_BUDGET, `schedule.html ships ${scheduleSize} B gzip — over the ${SCHEDULE_BUDGET} B budget`);
 assert(existsSync('dist/calendar/f1.ics'), 'dist/calendar/f1.ics missing');
-assert(existsSync('dist/island.js') && existsSync('dist/session-island.css'), 'session island assets missing');
+assert(existsSync('dist/island.js'), 'session island script missing');
+for (const page of ['index.html', 'cockpit.html', 'help.html', '404.html']) {
+  const html = readFileSync(`dist/${page}`, 'utf8');
+  const styles = [...html.matchAll(/href="\/([^"]+\.css)"/g)].map(match => match[1]);
+  assert(styles.some(file => readFileSync(`dist/${file}`, 'utf8').includes('.session-island-slot')), `${page} must include session island styles`);
+}
 assert(existsSync('dist/assets/circuits/1.webp') && existsSync('dist/assets/circuits/23.webp'), 'circuit thumbnails missing in dist/assets/circuits/');
 /* Standings stopped being a thin shell when it took on the leaders, the pills and
    two live tables: it fetches both championships, caches each, paints the two
