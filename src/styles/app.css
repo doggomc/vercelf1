@@ -6760,9 +6760,9 @@ html.has-mvx body {
 
 
 /* Cockpit controls: shared directory-style surfaces and restrained motion. */
-#watch .watch-head .eyebrow { display: inline-flex; align-items: center; gap: 8px; color: #a0a1a9; font: 700 11px/1 'Inter', system-ui, sans-serif; letter-spacing: .04em; text-transform: none; }
+#watch .watch-head .eyebrow { display: inline-flex; align-items: center; gap: 8px; }
 #watch .watch-head .eyebrow::before { content: ''; width: 3px; height: 13px; border-radius: 4px; background: var(--team, #e10600); }
-#watch .watch-head h2 { margin-top: 13px; font-family: 'Inter', system-ui, sans-serif; font-style: normal; font-weight: 800; text-transform: none; letter-spacing: -.045em; }
+#watch .watch-head h2 { margin-top: 13px; }
 #watch .watch-head .rule { display: none; }
 #watch .wplayer { border-radius: 18px; overflow: hidden; box-shadow: 0 0 0 1px #ffffff1c, 0 20px 65px #0005; }
 #watch .wplayer-bar { background: #15161a; border-bottom: 1px solid #ffffff12; }
@@ -6785,7 +6785,7 @@ html.has-mvx body {
 #watch .side-h { color: #9b9da5; font-weight: 600; }
 #watch .side-link:hover { background: #1d1f24; border-color: #ffffff32; transform: translateY(-2px); }
 #watch .side-link svg { padding: 7px; width: 32px; height: 32px; border: 1px solid #ffffff19; border-radius: 10px; background: #ffffff08; }
-@media (max-width: 760px) { #watch .wsources { padding: 16px; } #watch .watch-head h2 { font-size: clamp(2rem, 8vw, 2.7rem); } }
+@media (max-width: 760px) { #watch .wsources { padding: 16px; } }
 @media (prefers-reduced-motion: reduce) { #watch .wplayer-actions .btn, #watch .side-link, #watch .side-link svg, #watch .wsource-list .chip, #watch .wtabs::before { animation: none; transition: none; } }
 
 /* The two cockpit menus use the same quiet cards and white selected pill. */
@@ -6803,14 +6803,10 @@ html.has-mvx body {
 @media (prefers-reduced-motion: reduce) { #raceTimesOverlay .sheet-head .x, #teamSelectOverlay .sheet-head .x { transition: none; } }
 
 /* Cockpit refresh: a restrained illuminated console, scoped to the main live cockpit. */
-body[data-page="cockpit"] #watch .watch-head .eyebrow {
-  color: #c8c8d1; letter-spacing: .12em; text-transform: uppercase; font-size: 10px;
-}
 body[data-page="cockpit"] #watch .watch-head .eyebrow::before {
   width: 7px; height: 7px; border-radius: 50%; box-shadow: 0 0 16px var(--team, #e10600);
   animation: cockpitBeacon 2.8s ease-in-out infinite;
 }
-body[data-page="cockpit"] #watch .watch-head h2 { letter-spacing: -.055em; }
 body[data-page="cockpit"] #watch .wplayer {
   box-shadow: 0 0 0 1px #ffffff24, 0 22px 70px #0009, 0 0 44px color-mix(in srgb, var(--team, #e10600) 12%, transparent);
 }
