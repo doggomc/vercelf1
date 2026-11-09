@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_TILES, describeFeed, focusLayout, initialFeedIds, layout, strippedPlayerUrl, tileUrl } from '../src/features/multiviewer';
+import { MAX_TILES, describeFeed, focusLayout, initialFeedIds, isMultiviewWeeloSource, layout, strippedPlayerUrl, tileUrl } from '../src/features/multiviewer';
 
 describe('multiviewer geometry & feed classification', () => {
+  it('only allows Weelo-backed feeds in multiview', () => {
+    expect(isMultiviewWeeloSource({})).toBe(false); // Sky HD and other non-Weelo relays
+    expect(isMultiviewWeeloSource({ weelo: 'sky-weelo' })).toBe(true);
+    expect(isMultiviewWeeloSource({ weellzUrls: ['https://weellz.live/beta?stream=test'] })).toBe(true);
+    expect(isMultiviewWeeloSource({ weelo: 'test', hidden: true })).toBe(false);
+  });
+
   it('starts only the selected available feed or restores a valid saved grid', () => {
     const feeds = [
       { id: 'sky', live: true }, { id: 'kimi', live: false }, { id: 'max', live: true },

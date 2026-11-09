@@ -38,6 +38,12 @@ export interface TileBox {
 
 export const MAX_TILES = 9;
 
+/** Only Weelo-backed sources can appear in the multiview picker. */
+export function isMultiviewWeeloSource(source: { weelo?: string; weellzUrls?: string[]; hidden?: boolean; links?: { provider?: string }[] }): boolean {
+  return Boolean((source.weelo || source.weellzUrls?.length) && (!source.hidden || source.links?.[0]?.provider === 'custom'));
+}
+
+
 /** Restore a saved grid, otherwise start just the currently selected available feed. */
 export function initialFeedIds(list: WeeloStream[], savedIds: unknown, selectedId?: string): string[] {
   const restored = Array.isArray(savedIds)
@@ -429,23 +435,10 @@ export function init(ctx: any) {
     loadTimers.set(tile, timer);
   }
 
-  // The main cockpit already resolves current relay URLs and honours disabled sources.
-  // Only add our known stripped players here: arbitrary embeds do not reliably accept
-  // the mute protocol and gated sources must still go through their own confirmation.
+  // Multiview is reserved for Weelo feeds, including their stripped versions.
   const streams = (): WeeloStream[] => (ctx.sources || [])
-    .map((s: any, index: number): WeeloStream | null => {
-      if (s.hidden && s.links?.[0]?.provider !== 'custom') return null;
-      const isWeelo = Boolean(s.weelo || s.weellzUrls?.length);
-      let relay = '';
-      if (!isWeelo && s.stripped && !s.gated) {
-        try {
-          const base = new URL(ctx.BACKEND_API || STREAM_API, location.origin);
-          const url = new URL(String(ctx.buildUrl?.(index) || ''), location.origin);
-          const prefix = base.pathname.replace(/\/$/, '');
-          if (url.origin === base.origin && new RegExp(`^${prefix}/api/stream/(?:strmfree|embdlol|ppv)-embed$`).test(url.pathname)) relay = url.href;
-        } catch { /* No usable relay yet; a catalogue refresh may provide one later. */ }
-      }
-      if (!isWeelo && !relay) return null;
+    .filter(isMultiviewWeeloSource)
+    .map((s: any): WeeloStream => {
       const custom = s.links?.[0]?.provider === 'custom' ? String(s.links[0].url || '') : '';
       const synced = Array.isArray(s.weellzUrls) && s.weellzUrls.length ? String(s.weellzUrls[0] || '') : '';
       let streamId = String(s.weelo || '');
@@ -461,11 +454,11 @@ export function init(ctx: any) {
         id,
         streamId,
         label: String(s.label || meta.title),
-        live: !s.special || custom ? true : !ctx.isSpecialDown(s),
+        live: custom ? true : !ctx.isSpecialDown(s),
         stripped,
-        pasted: relay || custom || (stripped ? strippedPlayerUrl(streamId) : synced),
+        pasted: custom || (stripped ? strippedPlayerUrl(streamId) : synced),
       };
-    }).filter((s: WeeloStream | null): s is WeeloStream => Boolean(s));
+    });
 
   const byId = (id: string) => streams().find((s) => s.id === id);
 
@@ -597,7 +590,9 @@ export function init(ctx: any) {
 
     const f = document.createElement('iframe');
     const nextUrl = tileUrl(stream.streamId, id !== audio, stream.pasted);
-    f.src = nextUrl;
+    // Navigate only after draw() gives the tile its real dimensions. Some
+    // embedded players initialise their rendering against their first viewport.
+    f.dataset.initialSrc = nextUrl;
     f.dataset.state = id === audio ? 'on' : 'off';
     f.allow = ALLOW;
     f.setAttribute('allow', ALLOW);
@@ -671,6 +666,13 @@ export function init(ctx: any) {
     paintChrome();
     paintAudio(false);
     relayout();
+    for (const frame of frames.values()) {
+      const url = frame.dataset.initialSrc;
+      if (url) {
+        delete frame.dataset.initialSrc;
+        frame.src = url;
+      }
+    }
     if (!libEl.hidden) drawLibrary();
   }
 
