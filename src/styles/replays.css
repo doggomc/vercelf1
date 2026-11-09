@@ -38,7 +38,7 @@
 #filters .os-tabs-glider { transform: translate3d(3px,0,0); transition: transform .32s cubic-bezier(.22,1,.36,1), width .32s cubic-bezier(.22,1,.36,1), opacity .18s; }
 .rp-grid { transition: opacity .15s ease, transform .15s ease; }
 .rp-grid.is-switching { opacity: 0; transform: translate3d(calc(var(--rp-direction, 1) * -10px),0,0); }
-.rp-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; align-items: start; }
+.rp-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; align-items: stretch; grid-auto-rows: 1fr; }
 .rp-card { overflow: hidden; background: var(--card); border: 1px solid var(--line); border-radius: 16px; animation: osCardIn .36s both; animation-delay: var(--stagger); transition: border-color .2s, transform .2s; }
 .rp-card:hover { border-color: var(--line-2); transform: translateY(-2px); }
 .rp-card-top { display: flex; align-items: center; justify-content: space-between; padding: 17px 20px 13px; }

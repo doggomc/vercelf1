@@ -19,6 +19,9 @@ const emptyEl = document.getElementById('streamsEmpty');
 const emptyTitleEl = document.getElementById('streamsEmptyTitle');
 const emptyTextEl = document.getElementById('streamsEmptyText');
 const filtersEl = document.getElementById('categoryFilters');
+const categoryScroll = document.getElementById('categoryScroll');
+const scrollPrev = document.getElementById('categoryScrollPrev') as HTMLButtonElement | null;
+const scrollNext = document.getElementById('categoryScrollNext') as HTMLButtonElement | null;
 const gliderEl = document.getElementById('tabsGlider');
 const liveTotalEl = document.getElementById('liveTotalCount');
 const searchInput = document.getElementById('streamSearch') as HTMLInputElement | null;
@@ -37,6 +40,22 @@ let switchTimer = 0;
 function prefersReducedMotion(): boolean {
   return Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 }
+
+function syncScrollArrows(): void {
+  if (!categoryScroll || !scrollPrev || !scrollNext) return;
+  const max = Math.max(0, categoryScroll.scrollWidth - categoryScroll.clientWidth);
+  scrollPrev.disabled = categoryScroll.scrollLeft <= 1;
+  scrollNext.disabled = categoryScroll.scrollLeft >= max - 1;
+}
+
+function scrollCategories(direction: number): void {
+  if (!categoryScroll) return;
+  categoryScroll.scrollBy({ left: direction * Math.max(140, categoryScroll.clientWidth * .7), behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+}
+scrollPrev?.addEventListener('click', () => scrollCategories(-1));
+scrollNext?.addEventListener('click', () => scrollCategories(1));
+categoryScroll?.addEventListener('scroll', syncScrollArrows, { passive: true });
+if (categoryScroll && typeof ResizeObserver !== 'undefined') new ResizeObserver(syncScrollArrows).observe(categoryScroll);
 
 function syncTabGlider(immediate = false): void {
   if (!filtersEl || !gliderEl) return;
@@ -191,7 +210,7 @@ function renderFilters(immediateGlider = false): void {
   }
 
   filtersEl.replaceChildren(...nodes);
-  requestAnimationFrame(() => syncTabGlider(immediateGlider));
+  requestAnimationFrame(() => { syncTabGlider(immediateGlider); syncScrollArrows(); });
 }
 
 function renderList(): void {
@@ -316,7 +335,7 @@ refreshBtn?.addEventListener('click', () => {
   void loadStreams(false);
 });
 
-window.addEventListener('resize', () => syncTabGlider(true), { passive: true });
+window.addEventListener('resize', () => { syncTabGlider(true); syncScrollArrows(); }, { passive: true });
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && Date.now() - lastLoadedAt > 90_000) {

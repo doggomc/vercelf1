@@ -6,6 +6,7 @@ initShell({ nav:false, transitions:false });
 const gateReady = initPageGate();
 const $ = (id:string) => document.getElementById(id)!;
 let weekends: Weekend[]=[]; let event: Event | undefined; let session: Session | undefined; let sourceIndex=0;
+let helpTimer=0;
 const params=new URLSearchParams(location.search);
 function display() {
   if (document.getElementById('partialOutageStage')) return;
@@ -15,9 +16,11 @@ function display() {
   const weekend=weekends.find(w=>w.events.some(e=>e.id===event!.id));
   $('watchSessionTitle').textContent=`${weekend ? weekendTitle(weekend) : event.title} · ${session.name}`;
   $('watchSessionCountdown').textContent=seriesNames[event.series]; $('watchSessionMeta').textContent=`${event.season} · ${event.circuit}`;
-  $('loader').hidden=true; $('noStream').style.display='none';
+  $('loader').hidden=true; $('noStream').classList.remove('visible');
+  window.clearTimeout(helpTimer); $('replayHelp').hidden=true;
+  const direct=$('replayDirectBtn') as HTMLAnchorElement; direct.hidden=!url; if(url) direct.href=url;
   $('stageBox').querySelector('iframe')?.remove();
-  if(url){const frame=document.createElement('iframe');frame.src=url;frame.title=`${event.country} Grand Prix ${session.name}`;frame.allow='autoplay; fullscreen; picture-in-picture; encrypted-media';frame.allowFullscreen=true;frame.referrerPolicy='origin';frame.className='is-ready';$('stageBox').append(frame);}
+  if(url){const frame=document.createElement('iframe'); const playerUrl=new URL(url); playerUrl.searchParams.set('autoplay','1'); frame.src=playerUrl.href; frame.loading='eager';frame.title=`${event.country} Grand Prix ${session.name}`;frame.allow='autoplay; fullscreen; picture-in-picture; encrypted-media';frame.allowFullscreen=true;frame.referrerPolicy='origin';frame.className='is-ready';$('stageBox').append(frame); helpTimer=window.setTimeout(()=>{if(frame.isConnected&&!document.getElementById('partialOutageStage')) $('replayHelp').hidden=false;},12000);}
   const controls=$('replayControls');controls.replaceChildren();
   const makeGroup=(title:string)=>{const div=document.createElement('div');const h=document.createElement('h2');h.textContent=title;const buttons=document.createElement('div');buttons.className='replay-buttons';div.append(h,buttons);controls.append(div);return buttons;};
   const feeds=makeGroup('Broadcast feed');sources.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=/f1\s*tv/i.test(s.label)?'F1 TV':i===0?'International Feed':`Feed ${i+1}`;b.setAttribute('aria-pressed',String(i===sourceIndex));b.onclick=()=>{sourceIndex=i;display();};feeds.append(b);});
@@ -26,4 +29,6 @@ function display() {
 }
 $('reloadFeedBtn').addEventListener('click',display);
 $('nsRetryBtn').addEventListener('click',()=>location.reload());
-fetchWeekends().then(async data=>{weekends=data;event=data.flatMap(w=>w.events).find(e=>e.id===params.get('e'));session=event?.sessions.find(s=>s.key===params.get('s'));if(!event||!session)throw Error('Not found');await gateReady;display();}).catch(()=>{$('loader').hidden=true;$('noStream').style.display='';$('noStreamTitle').textContent='Replay unavailable';$('noStreamText').textContent='This session could not be loaded. Return to replays or try again.';});
+const feedController=new AbortController();
+const feedTimeout=window.setTimeout(()=>feedController.abort(),12000);
+fetchWeekends(feedController.signal).then(async data=>{weekends=data;event=data.flatMap(w=>w.events).find(e=>e.id===params.get('e'));session=event?.sessions.find(s=>s.key===params.get('s'));if(!event||!session)throw Error('Not found');await gateReady;display();}).catch(()=>{$('loader').hidden=true;$('noStream').classList.add('visible');$('noStreamTitle').textContent='Replay unavailable';$('noStreamText').textContent='This session could not be loaded. Return to replays or try again.';}).finally(()=>window.clearTimeout(feedTimeout));

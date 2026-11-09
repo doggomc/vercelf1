@@ -24,8 +24,8 @@ export function groupWeekends(events: Event[]): Weekend[] {
 export function safeSource(url: string): string | null {
   try { const u = new URL(url); return u.protocol === 'https:' && u.hostname === 'weellz.live' && u.pathname === '/replay' && /^[\w-]+$/.test(u.searchParams.get('id') || '') ? u.href : null; } catch { return null; }
 }
-export async function fetchWeekends(): Promise<Weekend[]> {
-  const response = await fetch('https://weelo.live/feed/replays.json', { cache:'no-store' });
+export async function fetchWeekends(signal?: AbortSignal): Promise<Weekend[]> {
+  const response = await fetch('https://weelo.live/feed/replays.json', { cache:'no-store', signal });
   if (!response.ok) throw new Error('Replay feed unavailable');
   const data = await response.json();
   if (!Array.isArray(data.events)) throw new Error('Invalid replay feed');

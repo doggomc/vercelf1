@@ -603,3 +603,14 @@
     transition: none !important;
   }
 }
+
+/* Category navigation: arrows remain outside the scrollable tablist. */
+.os-tabs-navigation { display: flex; align-items: center; gap: 7px; min-width: 0; flex: 1 1 auto; }
+.os-tabs-navigation .os-tabs-scroll { flex: 0 1 auto; min-width: 0; }
+.os-tabs-arrow { display: inline-grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: rgba(255,255,255,.045); color: var(--fg-2); cursor: pointer; transition: color .18s, background-color .18s, border-color .18s, transform .18s; }
+.os-tabs-arrow svg { width: 15px; height: 15px; }
+.os-tabs-arrow:not(:disabled):hover { color: #fff; background: rgba(255,255,255,.1); border-color: var(--line-2); transform: translateY(-1px); }
+.os-tabs-arrow:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.os-tabs-arrow:disabled { opacity: .3; cursor: default; }
+@media (max-width: 759px), (hover: none) { .os-tabs-arrow { display: none; } .os-tabs-navigation { max-width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .os-tabs-arrow { transition: none; } }

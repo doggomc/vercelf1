@@ -79,14 +79,18 @@
 
   <section class="wrap section rise rise-1" aria-label="Available live streams">
     <div class="os-toolbar">
-      <div class="os-tabs-scroll">
-        <div class="os-tabs" id="categoryFilters" role="tablist" aria-label="Filter by category">
-          <span class="os-tabs-glider" id="tabsGlider" aria-hidden="true"></span>
-          <button class="os-filter is-active" type="button" role="tab" aria-selected="true" data-category="all">
-            <span>All</span>
-            <span class="os-filter-count">—</span>
-          </button>
+      <div class="os-tabs-navigation">
+        <button class="os-tabs-arrow" id="categoryScrollPrev" type="button" aria-label="Scroll categories left" aria-controls="categoryFilters" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
+        <div class="os-tabs-scroll" id="categoryScroll">
+          <div class="os-tabs" id="categoryFilters" role="tablist" aria-label="Filter by category">
+            <span class="os-tabs-glider" id="tabsGlider" aria-hidden="true"></span>
+            <button class="os-filter is-active" type="button" role="tab" aria-selected="true" data-category="all">
+              <span>All</span>
+              <span class="os-filter-count">—</span>
+            </button>
+          </div>
         </div>
+        <button class="os-tabs-arrow" id="categoryScrollNext" type="button" aria-label="Scroll categories right" aria-controls="categoryFilters" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
       </div>
       <div class="os-search-wrap">
         <svg class="os-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>

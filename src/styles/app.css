@@ -6758,3 +6758,46 @@ html.has-mvx body {
 }
 
 
+
+/* Cockpit controls: shared directory-style surfaces and restrained motion. */
+#watch .watch-head .eyebrow { display: inline-flex; align-items: center; gap: 8px; color: #a0a1a9; font: 700 11px/1 'Inter', system-ui, sans-serif; letter-spacing: .04em; text-transform: none; }
+#watch .watch-head .eyebrow::before { content: ''; width: 3px; height: 13px; border-radius: 4px; background: var(--team, #e10600); }
+#watch .watch-head h2 { margin-top: 13px; font-family: 'Inter', system-ui, sans-serif; font-style: normal; font-weight: 800; text-transform: none; letter-spacing: -.045em; }
+#watch .watch-head .rule { display: none; }
+#watch .wplayer { border-radius: 18px; overflow: hidden; box-shadow: 0 0 0 1px #ffffff1c, 0 20px 65px #0005; }
+#watch .wplayer-bar { background: #15161a; border-bottom: 1px solid #ffffff12; }
+#watch .wplayer-actions, #watch .wsources, #watch .side-card { border: 1px solid #ffffff17; background: #151619; box-shadow: 0 14px 35px #0002; }
+#watch .wplayer-actions { border-radius: 18px; }
+#watch .wsources { border-radius: 18px; padding: 20px; }
+#watch .wsources-head h2 { font-size: 17px; letter-spacing: -.025em; }
+#watch .wsources-count { padding: 4px 7px; border-radius: 6px; background: #ffffff0b; }
+#watch .wtabs { background: #0d0e10; border: 1px solid #ffffff12; }
+#watch .wtabs::before { background: #f5f5f6; box-shadow: 0 3px 12px #0005; }
+#watch .wtabs .chip.active { color: #121316; }
+#watch .wtabs .chip:focus-visible, #watch .wsource-list .chip:focus-visible, #watch .side-link:focus-visible, #watch .wplayer-actions .btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+#watch .wsource-list > button.chip, #watch .wsource-list .special-row button.chip { min-height: 38px; border-radius: 10px; background: #ffffff08; box-shadow: inset 0 0 0 1px #ffffff19; }
+#watch .wsource-list > button.chip:hover, #watch .wsource-list .special-row button.chip:hover { background: #ffffff13; box-shadow: inset 0 0 0 1px #ffffff38; }
+#watch .wsource-list > button.chip.active, #watch .wsource-list .special-row button.chip.active { background: color-mix(in srgb, var(--team, #e10600) 15%, #1a1b1e); box-shadow: inset 0 0 0 1px var(--team, #e10600); }
+#watch .wplayer-actions .btn { border: 1px solid #ffffff16; background: #ffffff0b; transition: background-color .2s var(--ease), border-color .2s var(--ease), transform .2s var(--ease); }
+#watch .wplayer-actions .btn:hover { border-color: #ffffff38; background: #ffffff16; }
+#watch .side-card { border-radius: 18px; }
+#watch .side-card:not(.side-link) { cursor: default; }
+#watch .side-h { color: #9b9da5; font-weight: 600; }
+#watch .side-link:hover { background: #1d1f24; border-color: #ffffff32; transform: translateY(-2px); }
+#watch .side-link svg { padding: 7px; width: 32px; height: 32px; border: 1px solid #ffffff19; border-radius: 10px; background: #ffffff08; }
+@media (max-width: 760px) { #watch .wsources { padding: 16px; } #watch .watch-head h2 { font-size: clamp(2rem, 8vw, 2.7rem); } }
+@media (prefers-reduced-motion: reduce) { #watch .wplayer-actions .btn, #watch .side-link, #watch .side-link svg, #watch .wsource-list .chip, #watch .wtabs::before { animation: none; transition: none; } }
+
+/* The two cockpit menus use the same quiet cards and white selected pill. */
+#raceTimesOverlay .sheet, #teamSelectOverlay .sheet { border: 1px solid #ffffff24; border-radius: 22px; background: #151619; box-shadow: 0 28px 90px #000b; }
+#raceTimesOverlay .sheet::before, #teamSelectOverlay .sheet::before { opacity: .65; }
+#raceTimesOverlay .sheet-head h2, #teamSelectOverlay .sheet-head h2 { font-family: 'Inter', system-ui, sans-serif; font-style: normal; font-weight: 800; text-transform: none; letter-spacing: -.035em; }
+#raceTimesOverlay .sheet-head .x, #teamSelectOverlay .sheet-head .x { border: 1px solid #ffffff1a; background: #ffffff0a; border-radius: 10px; transition: background-color .2s, transform .2s; }
+#raceTimesOverlay .sheet-head .x:hover, #teamSelectOverlay .sheet-head .x:hover { background: #ffffff1a; transform: rotate(90deg); }
+#raceTimesOverlay .seg { border: 1px solid #ffffff15; background: #0d0e10; border-radius: 999px; }
+#raceTimesOverlay .seg-btn { border-radius: 999px; text-transform: none; letter-spacing: 0; }
+#raceTimesOverlay .seg-btn.active { color: #151619; background: #f4f4f5; }
+#raceTimesOverlay .select-trigger, #raceTimesOverlay select { border-radius: 11px; }
+#raceTimesOverlay .select-menu { border-radius: 14px; background: #191a1e; }
+#teamSelectOverlay .livery-custom { border-radius: 16px; }
+@media (prefers-reduced-motion: reduce) { #raceTimesOverlay .sheet-head .x, #teamSelectOverlay .sheet-head .x { transition: none; } }
