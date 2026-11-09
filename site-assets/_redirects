@@ -29,6 +29,8 @@
 /teams/:slug/     /teams/:slug/index.html   200
 /teams            /teams.html   301
 /teams/           /teams.html   301
+/other            /other.html   301
+/other/           /other.html   301
 /live-timing      /live-timing.html   301
 /live-timing/     /live-timing.html   301
 # Everything else that doesn't exist falls through to /404.html (Netlify default).

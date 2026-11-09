@@ -21,6 +21,8 @@
     { "source": "/drivers/", "destination": "/drivers.html", "statusCode": 301 },
     { "source": "/teams", "destination": "/teams.html", "statusCode": 301 },
     { "source": "/teams/", "destination": "/teams.html", "statusCode": 301 },
+    { "source": "/other", "destination": "/other.html", "statusCode": 301 },
+    { "source": "/other/", "destination": "/other.html", "statusCode": 301 },
     { "source": "/live-timing", "destination": "/live-timing.html", "statusCode": 301 },
     { "source": "/live-timing/", "destination": "/live-timing.html", "statusCode": 301 }
   ],

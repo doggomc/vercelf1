@@ -325,6 +325,7 @@ export default defineConfig({
         'drivers.driver': resolve(ROOT, 'driver.html'),
         teams: resolve(ROOT, 'teams.html'),
         'teams.team': resolve(ROOT, 'team.html'),
+        other: resolve(ROOT, 'other.html'),
         liveTiming: resolve(ROOT, 'live-timing.html'),
         help: resolve(ROOT, 'help.html'),
         maintenance: resolve(ROOT, 'maintenance.html'),
