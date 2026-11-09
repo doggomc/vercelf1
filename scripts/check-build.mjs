@@ -59,6 +59,11 @@ console.log(`schedule gzip: ${scheduleSize} B of ${SCHEDULE_BUDGET}`);
 assert(scheduleSize < SCHEDULE_BUDGET, `schedule.html ships ${scheduleSize} B gzip — over the ${SCHEDULE_BUDGET} B budget`);
 assert(existsSync('dist/calendar/f1.ics'), 'dist/calendar/f1.ics missing');
 assert(existsSync('dist/island.js'), 'session island script missing');
+for (const page of ['index.html', 'cockpit.html', 'schedule.html', 'standings.html', 'drivers.html', 'driver.html', 'teams.html', 'team.html', 'other.html', 'other-streams.html', 'replays.html', 'live-timing.html', 'help.html', '404.html']) {
+  const html = readFileSync(`dist/${page}`, 'utf8');
+  assert(html.includes('<div class=\"session-island-slot\"></div>'), `${page} must reserve island space in initial HTML`);
+}
+
 for (const page of ['index.html', 'cockpit.html', 'help.html', '404.html']) {
   const html = readFileSync(`dist/${page}`, 'utf8');
   const styles = [...html.matchAll(/href="\/([^"]+\.css)"/g)].map(match => match[1]);

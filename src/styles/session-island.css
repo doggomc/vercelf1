@@ -34,14 +34,14 @@
   .session-island:hover .si-expanded { opacity: 1; transform: none; transition-delay: .12s; }
 }
 @media (min-width: 901px) and (max-width: 1250px) {
-  nav.nav:has(.session-island) .nav-inner { gap: 8px; }
-  nav.nav:has(.session-island) .nav-links { gap: 0; margin-right: 4px; }
-  nav.nav:has(.session-island) .nav-links a { padding-inline: 6px; font-size: 12px; }
+  nav.nav:has(.session-island-slot) .nav-inner { gap: 8px; }
+  nav.nav:has(.session-island-slot) .nav-links { gap: 0; margin-right: 4px; }
+  nav.nav:has(.session-island-slot) .nav-links a { padding-inline: 6px; font-size: 12px; }
   .session-island-slot { width: 120px; flex-basis: 120px; }
   .session-island { width: 120px; }
   .si-name { display: none; }
 }
-@media (max-width: 1150px) { nav.nav:has(.session-island) .nav-pill { display: none; } }
+@media (max-width: 1150px) { nav.nav:has(.session-island-slot) .nav-pill { display: none; } }
 @media (max-width: 900px) {
   .session-island-slot { position: absolute; top: 50%; left: 50%; width: 180px; height: 40px; transform: translate(-50%, -50%); }
   .session-island { right: 50%; transform: translateX(50%); }
@@ -50,7 +50,7 @@
 @media (max-width: 399px) { .session-island-slot, .session-island { width: 120px; } .si-name { display: none; } }
 @media (prefers-reduced-motion: reduce) { .session-island, .si-compact, .si-expanded { transition: none !important; } }
 @media (max-width: 350px) {
-  nav.nav:has(.session-island) .brand-text { display: none; }
+  nav.nav:has(.session-island-slot) .brand-text { display: none; }
   .session-island-slot, .session-island { width: 108px; }
 }
 @media (max-width: 350px) {
@@ -59,4 +59,36 @@
   .si-expanded { gap: 8px; padding-inline: 10px; }
   .si-count, .si-bar { min-width: 78px; width: 78px; }
   .si-clock { font-size: 12px; }
+}
+
+/* Reserve the counter's space before the socket starts and regardless of its value. */
+nav.nav .pill.viewer { box-sizing: border-box; width: 126px; flex: 0 0 126px; justify-content: center; }
+nav.nav .pill.viewer[hidden] { display: inline-flex !important; visibility: hidden; }
+nav.nav .pill.viewer #viewerCount { display: inline-block; width: 6ch; flex: 0 0 6ch; text-align: center; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 480px) {
+  nav.nav .pill.viewer { width: 80px; flex-basis: 80px; }
+  .session-island-slot { left: 39%; }
+}
+@media (max-width: 350px) { .session-island-slot { left: 37%; } }
+/* Support status changes its label asynchronously; keep the nav width steady. */
+nav.nav #helpNavPill { width: 146px; justify-content: center; flex: 0 0 146px; }
+@media (max-width: 350px) {
+  .session-island-slot, .session-island { width: 92px; }
+  .si-compact { gap: 4px; padding-inline: 6px; }
+  .si-badge { min-width: 26px; padding-inline: 5px; }
+  .si-relative { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 10px; }
+}
+/* The compact pill is offset on phones to clear the counter. Re-centre the
+   expanded pill so the animation never spills beyond the viewport. */
+@media (max-width: 480px) {
+  .session-island.is-expanded, .session-island:focus-visible { transform: translateX(calc(50% + 11vw)); }
+}
+@media (max-width: 350px) {
+  .session-island.is-expanded, .session-island:focus-visible { transform: translateX(calc(50% + 13vw)); }
+}
+@media (max-width: 480px) and (hover: hover) {
+  .session-island:hover { transform: translateX(calc(50% + 11vw)); }
+}
+@media (max-width: 350px) and (hover: hover) {
+  .session-island:hover { transform: translateX(calc(50% + 13vw)); }
 }
