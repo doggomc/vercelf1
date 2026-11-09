@@ -11,22 +11,22 @@
   Cache-Control: public, max-age=31536000, immutable
 
 /*.html
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=60, must-revalidate
 
 /
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=60, must-revalidate
 
 /info
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=60, must-revalidate
 
 /info/
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=60, must-revalidate
 
 /discord
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=60, must-revalidate
 
 /discord/
-  Cache-Control: public, max-age=0, must-revalidate
+  Cache-Control: public, max-age=60, must-revalidate
 
 /fonts.css
   Cache-Control: public, max-age=3600, must-revalidate

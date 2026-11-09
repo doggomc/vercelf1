@@ -312,6 +312,14 @@ export default defineConfig({
     manifest: true,
     cssCodeSplit: true,
     rollupOptions: {
+      output: {
+        // Bundle two small synchronous player-support modules together to save
+        // a cold-load request without adding the player to other pages.
+        manualChunks(id) {
+          const path = id.replaceAll('\\', '/');
+          if (/\/src\/(?:interaction-guard|types\/site-config)\.ts$/.test(path)) return 'cockpit-support';
+        },
+      },
       input: {
         /* Separate pages, separate stylesheets: the public pages load layout.css
            and a few hundred bytes of shell, the cockpit loads the player runtime. */
