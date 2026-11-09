@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_TILES, describeFeed, focusLayout, layout, strippedPlayerUrl, tileUrl } from '../src/features/multiviewer';
+import { MAX_TILES, describeFeed, focusLayout, initialFeedIds, layout, strippedPlayerUrl, tileUrl } from '../src/features/multiviewer';
 
 describe('multiviewer geometry & feed classification', () => {
+  it('starts only the selected available feed or restores a valid saved grid', () => {
+    const feeds = [
+      { id: 'sky', live: true }, { id: 'kimi', live: false }, { id: 'max', live: true },
+    ] as any;
+    expect(initialFeedIds(feeds, undefined, 'max')).toEqual(['max']);
+    expect(initialFeedIds(feeds, [], 'missing')).toEqual(['sky']);
+    expect(initialFeedIds(feeds, ['missing', 'kimi', 'kimi', 'max'], 'sky')).toEqual(['kimi', 'max']);
+    expect(initialFeedIds([], [], 'missing')).toEqual([]);
+  });
+
   it('builds muted and unmuted weellz.live and stripped relay tile URLs cleanly', () => {
     expect(tileUrl('abc123', false)).toBe('https://weellz.live/beta?stream=abc123&autoplay=1&mute=0');
     expect(tileUrl('abc123', true)).toBe('https://weellz.live/beta?stream=abc123&autoplay=1&mute=1');
