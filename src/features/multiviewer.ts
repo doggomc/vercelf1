@@ -47,7 +47,7 @@ const STREAM_API = BACKEND_API;
 
 export function strippedPlayerUrl(streamId: string, apiBase = STREAM_API): string {
   const base = String(apiBase || '').replace(/\/+$/, '');
-  return `${base}/api/stream/weellz-embed?stream=${encodeURIComponent(streamId)}`;
+  return `${base}/api/stream/weellz-embed?stream=${encodeURIComponent(streamId)}&v=2`;
 }
 
 export function tileUrl(id: string, muted: boolean, base = ''): string {

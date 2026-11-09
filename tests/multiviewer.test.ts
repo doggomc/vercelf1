@@ -10,7 +10,7 @@ describe('multiviewer geometry & feed classification', () => {
     );
     const strippedBase = strippedPlayerUrl('dflgjhacdfahpgchehacbdacoekfacieee', 'https://f1admin.onrender.com');
     expect(tileUrl('dflgjhacdfahpgchehacbdacoekfacieee', false, strippedBase)).toBe(
-      'https://f1admin.onrender.com/api/stream/weellz-embed?stream=dflgjhacdfahpgchehacbdacoekfacieee&autoplay=1&mute=0',
+      'https://f1admin.onrender.com/api/stream/weellz-embed?stream=dflgjhacdfahpgchehacbdacoekfacieee&v=2&autoplay=1&mute=0',
     );
   });
 
