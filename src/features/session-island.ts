@@ -30,8 +30,7 @@ export function initSessionIsland(): void {
     el('.si-bar > span').style.width = `${live ? 100 : Math.max(2, Math.min(100, (1 - total / 86400) * 100))}%`;
     link.setAttribute('aria-label', `${info.event.name}, ${info.session.name}, ${live ? 'scheduled now' : dateFormat.format(info.session.ts)}. View schedule`);
   };
-  let autoTimer = 0;
-  const close = () => { window.clearTimeout(autoTimer); link.classList.remove('is-expanded'); };
+  const close = () => link.classList.remove('is-expanded');
   link.addEventListener('click', (e) => {
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || !matchMedia('(hover: none)').matches || e.detail === 0) return;
     if (!link.classList.contains('is-expanded')) { e.preventDefault(); link.classList.add('is-expanded'); }
@@ -40,8 +39,5 @@ export function initSessionIsland(): void {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
   update(); window.setInterval(() => { if (!document.hidden) update(); }, 1000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) update(); });
-  if (matchMedia('(hover: hover) and (min-width: 901px) and (prefers-reduced-motion: no-preference)').matches) {
-    window.setTimeout(() => { if (!document.hidden && !link.matches(':hover, :focus-visible')) { link.classList.add('is-expanded'); autoTimer = window.setTimeout(close, 3000); } }, 1600);
-  }
 }
 initSessionIsland();
