@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0B">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex">
+<meta name="freef1-viewer-counter-ws" content="wss://freef1-viewer-counter.calvinbotha1julie.workers.dev/ws">
+<meta name="freef1-help-api" content="https://f1admin.onrender.com">
+<meta name="description" content="Private theater cockpit on FreeF1.">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<title>Private Cockpit — FreeF1</title>
+<link rel="dns-prefetch" href="https://f1admin.onrender.com">
+<link rel="preconnect" href="https://f1admin.onrender.com" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Inter-latin.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Archivo-latin.woff2" crossorigin>
+<link rel="stylesheet" href="/fonts.css">
+<link rel="stylesheet" href="/src/styles/app.css">
+<style>
+  html:has(body[data-page="private-cockpit"]) {
+    scrollbar-gutter: auto;
+  }
+  body[data-page="private-cockpit"] a.btn {
+    text-decoration: none;
+  }
+  body[data-page="private-cockpit"] .wplayer-stage iframe {
+    background: #000;
+    color-scheme: dark;
+  }
+  @media (max-width: 760px) {
+    body[data-page="private-cockpit"].theater .wplayer {
+      width: 100%;
+      border-radius: 12px;
+    }
+  }
+</style>
+</head>
+<body class="theater theater-no-sources" data-page="private-cockpit">
+<a class="skip-link" href="#watch">Skip to stream</a>
+
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- Hidden counter anchor so viewer-counter.ts connects and mirrors into #theaterOnline -->
+<div id="viewerCounter" hidden aria-hidden="true"><span id="viewerCount">—</span></div>
+
+<main id="cockpit">
+  <section class="sec watch-sec" id="watch" aria-label="Private Cockpit">
+    <div class="wrap wrap-wide watch-grid">
+      <div class="watch-main">
+        <div class="wplayer" id="player">
+          <div class="wplayer-bar">
+            <span class="wplayer-dot" aria-hidden="true"><i></i></span>
+            <span class="wplayer-path" id="stageLabel">freef1://other/live</span>
+            <span class="wplayer-live active" id="overridePill">Live</span>
+          </div>
+          <div class="wplayer-stage" id="stageBox">
+            <div class="overlay" id="loader">
+              <div class="spinner"></div>
+              <span class="lt" id="loaderText">Establishing feed…</span>
+            </div>
+            <div class="nostream" id="noStream">
+              <h3 id="noStreamTitle">Stream unavailable</h3>
+              <p id="noStreamText">Select a live channel from Other streams to launch the private cockpit.</p>
+              <div class="ns-actions" id="nsActions">
+                <button class="btn sm" id="nsRetryBtn" type="button">Retry</button>
+                <a class="btn sm" href="/other-streams.html">Other streams</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="wplayer-actions">
+          <div class="watch-session-info" id="watchSessionState" role="status" aria-live="polite">
+            <div class="watch-session-eyebrow">
+              <span class="watch-session-dot is-live" id="watchSessionDot" aria-hidden="true"></span>
+              <span id="watchSessionBadge">Live now</span>
+              <span class="watch-session-sep" id="watchSessionSep" aria-hidden="true">·</span>
+              <span class="mono" id="watchSessionCountdown">Private Cockpit</span>
+            </div>
+            <div class="watch-session-line">
+              <strong class="watch-session-title" id="watchSessionTitle">Loading stream…</strong>
+              <span class="watch-session-meta" id="watchSessionMeta"></span>
+            </div>
+          </div>
+          <div class="wplayer-actions-main" id="stageActions">
+            <span class="btn sm theater-online mono" id="theaterOnline" role="status" aria-live="polite" hidden><i aria-hidden="true"></i><b id="theaterOnlineCount">—</b> online</span>
+            <button class="btn sm" id="reloadFeedBtn" type="button">Reload</button>
+            <a class="btn sm" id="backStreamsBtn" href="/other-streams.html">← Other streams</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="/src/pages/private-cockpit.ts"></script>
+</body>
+</html>

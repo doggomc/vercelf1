@@ -23,6 +23,10 @@
     { "source": "/teams/", "destination": "/teams.html", "statusCode": 301 },
     { "source": "/other", "destination": "/other.html", "statusCode": 301 },
     { "source": "/other/", "destination": "/other.html", "statusCode": 301 },
+    { "source": "/other-streams", "destination": "/other-streams.html", "statusCode": 301 },
+    { "source": "/other-streams/", "destination": "/other-streams.html", "statusCode": 301 },
+    { "source": "/private-cockpit", "destination": "/private-cockpit.html", "statusCode": 301 },
+    { "source": "/private-cockpit/", "destination": "/private-cockpit.html", "statusCode": 301 },
     { "source": "/live-timing", "destination": "/live-timing.html", "statusCode": 301 },
     { "source": "/live-timing/", "destination": "/live-timing.html", "statusCode": 301 }
   ],

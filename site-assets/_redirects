@@ -31,6 +31,10 @@
 /teams/           /teams.html   301
 /other            /other.html   301
 /other/           /other.html   301
+/other-streams    /other-streams.html   301
+/other-streams/   /other-streams.html   301
+/private-cockpit  /private-cockpit.html   301
+/private-cockpit/ /private-cockpit.html   301
 /live-timing      /live-timing.html   301
 /live-timing/     /live-timing.html   301
 # Everything else that doesn't exist falls through to /404.html (Netlify default).
