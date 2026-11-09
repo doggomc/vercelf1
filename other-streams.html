@@ -7,20 +7,17 @@
 <meta name="color-scheme" content="dark">
 <meta name="freef1-viewer-counter-ws" content="wss://freef1-viewer-counter.calvinbotha1julie.workers.dev/ws">
 <meta name="freef1-help-api" content="https://f1admin.onrender.com">
-<meta name="description" content="Available EMBDLOL, live PPV, and live Weelo streams on FreeF1.">
+<meta name="description" content="Live sports, motorsport series, and 24/7 channels on FreeF1.">
 <link rel="canonical" href="https://freef1-live.vercel.app/other-streams.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="FreeF1 Live">
 <meta property="og:title" content="Other streams — FreeF1">
-<meta property="og:description" content="Available EMBDLOL, live PPV, and live Weelo streams on FreeF1.">
+<meta property="og:description" content="Live sports, motorsport series, and 24/7 channels on FreeF1.">
 <meta property="og:url" content="https://freef1-live.vercel.app/other-streams.html">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <title>Other streams — FreeF1</title>
-<link rel="dns-prefetch" href="https://api.embdlol.st">
-<link rel="dns-prefetch" href="https://api.ppv.st">
-<link rel="dns-prefetch" href="https://weelo.live">
 <link rel="dns-prefetch" href="https://f1admin.onrender.com">
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Inter-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Archivo-latin.woff2" crossorigin>
@@ -61,49 +58,59 @@
 <main id="main">
   <div class="wrap page-head rise">
     <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="sep" aria-hidden="true">›</span><a href="/other.html">Other</a><span class="sep" aria-hidden="true">›</span><span aria-current="page">Other streams</span></nav>
-    <span class="eyebrow"><span class="swatch" aria-hidden="true"></span>Live Feeds</span>
-    <h1 class="page-title">Other streams</h1>
-    <p class="page-lede">Available EMBDLOL channels and live PPV and Weelo streams outside Formula 1. Select any card to open its private theater cockpit.</p>
+    <div class="os-head-row">
+      <div class="os-head-copy">
+        <span class="eyebrow"><span class="swatch" aria-hidden="true"></span>Broadcast Directory</span>
+        <h1 class="page-title">Other streams</h1>
+        <p class="page-lede">Live sports, motorsport series, and 24/7 channels outside Formula 1. Select any feed to launch its theater cockpit.</p>
+      </div>
+      <div class="os-head-actions">
+        <div class="os-status-pill" id="liveSummaryPill" role="status" aria-live="polite">
+          <span class="os-pulse-dot" aria-hidden="true"></span>
+          <span><b id="liveTotalCount">—</b> active feeds</span>
+        </div>
+        <button class="os-refresh" id="refreshStreamsBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+          <span id="refreshStreamsLabel">Refresh</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <section class="wrap section rise rise-1" aria-label="Available live streams">
     <div class="os-toolbar">
-      <div class="os-filters" id="providerFilters" role="tablist" aria-label="Filter by provider">
-        <button class="os-filter is-active" type="button" role="tab" aria-selected="true" data-provider="all">
-          <span>All</span>
-          <span class="os-filter-count" data-count="all">—</span>
-        </button>
-        <button class="os-filter" type="button" role="tab" aria-selected="false" data-provider="embdlol">
-          <span>EMBDLOL</span>
-          <span class="os-filter-count" data-count="embdlol">—</span>
-        </button>
-        <button class="os-filter" type="button" role="tab" aria-selected="false" data-provider="ppv">
-          <span>PPV</span>
-          <span class="os-filter-count" data-count="ppv">—</span>
-        </button>
-        <button class="os-filter" type="button" role="tab" aria-selected="false" data-provider="weelo">
-          <span>Weelo</span>
-          <span class="os-filter-count" data-count="weelo">—</span>
-        </button>
+      <div class="os-tabs-scroll">
+        <div class="os-tabs" id="categoryFilters" role="tablist" aria-label="Filter by category">
+          <span class="os-tabs-glider" id="tabsGlider" aria-hidden="true"></span>
+          <button class="os-filter is-active" type="button" role="tab" aria-selected="true" data-category="all">
+            <span>All</span>
+            <span class="os-filter-count">—</span>
+          </button>
+        </div>
       </div>
-      <div class="os-controls">
-        <input class="os-search" id="streamSearch" type="search" placeholder="Search channels or sports…" aria-label="Search streams" autocomplete="off">
-        <button class="os-refresh" id="refreshStreamsBtn" type="button">Refresh</button>
+      <div class="os-search-wrap">
+        <svg class="os-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input class="os-search" id="streamSearch" type="search" placeholder="Filter channels or sports…" aria-label="Filter streams" autocomplete="off">
+        <button class="os-search-clear" id="clearSearchBtn" type="button" aria-label="Clear search" hidden>×</button>
       </div>
     </div>
 
     <div class="team-grid" id="streamsGrid" aria-live="polite">
       <div class="team-card os-skeleton" style="--tc:#00D2BE" aria-hidden="true">
-        <div class="t-top"><span class="t-bar"></span><span class="os-badge">Loading</span></div>
-        <div><div class="t-name">Checking live directories…</div><div class="t-sub">EMBDLOL · PPV · Weelo</div></div>
+        <div class="os-card-head"><span class="t-bar"></span><span class="os-badge">Syncing</span></div>
+        <div><div class="os-skel-line os-skel-title"></div><div class="os-skel-line os-skel-sub"></div></div>
       </div>
       <div class="team-card os-skeleton" style="--tc:#FF8000" aria-hidden="true">
-        <div class="t-top"><span class="t-bar"></span><span class="os-badge">Loading</span></div>
-        <div><div class="t-name">Fetching active channels…</div><div class="t-sub">Non-F1 live streams</div></div>
+        <div class="os-card-head"><span class="t-bar"></span><span class="os-badge">Syncing</span></div>
+        <div><div class="os-skel-line os-skel-title"></div><div class="os-skel-line os-skel-sub"></div></div>
       </div>
       <div class="team-card os-skeleton" style="--tc:#38BDF8" aria-hidden="true">
-        <div class="t-top"><span class="t-bar"></span><span class="os-badge">Loading</span></div>
-        <div><div class="t-name">Syncing session status…</div><div class="t-sub">Theater cockpit ready</div></div>
+        <div class="os-card-head"><span class="t-bar"></span><span class="os-badge">Syncing</span></div>
+        <div><div class="os-skel-line os-skel-title"></div><div class="os-skel-line os-skel-sub"></div></div>
+      </div>
+      <div class="team-card os-skeleton" style="--tc:#22C55E" aria-hidden="true">
+        <div class="os-card-head"><span class="t-bar"></span><span class="os-badge">Syncing</span></div>
+        <div><div class="os-skel-line os-skel-title"></div><div class="os-skel-line os-skel-sub"></div></div>
       </div>
     </div>
 

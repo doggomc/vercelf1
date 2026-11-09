@@ -122,6 +122,7 @@ function mountStream(useFallback = false): void {
   const finishLoad = () => {
     if (token !== activeToken || settled) return;
     settled = true;
+    frame.classList.add('is-ready');
     loaderEl?.classList.add('hidden');
   };
 
@@ -154,10 +155,10 @@ if (!resolved) {
   document.title = `${resolved.title} — Private Cockpit · FreeF1`;
   if (stageLabel) stageLabel.textContent = resolved.stagePath;
   if (overridePill) {
-    overridePill.textContent = `${resolved.providerLabel} · Live`;
+    overridePill.textContent = resolved.alwaysLive ? '24/7 · Live' : 'Live Feed';
     overridePill.classList.add('active');
   }
-  if (badgeEl) badgeEl.textContent = `Live now · ${resolved.providerLabel}`;
+  if (badgeEl) badgeEl.textContent = 'Live now';
   if (categoryEl) categoryEl.textContent = resolved.category;
   if (titleEl) titleEl.textContent = resolved.title;
   if (metaEl) metaEl.textContent = resolved.subtitle;

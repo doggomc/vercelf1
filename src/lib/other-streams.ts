@@ -80,7 +80,7 @@ const UPPER_TOKENS = new Set([
   'ufc', 'nfl', 'nba', 'nhl', 'mlb', 'mls', 'wwe', 'aew', 'pga', 'liv', 'atp', 'wta',
   'ucl', 'uel', 'fa', 'f2', 'f3', 'f4', 'fe', 'gt', 'gt3', 'wec', 'wrc', 'dtm', 'imsa',
   'uhd', '4k', 'fhd', 'hd', 'uk', 'usa', 'us', 'es', 'it', 'de', 'fr', 'nl', 'pt', 'tv',
-  'espn', 'tnt', 'cbs', 'nbc', 'abc', 'sky', 'dazn', 'tsn', 'sn', 'ppv',
+  'espn', 'tnt', 'cbs', 'nbc', 'abc', 'sky', 'dazn', 'tsn', 'sn',
 ]);
 
 export function resolveBackendOrigin(raw?: string): string {
@@ -225,6 +225,20 @@ export function buildPpvUrls(
   };
 }
 
+function inferChannelCategory(rawName: string, rawCategory?: unknown): string {
+  const explicit = String(rawCategory || '').trim();
+  if (explicit && !/^(?:embdlol|ppv|weelo|weellz)$/i.test(explicit)) return explicit;
+  const s = rawName.toLowerCase();
+  if (/\b(?:f2|formula\s*2)\b/.test(s)) return 'Formula 2';
+  if (/\b(?:f3|formula\s*3)\b/.test(s)) return 'Formula 3';
+  if (/\b(?:motogp|indycar|nascar|wec|wrc|supercup)\b/.test(s)) return 'Motorsport';
+  if (/\b(?:ufc|mma|boxing|fight)\b/.test(s)) return 'Combat';
+  if (/\b(?:nfl|cfb)\b/.test(s)) return 'American Football';
+  if (/\bnba\b/.test(s)) return 'Basketball';
+  if (/\bnhl\b/.test(s)) return 'Ice Hockey';
+  return 'Live Channel';
+}
+
 export function parseEmbdlolStruct(payload: unknown, backend = DEFAULT_BACKEND): OtherStreamItem[] {
   const channels = Array.isArray((payload as { channels?: unknown[] } | null)?.channels)
     ? ((payload as { channels: Array<Record<string, unknown>> }).channels)
@@ -244,17 +258,17 @@ export function parseEmbdlolStruct(payload: unknown, backend = DEFAULT_BACKEND):
     seen.add(rawId);
 
     const title = formatEmbdlolTitle(rawName);
-    const category = String(entry.category || 'EMBDLOL').trim() || 'EMBDLOL';
+    const category = inferChannelCategory(rawName, entry.category);
     const isUhd = /\b(?:uhd|4k)\b/i.test(rawName);
-    const tag = isUhd ? '4K UHD' : 'HD';
+    const tag = isUhd ? '4K UHD' : 'Live HD';
 
     out.push({
-      key: `embdlol:${rawId}`,
+      key: `1:${rawId}`,
       provider: 'embdlol',
       id: rawId,
       title,
       category,
-      subtitle: `${category} · ${tag} · ${rawName}`,
+      subtitle: `${category} · ${tag}`,
       tag,
       viewers: 0,
       alwaysLive: false,
@@ -513,44 +527,63 @@ export function parseWeeloEvents(
   return out;
 }
 
+const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
+  embdlol: '1',
+  ppv: '2',
+  weelo: '3',
+};
+
+const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
+  '1': 'embdlol',
+  '2': 'ppv',
+  '3': 'weelo',
+  embdlol: 'embdlol',
+  ppv: 'ppv',
+  weelo: 'weelo',
+};
+
+function slugifyStreamLabel(value: string): string {
+  const clean = value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 48);
+  return clean || 'stream';
+}
+
 export function buildPrivateCockpitHref(item: OtherStreamItem): string {
   const params = new URLSearchParams();
-  params.set('p', item.provider);
+  params.set('s', PROVIDER_TO_CODE[item.provider]);
   params.set('id', item.id);
   if (item.host) params.set('host', item.host);
   params.set('title', item.title);
   params.set('cat', item.category);
   if (item.subtitle) params.set('sub', item.subtitle);
+  if (item.alwaysLive) params.set('al', '1');
   return `/private-cockpit.html?${params.toString()}`;
 }
 
 export interface ResolvedPrivateStream {
   provider: OtherStreamProvider;
-  providerLabel: string;
   id: string;
   title: string;
   category: string;
   subtitle: string;
+  alwaysLive: boolean;
   stagePath: string;
   embedUrl: string;
   fallbackUrl: string;
 }
-
-const PROVIDER_LABELS: Record<OtherStreamProvider, string> = {
-  embdlol: 'EMBDLOL',
-  ppv: 'PPV',
-  weelo: 'Weelo',
-};
 
 export function parsePrivateCockpitParams(
   search: string,
   backend = DEFAULT_BACKEND,
 ): ResolvedPrivateStream | null {
   const params = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
-  const providerRaw = String(params.get('p') || '').trim().toLowerCase();
-  if (providerRaw !== 'embdlol' && providerRaw !== 'ppv' && providerRaw !== 'weelo') return null;
+  const codeRaw = String(params.get('s') || params.get('p') || '').trim().toLowerCase();
+  const provider = CODE_TO_PROVIDER[codeRaw];
+  if (!provider) return null;
 
-  const provider = providerRaw as OtherStreamProvider;
   const rawId = String(params.get('id') || '').trim();
   if (!rawId) return null;
 
@@ -578,19 +611,20 @@ export function parsePrivateCockpitParams(
   }
 
   const title = String(params.get('title') || '').trim().slice(0, 140) || cleanId;
-  const category = String(params.get('cat') || '').trim().slice(0, 80) || PROVIDER_LABELS[provider];
-  const subtitle = String(params.get('sub') || '').trim().slice(0, 180) || `${PROVIDER_LABELS[provider]} · Live`;
+  const category = String(params.get('cat') || '').trim().slice(0, 80) || 'Live Feed';
+  const subtitle = String(params.get('sub') || '').trim().slice(0, 180) || `${category} · Live`;
+  const alwaysLive = params.get('al') === '1';
 
   if (isFormula1Text(`${title} ${category} ${cleanId}`)) return null;
 
   return {
     provider,
-    providerLabel: PROVIDER_LABELS[provider],
     id: cleanId,
     title,
     category,
     subtitle,
-    stagePath: `freef1://other/${provider}/${cleanId}`,
+    alwaysLive,
+    stagePath: `freef1://live/other/${slugifyStreamLabel(title)}`,
     embedUrl,
     fallbackUrl,
   };

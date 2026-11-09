@@ -223,18 +223,21 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
 
     const href = buildPrivateCockpitHref(sample!);
     expect(href.startsWith('/private-cockpit.html?')).toBe(true);
+    expect(href).not.toMatch(/ppv|embdlol|weelo/i);
 
     const resolved = parsePrivateCockpitParams(href.split('?')[1] || '');
     expect(resolved).not.toBeNull();
     expect(resolved?.provider).toBe('ppv');
     expect(resolved?.title).toBe('Willow');
+    expect(resolved?.stagePath).toBe('freef1://live/other/willow');
+    expect(resolved?.stagePath).not.toMatch(/ppv|embdlol|weelo/i);
     expect(resolved?.embedUrl).toBe(
       'https://f1admin.onrender.com/api/stream/ppv-embed?slug=247-willow&host=taifood-blog.asia',
     );
 
-    expect(parsePrivateCockpitParams('p=ppv&id=f1/2026/vegas/sky&title=Formula+1')).toBeNull();
-    expect(parsePrivateCockpitParams('p=ppv&id=247-willow&host=http://localhost:3000')).toBeNull();
-    expect(parsePrivateCockpitParams('p=unknown&id=abc12345')).toBeNull();
+    expect(parsePrivateCockpitParams('s=2&id=f1/2026/vegas/sky&title=Formula+1')).toBeNull();
+    expect(parsePrivateCockpitParams('s=2&id=247-willow&host=http://localhost:3000')).toBeNull();
+    expect(parsePrivateCockpitParams('s=unknown&id=abc12345')).toBeNull();
     expect(isFormula1Text('Formula 2 Feature Race')).toBe(false);
     expect(isFormula1Text('Formula 1 Las Vegas Grand Prix')).toBe(true);
   });

@@ -22,12 +22,27 @@
   html:has(body[data-page="private-cockpit"]) {
     scrollbar-gutter: auto;
   }
-  body[data-page="private-cockpit"] a.btn {
+  body[data-page="private-cockpit"] a.btn,
+  body[data-page="private-cockpit"] button.btn {
     text-decoration: none;
+    transition: transform .18s var(--ease), background-color .18s var(--ease), border-color .18s var(--ease), color .18s var(--ease);
+  }
+  body[data-page="private-cockpit"] a.btn:hover,
+  body[data-page="private-cockpit"] button.btn:hover {
+    transform: translate3d(0, -1px, 0);
+  }
+  body[data-page="private-cockpit"] a.btn:active,
+  body[data-page="private-cockpit"] button.btn:active {
+    transform: translate3d(0, 0, 0) scale(.98);
   }
   body[data-page="private-cockpit"] .wplayer-stage iframe {
     background: #000;
     color-scheme: dark;
+    opacity: 0;
+    transition: opacity .42s var(--ease);
+  }
+  body[data-page="private-cockpit"] .wplayer-stage iframe.is-ready {
+    opacity: 1;
   }
   @media (max-width: 760px) {
     body[data-page="private-cockpit"].theater .wplayer {
