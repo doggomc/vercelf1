@@ -1,5 +1,5 @@
 /* Multiviewer — full-viewport multi-stream theater inspired by Rerace.
-   Supports up to 9 simultaneous weellz.live F1 feeds (3x3 ceiling), Grid & Focus ("one big player,
+   Supports up to 9 simultaneous F1 player feeds (3x3 ceiling), Grid & Focus ("one big player,
    the rest small") layouts, GPU transform tile transitions, pointer drag-to-swap without reloading
    iframes, per-tile audio routing, fullscreen, keyboard shortcuts, and a searchable/filterable
    "Add streams" drawer with official 2026 driver portraits.
@@ -37,6 +37,23 @@ export interface TileBox {
 }
 
 export const MAX_TILES = 9;
+
+/** Only Weelo-backed sources can appear in the multiview picker. */
+export function isMultiviewWeeloSource(source: { weelo?: string; weellzUrls?: string[]; hidden?: boolean; links?: { provider?: string }[] }): boolean {
+  return Boolean((source.weelo || source.weellzUrls?.length) && (!source.hidden || source.links?.[0]?.provider === 'custom'));
+}
+
+
+/** Restore a saved grid, otherwise start just the currently selected available feed. */
+export function initialFeedIds(list: WeeloStream[], savedIds: unknown, selectedId?: string): string[] {
+  const restored = Array.isArray(savedIds)
+    ? [...new Set(savedIds.filter((id): id is string => typeof id === 'string' && list.some((s) => s.id === id)))]
+    : [];
+  if (restored.length) return restored.slice(0, MAX_TILES);
+  const first = list.find((s) => s.id === selectedId) || list.find((s) => s.live) || list[0];
+  return first ? [first.id] : [];
+}
+
 const GAP = 6;
 const STATE_KEY = 'freef1_mvx_state_v1';
 
@@ -418,8 +435,9 @@ export function init(ctx: any) {
     loadTimers.set(tile, timer);
   }
 
+  // Multiview is reserved for Weelo feeds, including their stripped versions.
   const streams = (): WeeloStream[] => (ctx.sources || [])
-    .filter((s: any) => (s.weelo || s.weellzUrls?.length) && (!s.hidden || s.links?.[0]?.provider === 'custom'))
+    .filter(isMultiviewWeeloSource)
     .map((s: any): WeeloStream => {
       const custom = s.links?.[0]?.provider === 'custom' ? String(s.links[0].url || '') : '';
       const synced = Array.isArray(s.weellzUrls) && s.weellzUrls.length ? String(s.weellzUrls[0] || '') : '';
@@ -572,7 +590,9 @@ export function init(ctx: any) {
 
     const f = document.createElement('iframe');
     const nextUrl = tileUrl(stream.streamId, id !== audio, stream.pasted);
-    f.src = nextUrl;
+    // Navigate only after draw() gives the tile its real dimensions. Some
+    // embedded players initialise their rendering against their first viewport.
+    f.dataset.initialSrc = nextUrl;
     f.dataset.state = id === audio ? 'on' : 'off';
     f.allow = ALLOW;
     f.setAttribute('allow', ALLOW);
@@ -586,7 +606,11 @@ export function init(ctx: any) {
     f.title = stream.title;
     f.dataset.stream = stream.streamId;
 
-    f.addEventListener('load', () => clearTileLoading(tile));
+    f.addEventListener('load', () => {
+      clearTileLoading(tile);
+      // The selection can change while this document is still loading.
+      try { f.contentWindow?.postMessage(JSON.stringify({ type: 'freef1-audio', muted: id !== audio }), '*'); } catch { /* cross-origin */ }
+    });
 
     const loadRing = document.createElement('span');
     loadRing.className = 'mvx-tile-load';
@@ -642,6 +666,13 @@ export function init(ctx: any) {
     paintChrome();
     paintAudio(false);
     relayout();
+    for (const frame of frames.values()) {
+      const url = frame.dataset.initialSrc;
+      if (url) {
+        delete frame.dataset.initialSrc;
+        frame.src = url;
+      }
+    }
     if (!libEl.hidden) drawLibrary();
   }
 
@@ -802,12 +833,13 @@ export function init(ctx: any) {
       parkedSrc = frame?.src || '';
       if (frame) frame.src = 'about:blank';
     } else if (parkedSrc && frame) {
-      frame.src = parkedSrc;
+      // reloadTop mounts the current player itself; restoring here would request it twice.
+      if (!ctx.reloadTop) frame.src = parkedSrc;
       parkedSrc = '';
     }
   }
 
-  const available = () => (ctx.sources || []).some((s: any) => (s.weelo || s.weellzUrls?.length) && !s.hidden);
+  const available = () => streams().length > 0;
 
   function mirrorCounter() {
     const src = document.getElementById('viewerCount');
@@ -845,8 +877,8 @@ export function init(ctx: any) {
       const list = streams();
       const saved = readSavedState();
       if (!ids.length) {
-        const restored = Array.isArray(saved.ids) ? saved.ids.filter((id) => list.some((s) => s.id === id)) : [];
-        ids = (restored.length ? restored : list.slice(0, 3).map((s) => s.id)).slice(0, MAX_TILES);
+        const selected = ctx.sources?.[ctx.currentSource]?.id;
+        ids = initialFeedIds(list, saved.ids, selected);
         mode = saved.mode === 'focus' ? 'focus' : 'grid';
         audio = saved.audio && ids.includes(saved.audio) ? saved.audio : ids[0] || null;
       } else {
