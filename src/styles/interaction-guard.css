@@ -1,0 +1,6 @@
+/* Discourage selecting page content without interfering with editable fields. */
+html { -webkit-user-select: none; user-select: none; }
+input, textarea, [contenteditable]:not([contenteditable="false"]) {
+  -webkit-user-select: text;
+  user-select: text;
+}

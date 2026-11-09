@@ -1,3 +1,4 @@
+import '../interaction-guard';
 import { findLiveSession, findNextSession, sessionShortName } from '../services/weekend';
 
 /** Schedule status, not a claim that a stream is live or available. */

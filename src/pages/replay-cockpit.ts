@@ -1,3 +1,4 @@
+import '../interaction-guard';
 import { initShell } from '../ui/shell';
 import { initPageGate } from '../features/page-gate';
 import '../viewer-counter';
