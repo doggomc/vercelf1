@@ -9,8 +9,8 @@
 /info/   /index.html   200
 /discord    /index.html   200
 /discord/   /index.html   200
-/replays    /index.html   200
-/replays/   /index.html   200
+/replays    /replays.html   301
+/replays/   /replays.html   301
 # The cockpit is its own page; keep the short URL working for old links.
 /cockpit          /cockpit.html   301
 /cockpit/         /cockpit.html   301

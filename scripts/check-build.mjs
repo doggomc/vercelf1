@@ -87,7 +87,7 @@ for (const feature of optional) {
   assert(entry?.isDynamicEntry, `${feature} must stay lazy`);
   assert(!startup.has(entry.file), `${feature} leaked into the startup bundle`);
 }
-const PAGES = ['index.html', 'cockpit.html', 'schedule.html', 'standings.html', 'drivers.html', 'teams.html', 'other.html', 'other-streams.html', 'private-cockpit.html', 'live-timing.html', 'help.html', 'maintenance.html', '404.html', 'beertjie.html'];
+const PAGES = ['index.html', 'cockpit.html', 'schedule.html', 'standings.html', 'drivers.html', 'teams.html', 'other.html', 'other-streams.html', 'private-cockpit.html', 'replays.html', 'replay-cockpit.html', 'live-timing.html', 'help.html', 'maintenance.html', '404.html', 'beertjie.html'];
 
 /* Driver profiles are real pages under dist/drivers/<slug>/. The build knows the
    grid from benchmarks/driver-grid.json, so every one of them must exist, carry

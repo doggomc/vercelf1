@@ -326,6 +326,8 @@ export default defineConfig({
         teams: resolve(ROOT, 'teams.html'),
         'teams.team': resolve(ROOT, 'team.html'),
         other: resolve(ROOT, 'other.html'),
+        replays: resolve(ROOT, 'replays.html'),
+        replayCockpit: resolve(ROOT, 'replay-cockpit.html'),
         otherStreams: resolve(ROOT, 'other-streams.html'),
         privateCockpit: resolve(ROOT, 'private-cockpit.html'),
         liveTiming: resolve(ROOT, 'live-timing.html'),
