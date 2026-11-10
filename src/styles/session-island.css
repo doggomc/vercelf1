@@ -47,14 +47,8 @@
   .session-island { right: 50%; transform: translateX(50%); }
   .session-island.is-expanded, .session-island:focus-visible { width: min(350px, calc(100vw - 32px)); }
 }
-@media (max-width: 399px) { .session-island-slot, .session-island { width: 120px; } .si-name { display: none; } }
 @media (prefers-reduced-motion: reduce) { .session-island, .si-compact, .si-expanded { transition: none !important; } }
 @media (max-width: 350px) {
-  nav.nav:has(.session-island-slot) .brand-text { display: none; }
-  .session-island-slot, .session-island { width: 108px; }
-}
-@media (max-width: 350px) {
-  .session-island-slot { left: 44%; }
   .session-island.is-expanded, .session-island:focus-visible { width: min(260px, calc(100vw - 32px)); }
   .si-expanded { gap: 8px; padding-inline: 10px; }
   .si-count, .si-bar { min-width: 78px; width: 78px; }
@@ -67,28 +61,36 @@ nav.nav .pill.viewer[hidden] { display: inline-flex !important; visibility: hidd
 nav.nav .pill.viewer #viewerCount { display: inline-block; max-width: 6ch; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; }
 @media (max-width: 480px) {
   nav.nav .pill.viewer { width: 76px; flex-basis: 76px; }
-  .session-island-slot { left: 39%; }
 }
-@media (max-width: 350px) { .session-island-slot { left: 37%; } }
 /* Support status changes its label asynchronously; keep the nav width steady. */
 nav.nav #helpNavPill { width: 146px; justify-content: center; flex: 0 0 146px; }
-@media (max-width: 350px) {
-  .session-island-slot, .session-island { width: 92px; }
+/* Phone navigation: anchor the island to the fixed counter/menu cluster rather
+   than to a viewport percentage, leaving a predictable gap to both sides. */
+@media (max-width: 600px) {
+  .session-island-slot {
+    --mobile-island-width: 120px;
+    left: auto;
+    right: calc(var(--gutter, clamp(20px, 5vw, 56px)) + 130px);
+    width: var(--mobile-island-width);
+    transform: translateY(-50%);
+  }
+  .session-island { width: var(--mobile-island-width); }
+  .si-name { display: none; }
+  nav.nav .pill.viewer { width: 76px; flex-basis: 76px; }
+  nav.nav .pill.viewer .viewer-label { display: none; }
+  .session-island.is-expanded, .session-island:focus-visible {
+    transform: translateX(calc(50% + var(--gutter, clamp(20px, 5vw, 56px)) + 130px + var(--mobile-island-width) / 2 - 50vw));
+  }
+}
+@media (max-width: 400px) {
+  .session-island-slot { --mobile-island-width: 92px; }
   .si-compact { gap: 4px; padding-inline: 6px; }
   .si-badge { min-width: 26px; padding-inline: 5px; }
   .si-relative { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 10px; }
 }
-/* The compact pill is offset on phones to clear the counter. Re-centre the
-   expanded pill so the animation never spills beyond the viewport. */
-@media (max-width: 480px) {
-  .session-island.is-expanded, .session-island:focus-visible { transform: translateX(calc(50% + 11vw)); }
-}
-@media (max-width: 350px) {
-  .session-island.is-expanded, .session-island:focus-visible { transform: translateX(calc(50% + 13vw)); }
-}
-@media (max-width: 480px) and (hover: hover) {
-  .session-island:hover { transform: translateX(calc(50% + 11vw)); }
-}
-@media (max-width: 350px) and (hover: hover) {
-  .session-island:hover { transform: translateX(calc(50% + 13vw)); }
+@media (max-width: 375px) { nav.nav:has(.session-island-slot) .brand-text { display: none; } }
+@media (max-width: 600px) and (hover: hover) {
+  .session-island:hover {
+    transform: translateX(calc(50% + var(--gutter, clamp(20px, 5vw, 56px)) + 130px + var(--mobile-island-width) / 2 - 50vw));
+  }
 }
