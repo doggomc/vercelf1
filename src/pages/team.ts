@@ -115,7 +115,7 @@ function nextRoundCard(): string {
   const first = next.sessions[0];
   const date = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: next.tz }).format(new Date(first.ts));
   const days = Math.max(0, Math.ceil((first.ts - now) / 86400000));
-  return `<a class="dp-next-card" href="/schedule.html">
+  return `<a class="dp-next-card" href="/schedule">
     <span class="dp-next-round">Round ${esc(next.round)}</span>
     <b>${esc(next.name)}</b>
     <span class="dp-next-meta">${esc(date)} · ${days <= 1 ? 'this week' : `in ${days} days`}</span>
@@ -124,7 +124,7 @@ function nextRoundCard(): string {
 
 async function paint(): Promise<void> {
   const slug = slugFromLocation();
-  if (!slug) { location.replace('/teams.html'); return; }
+  if (!slug) { location.replace('/teams'); return; }
 
   const profile = findTeamBySlug(slug);
   show('tpNext', nextRoundCard());
@@ -144,7 +144,7 @@ async function paint(): Promise<void> {
     const body = $('tpResultsBody');
     if (body) {
       body.removeAttribute('aria-busy');
-      body.innerHTML = `<tr><td colspan="4" class="dp-empty">Pick a constructor from the <a href="/teams.html">2026 teams</a>.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="4" class="dp-empty">Pick a constructor from the <a href="/teams">2026 teams</a>.</td></tr>`;
     }
     document.title = 'Constructor not found — FreeF1';
     const robots = document.createElement('meta');

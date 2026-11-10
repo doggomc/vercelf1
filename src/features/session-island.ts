@@ -8,7 +8,7 @@ export function initSessionIsland(): void {
   const holder = right.querySelector<HTMLElement>('.session-island-slot') || document.createElement('div');
   holder.className = 'session-island-slot';
   if (!holder.isConnected) right.insertBefore(holder, right.querySelector('.nav-toggle'));
-  const link = document.createElement('a'); link.id = 'sessionIsland'; link.className = 'session-island'; link.href = '/schedule.html';
+  const link = document.createElement('a'); link.id = 'sessionIsland'; link.className = 'session-island'; link.href = '/schedule';
   link.innerHTML = `<span class="si-compact" aria-hidden="true"><span class="si-badge">F1</span><span class="si-name"></span><span class="si-relative"></span></span>
     <span class="si-expanded" aria-hidden="true"><span class="si-timer-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="7"/><path d="M12 13V9m-2-7h4m-2 0v3m5 2 1.5-1.5"/></svg></span><span class="si-copy"><span class="si-title"></span><span class="si-date"></span></span><span class="si-count"><span class="si-clock"></span><span class="si-bar"><span></span></span></span></span>`;
   // Fail closed if the page stylesheet is missing or blocked: never show unstyled SVG/text.

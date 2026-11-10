@@ -8,7 +8,7 @@ import {
 
 initShell();
 document
-  .querySelectorAll<HTMLAnchorElement>('.nav-links a[href="/other.html"], .footer-nav a[href="/other.html"]')
+  .querySelectorAll<HTMLAnchorElement>('.nav-links a[href="/other"], .footer-nav a[href="/other"]')
   .forEach((a) => a.setAttribute('aria-current', 'page'));
 
 const LAUNCH_ARROW_SVG =

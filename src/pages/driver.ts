@@ -77,7 +77,7 @@ function nextRoundCard(): string {
   const first = next.sessions[0];
   const date = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: next.tz }).format(new Date(first.ts));
   const days = Math.max(0, Math.ceil((first.ts - now) / 86400000));
-  return `<a class="dp-next-card" href="/schedule.html">
+  return `<a class="dp-next-card" href="/schedule">
       <span class="dp-next-round">Round ${esc(next.round)}</span>
       <b>${esc(next.name)}</b>
       <span class="dp-next-meta">${esc(date)} · ${days <= 1 ? 'this week' : `in ${days} days`}</span>
@@ -88,7 +88,7 @@ function nextRoundCard(): string {
 
 async function paint(): Promise<void> {
   const slug = slugFromLocation();
-  if (!slug) { location.replace('/drivers.html'); return; }
+  if (!slug) { location.replace('/drivers'); return; }
 
   let standings: { rows: StandingRow[]; round: string };
   try {
@@ -111,7 +111,7 @@ async function paint(): Promise<void> {
     const body = $('dpResultsBody');
     if (body) {
       body.removeAttribute('aria-busy');
-      body.innerHTML = `<tr><td colspan="6" class="dp-empty">Pick a driver from the <a href="/drivers.html">2026 grid</a>.</td></tr>`;
+      body.innerHTML = `<tr><td colspan="6" class="dp-empty">Pick a driver from the <a href="/drivers">2026 grid</a>.</td></tr>`;
     }
     /* The page itself is a real 404 in spirit even though Netlify serves the file,
        so nothing should index it and the title must say what happened. */

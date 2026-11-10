@@ -268,7 +268,7 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
     );
 
     const href = buildPrivateCockpitHref(sample!);
-    expect(href.startsWith('/private-cockpit.html?')).toBe(true);
+    expect(href.startsWith('/private-cockpit?')).toBe(true);
     expect(href).not.toMatch(/ppv|embdlol|weelo/i);
 
     const resolved = parsePrivateCockpitParams(href.split('?')[1] || '');

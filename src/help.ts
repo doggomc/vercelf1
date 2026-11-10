@@ -144,7 +144,7 @@ import { $ } from './services/dom';
       viewport: `${window.innerWidth}×${window.innerHeight}`,
       language: String(navigator.language || 'Unknown').slice(0, 24),
       timezone: String(timezone).slice(0, 80),
-      route: String(window.location.pathname || '/help.html').slice(0, 80),
+      route: String(window.location.pathname || '/help').slice(0, 80),
       online: navigator.onLine ? 'online' : 'offline',
     };
   }

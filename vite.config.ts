@@ -155,7 +155,7 @@ function serveStaticFolders(): Plugin {
             return next();
           }
           res.statusCode = rule.status;
-          res.setHeader('Location', rule.to);
+          res.setHeader('Location', rule.to + (req.url || '').slice(pathname.length));
           res.end();
           return;
         }

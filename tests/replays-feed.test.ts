@@ -4,5 +4,5 @@ const event = (series: Event['series'], round=13): Event => ({ id:`${series}-${r
 describe('replays feed', () => {
   it('groups series by race weekend and orders newest first', () => { const w=groupWeekends([event('f2'),event('f1',14),event('f1')]); expect(w.map(x=>x.round)).toEqual([14,13]);expect(w[1].events).toHaveLength(2); });
   it('only accepts approved replay embeds', () => { expect(safeSource('https://weellz.live/replay?id=abc')).toBeTruthy(); expect(safeSource('https://weellz.live.evil.test/replay?id=abc')).toBeNull();expect(safeSource('javascript:alert(1)')).toBeNull(); });
-  it('uses event and session identifiers in links', () => { const e=event('f1');expect(replayHref(e,e.sessions[0])).toBe('/replay-cockpit.html?e=f1-13&s=race'); });
+  it('uses event and session identifiers in links', () => { const e=event('f1');expect(replayHref(e,e.sessions[0])).toBe('/replay-cockpit?e=f1-13&s=race'); });
 });

@@ -127,8 +127,8 @@ function renderDrawer(
     : '';
   const actions = isCurrent
     ? `<div class="sc-drawer-links">
-        <a class="sc-drawer-link is-primary" href="/cockpit.html">Watch in cockpit</a>
-        <a class="sc-drawer-link" href="/live-timing.html">Live timing</a>
+        <a class="sc-drawer-link is-primary" href="/cockpit">Watch in cockpit</a>
+        <a class="sc-drawer-link" href="/live-timing">Live timing</a>
       </div>`
     : '';
   const foot = winnerLine || actions

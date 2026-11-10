@@ -1,40 +1,63 @@
-# Public News view is temporarily hidden; its data and admin controls remain intact.
-/news    /    302
-/news/   /    302
-# Help is a standalone page so the support chat can keep running independently of the cockpit.
-/help    /help.html   301
-/help/   /help.html   301
-# In-app views: serve the SPA shell; the frontend opens the matching view.
-/info    /index.html   200
-/info/   /index.html   200
-/discord    /index.html   200
-/discord/   /index.html   200
-/replays    /replays.html   301
-/replays/   /replays.html   301
-# The cockpit is its own page; keep the short URL working for old links.
-/cockpit          /cockpit.html   301
-/cockpit/         /cockpit.html   301
-/schedule         /schedule.html   301
-/schedule/        /schedule.html   301
-/standings        /standings.html   301
-/standings/       /standings.html   301
-# Driver profiles are their own directories (dist/drivers/<slug>/index.html), written
-# at build time. They must be matched before the grid's own short URL below, or every
-# profile would 301 to the grid and lose its URL.
-/drivers/:slug    /drivers/:slug/index.html   200
-/drivers/:slug/   /drivers/:slug/index.html   200
-/drivers          /drivers.html   301
-/drivers/         /drivers.html   301
-/teams/:slug      /teams/:slug/index.html   200
-/teams/:slug/     /teams/:slug/index.html   200
-/teams            /teams.html   301
-/teams/           /teams.html   301
-/other            /other.html   301
-/other/           /other.html   301
-/other-streams    /other-streams.html   301
-/other-streams/   /other-streams.html   301
-/private-cockpit  /private-cockpit.html   301
-/private-cockpit/ /private-cockpit.html   301
-/live-timing      /live-timing.html   301
-/live-timing/     /live-timing.html   301
-# Everything else that doesn't exist falls through to /404.html (Netlify default).
+# Clean public routes, with compatibility for old .html links.
+/news / 302
+/news/ / 302
+/index.html / 301
+/info /index.html 200
+/info/ /index.html 200
+/discord /index.html 200
+/discord/ /index.html 200
+/drivers/:slug /drivers/:slug/index.html 200
+/drivers/:slug/ /drivers/:slug/index.html 200
+/teams/:slug /teams/:slug/index.html 200
+/teams/:slug/ /teams/:slug/index.html 200
+/cockpit.html /cockpit 301
+/cockpit /cockpit.html 200
+/cockpit/ /cockpit.html 200
+/driver.html /driver 301
+/driver /driver.html 200
+/driver/ /driver.html 200
+/drivers.html /drivers 301
+/drivers /drivers.html 200
+/drivers/ /drivers.html 200
+/help.html /help 301
+/help /help.html 200
+/help/ /help.html 200
+/live-timing.html /live-timing 301
+/live-timing /live-timing.html 200
+/live-timing/ /live-timing.html 200
+/maintenance.html /maintenance 301
+/maintenance /maintenance.html 200
+/maintenance/ /maintenance.html 200
+/other-streams.html /other-streams 301
+/other-streams /other-streams.html 200
+/other-streams/ /other-streams.html 200
+/other.html /other 301
+/other /other.html 200
+/other/ /other.html 200
+/private-cockpit.html /private-cockpit 301
+/private-cockpit /private-cockpit.html 200
+/private-cockpit/ /private-cockpit.html 200
+/replay-cockpit.html /replay-cockpit 301
+/replay-cockpit /replay-cockpit.html 200
+/replay-cockpit/ /replay-cockpit.html 200
+/replays.html /replays 301
+/replays /replays.html 200
+/replays/ /replays.html 200
+/schedule.html /schedule 301
+/schedule /schedule.html 200
+/schedule/ /schedule.html 200
+/standings.html /standings 301
+/standings /standings.html 200
+/standings/ /standings.html 200
+/team.html /team 301
+/team /team.html 200
+/team/ /team.html 200
+/teams.html /teams 301
+/teams /teams.html 200
+/teams/ /teams.html 200
+/beertjie.html /beertjie 301
+/beertjie /beertjie.html 200
+/beertjie/ /beertjie.html 200
+/404.html /404 301
+/404 /404.html 200
+/404/ /404.html 200

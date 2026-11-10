@@ -32,5 +32,5 @@ export async function fetchWeekends(signal?: AbortSignal): Promise<Weekend[]> {
   return groupWeekends(data.events);
 }
 export function replayHref(event: Event, session: Session): string {
-  return `/replay-cockpit.html?${new URLSearchParams({ e:event.id, s:session.key })}`;
+  return `/replay-cockpit?${new URLSearchParams({ e:event.id, s:session.key })}`;
 }

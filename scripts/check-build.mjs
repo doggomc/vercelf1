@@ -143,11 +143,10 @@ for (const page of PAGES) {
   }
 }
 const vercelCfg = JSON.parse(readFileSync('vercel.json', 'utf8'));
-assert(vercelCfg.outputDirectory === 'dist' && vercelCfg.cleanUrls === false, 'vercel.json must serve dist/ with cleanUrls:false');
-assert(vercelCfg.redirects?.some(r => r.source === '/cockpit' && r.destination === '/cockpit.html' && r.statusCode === 301), 'vercel.json missing /cockpit redirect');
-assert(vercelCfg.rewrites?.some(r => r.source === '/info' && r.destination === '/index.html'), 'vercel.json missing /info rewrite');
-assert(vercelCfg.rewrites?.some(r => r.source === '/drivers/:slug' && r.destination === '/drivers/:slug/index.html'), 'vercel.json missing /drivers/:slug rewrite');
-assert(vercelCfg.rewrites?.some(r => r.source === '/teams/:slug' && r.destination === '/teams/:slug/index.html'), 'vercel.json missing /teams/:slug rewrite');
+assert(vercelCfg.outputDirectory === 'dist' && vercelCfg.cleanUrls === true, 'vercel.json must serve clean URLs');
+assert(!vercelCfg.redirects?.some(r => /\.html(?:$|[?#])/.test(r.destination)), 'Clean routes must not redirect to HTML URLs');
+assert(vercelCfg.rewrites?.some(r => r.source === '/info' && r.destination === '/'), 'vercel.json missing /info rewrite');
+assert(vercelCfg.rewrites?.some(r => r.source === '/discord' && r.destination === '/'), 'vercel.json missing /discord rewrite');
 assert(!vercelCfg.rewrites?.some(r => r.source === '/(.*)' && r.destination === '/index.html'), 'Do not turn missing pages into successful SPA responses');
 const bundleHdr = vercelCfg.headers?.find(h => h.source === '/bundles/:path*');
 assert(bundleHdr?.headers?.some(h => h.key === 'Cache-Control' && h.value.includes('immutable')), 'vercel.json missing immutable /bundles cache rule');

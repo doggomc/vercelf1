@@ -618,7 +618,7 @@ export function buildPrivateCockpitHref(item: OtherStreamItem): string {
   params.set('cat', item.category);
   if (item.subtitle) params.set('sub', item.subtitle);
   if (item.alwaysLive) params.set('al', '1');
-  return `/private-cockpit.html?${params.toString()}`;
+  return `/private-cockpit?${params.toString()}`;
 }
 
 export interface ResolvedPrivateStream {

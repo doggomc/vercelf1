@@ -84,7 +84,7 @@ const PUBLIC_NEWS_ENABLED = false;
 // Replays are parked while the embedded players are unreliable; the code stays for when they return.
 const PUBLIC_REPLAYS_ENABLED = false;
 /* The cockpit is its own document now. 'cockpit' is a real route with no in-page
-   view element: registering it stops the router treating /cockpit.html as home. */
+   view element: registering it stops the router treating /cockpit as home. */
 const VIEWS = { home: 'viewHome', cockpit: '', ...(PUBLIC_NEWS_ENABLED ? { news: 'viewNews' } : {}), ...(PUBLIC_REPLAYS_ENABLED ? { replays: 'viewReplays' } : {}), info: 'viewInfo', discord: 'viewDiscord' };
 const ROUTES = ['home', 'cockpit', 'info', 'discord', ...(PUBLIC_NEWS_ENABLED ? ['news'] : []), ...(PUBLIC_REPLAYS_ENABLED ? ['replays'] : [])];
 const VIEW_TITLES = { ...(PUBLIC_NEWS_ENABLED ? { news: 'News - FreeF1' } : {}), ...(PUBLIC_REPLAYS_ENABLED ? { replays: 'Race Replays - FreeF1' } : {}), info: 'Terms, Privacy & FAQ - FreeF1', discord: 'Discord - FreeF1' };
@@ -2333,8 +2333,8 @@ function applyStreamWindow(payload) {
 function applyMaintenanceMode(state, { fresh = false } = {}) {
   // Cached state may be stale while Race Control is offline; only a live
   // snapshot can redirect a public session into maintenance.
-  if (fresh && state?.active && location.pathname !== '/maintenance.html') {
-    location.replace('/maintenance.html');
+  if (fresh && state?.active && !/^\/maintenance(?:\.html)?\/?$/.test(location.pathname)) {
+    location.replace('/maintenance');
   }
 }
 
@@ -2840,7 +2840,7 @@ addEventListener('popstate', () => showView(routeFromPath(location.pathname), { 
 (function initView() {
   const route = routeFromPath(location.pathname);
   /* A parked view (/replays) or any unknown path resolves to home; drop the dead URL too.
-     /cockpit.html is its own document, so it keeps its URL. */
+     /cockpit is its own document, so it keeps its URL. */
   const stray = route === 'home' && location.pathname.replace(/\/+$/, '') !== '' && !/\/cockpit\.html$/i.test(location.pathname);
   history.replaceState({ view: route }, '', stray ? '/' : location.pathname + location.search + location.hash);
   if (route === 'cockpit') {

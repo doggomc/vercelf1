@@ -58,7 +58,7 @@ function toGateSnapshot(raw: unknown): SiteConfig | null {
 export function applyPageGate(config: SiteConfig | null, { fresh = false }: { fresh?: boolean } = {}): boolean {
   if (!config) return false;
   if (fresh && config.maintenance?.active === true) {
-    location.replace('/maintenance.html');
+    location.replace('/maintenance');
     return true;
   }
   const category = resolvePageCategory();

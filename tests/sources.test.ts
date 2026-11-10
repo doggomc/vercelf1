@@ -260,7 +260,7 @@ describe('stream source link pools', () => {
     const vercelRaw = readFileSync(new URL('../vercel.json', import.meta.url), 'utf8');
     const vercel = JSON.parse(vercelRaw);
     expect(vercel.outputDirectory).toBe('dist');
-    expect(vercel.cleanUrls).toBe(false);
+    expect(vercel.cleanUrls).toBe(true);
     expect(JSON.stringify(vercel.rewrites || [])).not.toContain('/api/stream');
     expect(JSON.stringify(vercel.rewrites || [])).not.toContain('/api/site/config');
   });
