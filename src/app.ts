@@ -1411,15 +1411,11 @@ async function fetchFourKUrl(): Promise<string> {
     const response = await fetchWithTimeout(`${STREAM_API}/api/stream/uhd`, { cache: 'no-store', headers: { Accept: 'application/json' } }, 9000);
     const json = await response.json().catch(() => ({}));
     if (seq !== fourKRequest) return fourKUrl;
-    if (!response.ok || !json?.url) {
-      showToast(json?.error || 'The 4K feed is unavailable right now.', 'warning');
-      return '';
-    }
+    if (!response.ok || !json?.url) return '';
 
     fourKUrl = String(json.url);
     return fourKUrl;
   } catch (_) {
-    showToast('Could not reach the 4K service. Try again.', 'warning');
     return '';
   }
 }
@@ -1480,12 +1476,11 @@ async function playFourK(targetIndex?: number) {
     : sources.findIndex((source) => source.gated && !source.stripped);
   if (index < 0) return;
   const url = await fetchFourKUrl();
-  if (!url) return;
   currentSource = index;
   renderButtons();
   updateHeader();
   load();
-  if (!canPlayHevc()) showToast(HEVC_WARNING, 'warning');
+  if (url && !canPlayHevc()) showToast(HEVC_WARNING, 'warning');
 }
 
 /* ehgembxe mints a JWT per request (302 → /play/<jwt>), so the address cannot be stored.
@@ -2046,8 +2041,7 @@ function attemptSource(token, order, idx, startedAt, linkIdx = 0, triedDynamic =
       return;
     }
     /* A chip with nothing upstream says so instead of silently playing another provider. */
-    if (!idx && sources[sourceIndex].gated) return showNoStream({ title: '4K is not upstream', text: 'embdlol is not publishing a 4K channel for this race. It appears a few hours before lights out — the UHD chip will come back on its own, nothing to reload.' });
-    if (!idx && !isCustom(sourceIndex) && (sources[sourceIndex].embdlol || sources[sourceIndex].weelo)) return showNoStream({ title: 'No link upstream', text: 'This feed has no channel upstream right now.' });
+    if (!idx && !isCustom(sourceIndex) && (sources[sourceIndex].gated || sources[sourceIndex].embdlol || sources[sourceIndex].weelo)) return showNoStream({ title: 'No link upstream', text: 'This feed has no channel upstream right now.' });
     attemptSource(token, order, idx + 1, startedAt, 0, triedDynamic);
     return;
   }

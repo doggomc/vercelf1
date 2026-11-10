@@ -1,0 +1,31 @@
+/* A quiet creator credit that lights up without navigating away. */
+footer.footer .footer-credit {
+  margin: 9px 0 0;
+  color: var(--fg-4, #92949b);
+  font-size: 12.5px;
+}
+footer.footer .footer-credit-name {
+  appearance: none;
+  display: inline-block;
+  margin: 0;
+  padding: 2px 3px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #c5c6ca;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  transition: color .2s ease, text-shadow .2s ease, background-color .2s ease;
+}
+footer.footer .footer-credit-name:hover,
+footer.footer .footer-credit-name:focus,
+footer.footer .footer-credit-name:active {
+  color: #fff;
+  background: rgba(225, 6, 0, .1);
+  text-shadow: 0 0 8px rgba(255, 100, 86, .95), 0 0 18px rgba(225, 6, 0, .8);
+}
+footer.footer .footer-credit-name:focus-visible { outline: 2px solid #ff655c; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  footer.footer .footer-credit-name { transition: none; }
+}
