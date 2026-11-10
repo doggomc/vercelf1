@@ -1,4 +1,4 @@
-export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo';
+export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree';
 
 export interface OtherStreamItem {
   key: string;
@@ -24,6 +24,9 @@ export interface OtherStreamsResult {
 
 const DEFAULT_BACKEND = 'https://f1admin.onrender.com';
 const EMBDLOL_STRUCT_URL = 'https://api.embdlol.st/struct';
+const STREAMFREE_STREAMS_URL = 'https://strmfree.st/api/v1/streams';
+const STREAMFREE_CACHE_KEY = 'freef1-streamfree-v1';
+const STREAMFREE_CACHE_MS = 60_000;
 const PPV_STREAMS_URL = 'https://api.ppv.st/api/streams';
 const WEELO_PLAYERS_URLS = [
   'https://weelo.live/players/events.json',
@@ -51,6 +54,7 @@ const PROVIDER_COLORS: Record<OtherStreamProvider, string> = {
   embdlol: '#FF8000',
   ppv: '#00D2BE',
   weelo: '#38BDF8',
+  strmfree: '#E75D38',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -223,6 +227,57 @@ export function buildPpvUrls(
       : directUrl,
     fallbackUrl: directUrl,
   };
+}
+
+/** StreamFree embeds are used directly, without the stripped backend player. */
+export function buildStreamfreeUrls(rawId: string, rawHost = 'strmfree.st'): { id: string; host: string; embedUrl: string; fallbackUrl: string } | null {
+  const host = String(rawHost || '').trim().toLowerCase();
+  if (host !== 'strmfree.st' && host !== 'streamfree.top') return null;
+  let id: string;
+  try { id = decodeURIComponent(String(rawId || '').trim()); } catch { return null; }
+  const parts = id.split('/');
+  if (parts.length !== 2 || !/^[a-z0-9-]{1,40}$/i.test(parts[0]) ||
+      !/^[\p{L}\p{N}_-]{1,180}$/u.test(parts[1]) || isFormula1Text(id)) return null;
+  const path = parts.map(encodeURIComponent).join('/');
+  const embedUrl = `https://${host}/embed/${path}`;
+  return { id, host, embedUrl, fallbackUrl: embedUrl };
+}
+
+export function parseStreamfreeStreams(payload: unknown): OtherStreamItem[] {
+  const streams = Array.isArray((payload as { streams?: unknown[] } | null)?.streams)
+    ? (payload as { streams: Array<Record<string, unknown>> }).streams : [];
+  const items: OtherStreamItem[] = [];
+  const seen = new Set<string>();
+  for (const event of streams) {
+    if (!event || typeof event !== 'object') continue;
+    const title = String(event.name || '').trim();
+    const rawCategory = String(event.category || '').trim();
+    const league = String(event.league || '').trim();
+    if (!title || !rawCategory || isFormula1Text(`${title} ${rawCategory} ${league} ${event.stream_key || ''}`)) continue;
+    const category = formatEmbdlolTitle(rawCategory);
+    const sources = Array.isArray(event.sources) ? event.sources as Array<Record<string, unknown>> : [];
+    for (const source of sources) {
+      if (!source || source.live !== true) continue;
+      let url: URL;
+      try { url = new URL(String(source.url || '')); } catch { continue; }
+      if (url.protocol !== 'https:' || url.username || url.password || url.port || url.search || url.hash || !url.pathname.startsWith('/embed/')) continue;
+      const built = buildStreamfreeUrls(url.pathname.slice('/embed/'.length), url.hostname);
+      if (!built || built.id.split('/')[0].toLowerCase() !== rawCategory.toLowerCase() || seen.has(built.embedUrl)) continue;
+      const broadcast = String(source.broadcast || '').trim();
+      const quality = String(source.quality || '').trim();
+      if (isFormula1Text(`${broadcast} ${built.id}`)) continue;
+      seen.add(built.embedUrl);
+      const distinctTitle = sources.filter(s => s && s.live === true).length > 1 && broadcast ? `${title} · ${broadcast}` : title;
+      items.push({
+        key: `strmfree:${built.host}/${built.id}`, provider: 'strmfree', id: built.id, host: built.host,
+        title: distinctTitle, category, subtitle: [league || category, 'StreamFree', broadcast, quality].filter(Boolean).join(' · '),
+        tag: `${quality || 'Live'} · StreamFree`, viewers: Math.max(0, Number.parseInt(String(event.viewers || '0'), 10) || 0),
+        alwaysLive: false, embedUrl: built.embedUrl, fallbackUrl: built.fallbackUrl,
+        color: pickStreamColor('strmfree', category),
+      });
+    }
+  }
+  return items;
 }
 
 function inferChannelCategory(rawName: string, rawCategory?: unknown): string {
@@ -531,15 +586,18 @@ const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
   embdlol: '1',
   ppv: '2',
   weelo: '3',
+  strmfree: '4',
 };
 
 const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
   '1': 'embdlol',
   '2': 'ppv',
   '3': 'weelo',
+  '4': 'strmfree',
   embdlol: 'embdlol',
   ppv: 'ppv',
   weelo: 'weelo',
+  strmfree: 'strmfree',
 };
 
 function slugifyStreamLabel(value: string): string {
@@ -601,6 +659,12 @@ export function parsePrivateCockpitParams(
     if (!urls) return null;
     embedUrl = urls.embedUrl;
     fallbackUrl = urls.fallbackUrl;
+  } else if (provider === 'strmfree') {
+    const urls = buildStreamfreeUrls(rawId, String(params.get('host') || 'strmfree.st'));
+    if (!urls) return null;
+    cleanId = urls.id;
+    embedUrl = urls.embedUrl;
+    fallbackUrl = urls.fallbackUrl;
   } else {
     const rawHost = String(params.get('host') || '').trim();
     const urls = buildPpvUrls(rawId, rawHost, backend);
@@ -651,6 +715,21 @@ async function fetchJsonWithTimeout(
   }
 }
 
+async function fetchStreamfree(fetchImpl: typeof fetch, useCache: boolean): Promise<unknown> {
+  if (useCache) {
+    try {
+      const cached = JSON.parse(localStorage.getItem(STREAMFREE_CACHE_KEY) || 'null');
+      if (cached && Date.now() - cached.at >= 0 && Date.now() - cached.at < STREAMFREE_CACHE_MS && Array.isArray(cached.data?.streams)) return cached.data;
+    } catch { /* Storage may be unavailable. */ }
+  }
+  const data = await fetchJsonWithTimeout(STREAMFREE_STREAMS_URL, {}, 8500, fetchImpl);
+  if (!Array.isArray((data as { streams?: unknown } | null)?.streams)) throw new Error('Invalid StreamFree response');
+  if (useCache) {
+    try { localStorage.setItem(STREAMFREE_CACHE_KEY, JSON.stringify({ at: Date.now(), data })); } catch { /* Storage is optional. */ }
+  }
+  return data;
+}
+
 export async function fetchAllOtherStreams(options: {
   backend?: string;
   fetchImpl?: typeof fetch;
@@ -670,12 +749,13 @@ export async function fetchAllOtherStreams(options: {
     throw lastError || new Error('Weelo unavailable');
   };
 
-  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes] = await Promise.allSettled([
+  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes] = await Promise.allSettled([
     fetchJsonWithTimeout(EMBDLOL_STRUCT_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(PPV_STREAMS_URL, {}, 8500, fetchImpl),
     fetchWeeloPlayers(),
     fetchJsonWithTimeout(RACINGLAP_STATUS_URL, { referrerPolicy: 'no-referrer' }, 6500, fetchImpl),
     fetchJsonWithTimeout(WEELO_FEED_URL, { referrerPolicy: 'no-referrer' }, 6500, fetchImpl),
+    fetchStreamfree(fetchImpl, !options.fetchImpl),
   ]);
 
   const embItems = embRes.status === 'fulfilled' ? parseEmbdlolStruct(embRes.value, backend) : [];
@@ -690,7 +770,8 @@ export async function fetchAllOtherStreams(options: {
       )
     : [];
 
-  const items = [...embItems, ...weeloItems, ...ppvItems];
+  const streamfreeItems = streamfreeRes.status === 'fulfilled' ? parseStreamfreeStreams(streamfreeRes.value) : [];
+  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems];
 
   return {
     items,
@@ -699,11 +780,13 @@ export async function fetchAllOtherStreams(options: {
       embdlol: embItems.length,
       ppv: ppvItems.length,
       weelo: weeloItems.length,
+      strmfree: streamfreeItems.length,
     },
     providerOk: {
       embdlol: embRes.status === 'fulfilled',
       ppv: ppvRes.status === 'fulfilled',
       weelo: weeloOk,
+      strmfree: streamfreeRes.status === 'fulfilled',
     },
   };
 }

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildPrivateCockpitHref,
+  buildStreamfreeUrls,
+  parseStreamfreeStreams,
   fetchAllOtherStreams,
   isEmbdlolF1Channel,
   isFormula1Text,
@@ -11,6 +13,50 @@ import {
 } from '../src/lib/other-streams';
 
 describe('Other streams non-F1 filtering & private cockpit resolution', () => {
+  it('adds only live StreamFree variants as direct non-stripped embeds and round trips them to the cockpit', () => {
+    const payload = { streams: [
+      { name: 'Alavés vs England', category: 'soccer', league: 'Cup', stream_key: 'alavés-vs-england', sources: [
+        { quality: 'FHD', url: 'https://strmfree.st/embed/soccer/alav%C3%A9s-vs-england1080p', live: true, broadcast: 'Main' },
+        { quality: 'HD', url: 'https://streamfree.top/embed/soccer/alav%C3%A9s-vs-england720p2', live: true, broadcast: 'Alternate' },
+        { quality: 'HD', url: 'https://strmfree.st/embed/soccer/offline', live: false },
+        { quality: 'HD', url: 'https://evil.example/embed/soccer/evil', live: true },
+      ] },
+      { name: 'Formula 1 Grand Prix', category: 'racing', stream_key: 'f1-race', sources: [
+        { url: 'https://strmfree.st/embed/racing/f1-race1080p', live: true },
+      ] },
+      { name: 'Waiting match', category: 'soccer', sources: [] },
+    ] };
+    const items = parseStreamfreeStreams(payload);
+    expect(items).toHaveLength(2);
+    expect(items.map(item => item.title)).toEqual(['Alavés vs England · Main', 'Alavés vs England · Alternate']);
+    for (const item of items) {
+      expect(item.provider).toBe('strmfree');
+      expect(item.embedUrl).toMatch(/^https:\/\/(strmfree\.st|streamfree\.top)\/embed\//);
+      expect(item.embedUrl).toBe(item.fallbackUrl);
+      const resolved = parsePrivateCockpitParams(new URL(buildPrivateCockpitHref(item), 'https://freef1-live.vercel.app').search);
+      expect(resolved?.embedUrl).toBe(item.embedUrl);
+      expect(resolved?.fallbackUrl).toBe(item.embedUrl);
+      expect(resolved?.embedUrl).not.toContain('/api/stream/');
+    }
+    expect(buildStreamfreeUrls('soccer/match', 'evil.example')).toBeNull();
+    expect(buildStreamfreeUrls('soccer/../admin')).toBeNull();
+    expect(buildStreamfreeUrls('racing/f1-race')).toBeNull();
+    expect(parsePrivateCockpitParams('?s=4&id=soccer%2Fmatch&host=evil.example')).toBeNull();
+  });
+
+  it('fetches StreamFree independently without interrupting the other providers', async () => {
+    const mockFetch: typeof fetch = async (input) => {
+      if (String(input).includes('strmfree.st')) return new Response(JSON.stringify({ streams: [{
+        name: 'Tennis final', category: 'tennis', stream_key: 'final', sources: [{ live: true, quality: 'FHD', url: 'https://strmfree.st/embed/tennis/final1080p' }],
+      }] }), { status: 200 });
+      throw new Error('other provider offline');
+    };
+    const result = await fetchAllOtherStreams({ fetchImpl: mockFetch });
+    expect(result.providerOk.strmfree).toBe(true);
+    expect(result.counts.strmfree).toBe(1);
+    expect(result.items[0]?.embedUrl).toBe('https://strmfree.st/embed/tennis/final1080p');
+  });
+
   it('excludes Formula 1 channels from embdlol while keeping non-F1 sports and feeder series', () => {
     expect(isEmbdlolF1Channel('f1friuhd')).toBe(true);
     expect(isEmbdlolF1Channel('f1mexicofullhd1')).toBe(true);
