@@ -25,13 +25,13 @@ export function applySourceConfig(payload: any, host: {
   render: () => void;
   reload: () => void;
 }) {
-  const signature = JSON.stringify({ disabled: payload?.disabled || [], overrides: payload?.overrides || {}, custom: payload?.custom || [], order: payload?.order || [] });
+  const signature = JSON.stringify({ disabled: payload?.disabled || [], overrides: payload?.overrides || {}, custom: payload?.custom || [], order: payload?.order || [], autoStreams: payload?.autoStreams === true, autoEntries: payload?.autoEntries || [] });
   if (signature === previousSignature) return;
   previousSignature = signature;
   const previous = host.sources[host.current()];
   const previousId = previous?.id;
   const previousUrl = previous?.links?.[0]?.provider === 'custom' ? previous.links[0].url : '';
-  const builtins = host.sources.filter(source => !source.managedCustom);
+  const builtins = host.sources.filter(source => !source.managedCustom && !source.managedAuto);
   if (!defaultOrder.has(host.sources)) defaultOrder.set(host.sources, builtins.map(source => source.id));
   const custom: StreamSource[] = (Array.isArray(payload?.custom) ? payload.custom : []).map((item: any) => ({
     id: item.id, label: item.label, lang: item.tab === 'other' ? 'other' : 'en',
@@ -39,9 +39,15 @@ export function applySourceConfig(payload: any, host: {
   }));
   const disabled = new Set<string>(Array.isArray(payload?.disabled) ? payload.disabled : []);
   const overrides: ChipOverrides = payload?.overrides || {};
-  builtins.forEach(source => { source.hidden = disabled.has(source.id); setChip(source, overrides[source.id]); });
-  custom.forEach(source => { source.hidden = disabled.has(source.id); });
-  const combined = [...builtins, ...custom];
+  builtins.forEach(source => { source.hidden = payload?.autoStreams === true || disabled.has(source.id); setChip(source, overrides[source.id]); });
+  custom.forEach(source => { source.hidden = payload?.autoStreams === true || disabled.has(source.id); });
+  const automatic: StreamSource[] = payload?.autoStreams && Array.isArray(payload?.autoEntries) ? payload.autoEntries.map((item: any) => ({
+    id: item.id, label: item.label, lang: item.tab === 'other' ? 'other' : 'en',
+    managedAuto: true, autoProvider: item.provider, autoTag: item.tag,
+    special: ['onboard', 'data', 'feed'].includes(item.special) ? item.special : undefined,
+    links: [{ provider: 'custom', quality: 0, url: item.url }]
+  })) : [];
+  const combined = [...builtins, ...custom, ...automatic];
   const rank = new Map<string, number>((Array.isArray(payload?.order) ? payload.order : []).map((id: string, i: number) => [id, i]));
   const baseline = new Map((defaultOrder.get(host.sources) || []).map((id, index) => [id, index]));
   combined.sort((a,b) => (rank.get(a.id) ?? 1e6) - (rank.get(b.id) ?? 1e6) || (baseline.get(a.id) ?? 1e6) - (baseline.get(b.id) ?? 1e6));

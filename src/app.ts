@@ -477,6 +477,7 @@ interface StreamSource {
   /* Race Control's own view of the chip: the shipped name and pool, and the live state. */
   base?: { label: string; links: StreamLink[] };
   hidden?: boolean;
+  managedAuto?: boolean; autoProvider?: string; autoTag?: string;
   custom?: boolean;             // Race Control pasted an address: play it as given, never judge it
 }
 
@@ -500,7 +501,7 @@ async function loadCatalogues(): Promise<void> {
   catalogues = await load({ fetchWithTimeout, backend: STREAM_API });
   cataloguesReady = true;
   lastWeeloRefreshAt = Date.now();
-  syncWeeloSourcesFromFeed();
+  if (!autoStreamsActive) syncWeeloSourcesFromFeed();
 }
 
 async function ensureEmbOnly(): Promise<void> {
@@ -765,7 +766,8 @@ const sources: StreamSource[] = [
   ]}
 ];
 
-const sourceEnabled = (s) => !s.hidden;
+let autoStreamsActive = false;
+const sourceEnabled = (s) => Boolean(s) && (autoStreamsActive ? Boolean(s.managedAuto) : !s.managedAuto && !s.hidden);
 
 /* ═══ Session key ═══
    Every source URL is derived from the live event + session, and the key is stamped onto feeds
@@ -1639,15 +1641,21 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
       b.appendChild(tag);
     }
 
+    if (s.managedAuto) {
+      const providerTag = document.createElement('span');
+      providerTag.className = 'src-pill-tag auto-provider-tag';
+      providerTag.textContent = ({ weelo: 'WEELO', ppv: 'PPV', strmfree: 'STREAMFREE', embdlol: 'EMB' } as Record<string, string>)[s.autoProvider || ''] || 'AUTO';
+      b.appendChild(providerTag);
+    }
     const titleSpan = document.createElement('span');
     titleSpan.className = 'src-pill-title';
     titleSpan.textContent = pill.title;
     b.appendChild(titleSpan);
 
-    if (pill.sub) {
+    if (pill.sub || s.autoTag) {
       const subSpan = document.createElement('span');
       subSpan.className = 'src-pill-sub';
-      subSpan.textContent = pill.sub;
+      subSpan.textContent = [pill.sub, s.autoTag].filter(Boolean).join(' · ');
       b.appendChild(subSpan);
     }
 
@@ -2181,6 +2189,10 @@ function load() {
     return;
   }
 
+  if (autoStreamsActive && !sources.some(sourceEnabled)) {
+    showNoStream({ blocked: true, title: 'No automatic streams available', text: 'No supported provider has published a Formula 1 feed yet. Auto-Streams will check again shortly.' });
+    return;
+  }
   const selectedSource = sources[currentSource];
   if (!isCustom()) {
     if (selectedSource?.embdlol && !catalogues.embdlol[selectedSource.embdlol] && !cataloguesReady) {
@@ -2327,16 +2339,45 @@ function applyMaintenanceMode(state, { fresh = false } = {}) {
 }
 
 /* Names, links and visibility live in features/chips.ts, fetched on the first snapshot. */
+let autoConfig: any = null;
+let autoGeneration = 0;
+let autoRefreshTimer: ReturnType<typeof setTimeout> | undefined;
+let autoEntries: any[] = [];
 function applySourceConfig(payload) {
-  void import('./features/chips').then(({ applySourceConfig: apply }) => apply(payload, {
-    sources,
-    current: () => currentSource,
-    setCurrent: (index) => { currentSource = index; },
-    usable: (source) => Boolean(source) && sourceEnabled(source),
-    normalize: normalizeCurrentSource,
-    render: () => { renderButtons(); updateHeader(); },
-    reload: load
-  }));
+  autoConfig = payload;
+  autoStreamsActive = payload?.autoStreams === true;
+  const generation = ++autoGeneration;
+  if (autoRefreshTimer) clearTimeout(autoRefreshTimer);
+  const apply = (entries: any[]) => {
+    void import('./features/chips').then(({ applySourceConfig: applyChips }) => {
+      if (generation !== autoGeneration) return;
+      applyChips({ ...payload, autoEntries: entries }, {
+        sources, current: () => currentSource,
+        setCurrent: (index) => { currentSource = index; },
+        usable: (source) => Boolean(source) && sourceEnabled(source),
+        normalize: normalizeCurrentSource,
+        render: () => { renderButtons(); updateHeader(); }, reload: load
+      });
+    });
+  };
+  if (!payload?.autoStreams) { autoEntries = []; apply([]); return; }
+  apply(autoEntries);
+  const refresh = async () => {
+    try {
+      const response = await fetchWithTimeout(`${STREAM_API}/api/stream/auto`, { headers: { Accept: 'application/json' }, cache: 'default' }, 9000);
+      if (!response.ok) throw new Error('Auto-Streams unavailable');
+      const json = await response.json();
+      if (generation !== autoGeneration || !autoConfig?.autoStreams) return;
+      const hosts: Record<string, string[]> = { weelo: ['weellz.live'], ppv: ['taifood-blog.asia'], strmfree: ['strmfree.st', 'streamfree.top'], embdlol: ['embdlol.st'] };
+      autoEntries = (Array.isArray(json.streams) ? json.streams : []).slice(0, 200).filter((row: any) => {
+        if (!row || !/^auto-(weelo|ppv|strmfree|embdlol)-[a-f0-9]{16}$/.test(row.id) || typeof row.label !== 'string' || !hosts[row.provider]) return false;
+        try { const url = new URL(row.url); return url.protocol === 'https:' && !url.username && !url.password && hosts[row.provider].includes(url.hostname); } catch { return false; }
+      });
+      apply(autoEntries);
+    } catch { /* Keep the last successful catalogue if a provider request fails. */ }
+    if (generation === autoGeneration) autoRefreshTimer = setTimeout(refresh, 120_000);
+  };
+  void refresh();
 }
 
 function applySiteConfig(input: unknown, { fresh = false } = {}) {
@@ -3240,7 +3281,7 @@ async function refreshWeeloFeeds(): Promise<void> {
     catalogues = await refreshWeeloCatalogues({ fetchWithTimeout, backend: STREAM_API });
     cataloguesReady = true;
     lastWeeloRefreshAt = Date.now();
-    const pillsChanged = syncWeeloSourcesFromFeed();
+    const pillsChanged = !autoStreamsActive && syncWeeloSourcesFromFeed();
     if (pillsChanged) {
       renderButtons({ quiet: true });
       updateCurrentStreamButton();

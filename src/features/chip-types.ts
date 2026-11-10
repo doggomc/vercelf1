@@ -10,4 +10,5 @@ export interface StreamSource {
   /* Race Control pasted an address for this chip; it is played exactly as given. */
   custom?: boolean;
   managedCustom?: boolean;
+  managedAuto?: boolean; autoProvider?: string; autoTag?: string;
 }

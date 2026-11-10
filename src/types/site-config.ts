@@ -31,7 +31,7 @@ export interface SiteConfig {
   maintenance?: Maintenance;
   pages?: PageControl;
   streamOverride?: StreamOverride;
-  sources?: { disabled: string[]; overrides?: Record<string, { label?: string; url?: string }>; custom?: { id: string; label: string; url: string; tab: 'en' | 'other' }[]; order?: string[] };
+  sources?: { autoStreams?: boolean; disabled: string[]; overrides?: Record<string, { label?: string; url?: string }>; custom?: { id: string; label: string; url: string; tab: 'en' | 'other' }[]; order?: string[] };
   streamWindow?: StreamWindow;
   news?: unknown[];
 }
@@ -65,7 +65,7 @@ export function parseSiteConfig(value: unknown): SiteConfig | null {
     result.streamOverride = { active: override.active && Boolean(safeUrl), url: safeUrl, type: text(override.type, 12) };
   }
   if (record(value.sources) && Array.isArray(value.sources.disabled)) {
-    result.sources = { disabled: value.sources.disabled.filter((id): id is string => typeof id === 'string').slice(0, 120) };
+    result.sources = { autoStreams: value.sources.autoStreams === true, disabled: value.sources.disabled.filter((id): id is string => typeof id === 'string').slice(0, 120) };
     /* Race Control's per-chip name and link. HTTPS only, the rule the backend enforces. */
     const overrides: Record<string, { label?: string; url?: string }> = {};
     for (const [id, entry] of Object.entries(record(value.sources.overrides) ? value.sources.overrides : {}).slice(0, 120)) {

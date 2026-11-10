@@ -29,4 +29,18 @@ describe('managed cockpit sources', () => {
     applySourceConfig({ disabled:['second'], custom:[], order:[], overrides:{} },host);
     expect(sources[index].id).toBe('first'); expect(reloads).toBe(3); expect(renders).toBe(4);
   });
+  it('switches to discovered feeds without losing manual settings', () => {
+    const sources: StreamSource[] = [{id:'manual-one',label:'Manual',links:[{url:'https://example.com'}]}];
+    let index=0;
+    const host = { sources, current:()=>index, setCurrent:(i:number)=>{index=i}, usable:(s:StreamSource|undefined)=>!!s&&!s.hidden, normalize:()=>{index=sources.findIndex(s=>!s.hidden)}, render:()=>{}, reload:()=>{} };
+    const config = {disabled:[], overrides:{'manual-one':{label:'Renamed'}}, custom:[{id:'custom-extra',label:'Extra',url:'https://example.com/x',tab:'en'}], order:[]};
+    const item = {id:'auto-weelo-0123456789abcdef',label:'Feed',provider:'weelo',tag:'Live',url:'https://weellz.live/beta?stream=abc',tab:'en'};
+    applySourceConfig({...config,autoStreams:true,autoEntries:[item]},host);
+    expect(sources.filter(s=>!s.hidden).map(s=>s.id)).toEqual([item.id]);
+    expect(sources[index].id).toBe(item.id);
+    applySourceConfig({...config,autoStreams:false},host);
+    expect(sources.filter(s=>!s.hidden).map(s=>s.id)).toEqual(['manual-one','custom-extra']);
+    expect(sources[0].label).toBe('Renamed');
+    expect(parseSiteConfig({sources:{disabled:[],autoStreams:true}})?.sources?.autoStreams).toBe(true);
+  });
 });

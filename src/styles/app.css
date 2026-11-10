@@ -6881,3 +6881,4 @@ body[data-page="cockpit"]:not(.theater) #watch .wsources { animation: cockpitRis
   color: var(--rr-fg-3); font-size: 11.5px; font-weight: 650; letter-spacing: .02em;
 }
 .wsource-list .source-tier-heading:first-child { margin: 0; padding: 0; border: 0; }
+.wsource-list .auto-provider-tag { background: #ffffff17; color: #d6d8e0; font-size: 9px; letter-spacing: .04em; }
