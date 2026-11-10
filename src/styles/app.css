@@ -5119,7 +5119,7 @@ body[data-page="cockpit"] footer.footer { margin-top: 0; }
 .wplayer-live.active { background: #f8716824; color: #fd9891; }
 
 /* Full column width right up to the side cards, maintaining a true 16:9 stage. */
-.wplayer-stage { position: relative; aspect-ratio: 16 / 9; background: #000; }
+.wplayer-stage { position: relative; aspect-ratio: 16 / 9; background: #000; overflow: hidden; }
 
 /* The frame fills the stage: it used to be appended to the card instead, which laid it out at the
    browser's default 300x150 in the top-left and left the rest of the box black. */

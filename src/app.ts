@@ -1,4 +1,5 @@
 import { setupCustomSelects } from './ui/select';
+import { isHakunaCleanPlayer, fitHakunaFrame } from './features/hakuna-frame';
 import { TEAM_LOGO, TEAM_HEX, TEAM_ALIAS, teams } from './data/teams';
 import { NO_STREAM_MESSAGES, LOADER_LINES, BLOCKED_TITLE, BLOCKED_COPY_IOS, BLOCKED_COPY, HIJACK_TITLE, HIJACK_COPY } from './data/cockpit-messages';
 import { BACKEND_API, SITE_CONFIG_CACHE_KEY, SITE_SEASON, OPENF1_API, JOLPI } from './config';
@@ -670,7 +671,7 @@ const sources: StreamSource[] = [
   ...STRIPPED_SPECIAL_SOURCES,
 
   { id: "sky-sports", label: "Sky Sports", rp: "unsafe-url", links: [
-      { provider: 'hakunamatata', url: "https://hakunamatata5.org/hakunamatata5.html" }
+      { provider: 'hakunamatata', url: "https://hakunamatata5.org/sky-main-event/clean.html" }
   ]},
 
   /* PPV streams built from https://api.ppv.st/api/streams (main HD feed + non-540p substreams).
@@ -804,6 +805,22 @@ const playerEl = $("player");
 /* The frame belongs inside the stage: appended to the card it rendered at the browser's default
    300x150 in the corner (the "very small window"). All mounting goes through this one element. */
 const stageBox = playerEl?.querySelector(".wplayer-stage");
+/* This provider's clean page fixes its player height at 500px and leaves a white document
+   below it. Scale the whole cross-origin frame, rather than touching its contents, so the
+   player (including controls) exactly fills the stage. Other providers are unaffected. */
+function resizeHakunaFrame() {
+  const frame = stageBox?.querySelector<HTMLIFrameElement>('iframe[data-hakuna-clean]');
+  if (!frame || !stageBox) return;
+  const rect = stageBox.getBoundingClientRect();
+  const fit = fitHakunaFrame(rect.width, rect.height);
+  if (!fit) return;
+  frame.style.width = `${fit.width}px`;
+  frame.style.height = '500px';
+  frame.style.transformOrigin = 'top left';
+  frame.style.transform = `scale(${fit.scale})`;
+}
+if (stageBox && typeof ResizeObserver !== 'undefined') new ResizeObserver(resizeHakunaFrame).observe(stageBox);
+else window.addEventListener('resize', resizeHakunaFrame, { passive: true });
 const loaderEl = $("loader");
 const noStreamEl = $("noStream");
 const badgeEl = $("badge");
@@ -1996,6 +2013,7 @@ function attemptSource(token, order, idx, startedAt, linkIdx = 0) {
   setLoaderText(!idx && !linkIdx ? "Establishing feed…" : idx === order.length - 1 && linkIdx === pool.length - 1 ? "Every feed is unreachable…" : "Switching link…");
 
   const f = makeStreamIframe(targetUrl, sources[sourceIndex].rp);
+  if (isHakunaCleanPlayer(targetUrl)) f.dataset.hakunaClean = 'true';
   let settled = false;
 
   const reveal = () => {
@@ -2061,6 +2079,7 @@ function attemptSource(token, order, idx, startedAt, linkIdx = 0) {
   }, NAV_TIMEOUT_MS);
 
   stageBox?.appendChild(f);
+  resizeHakunaFrame();
   setStreamOnScreen(true);
 }
 
