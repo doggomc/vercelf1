@@ -1,3 +1,4 @@
+import { isStreamRelayUrl } from '../lib/stream-relays';
 /* Multiviewer — full-viewport multi-stream theater inspired by Rerace.
    Supports up to 9 simultaneous weellz.live F1 feeds (3x3 ceiling), Grid & Focus ("one big player,
    the rest small") layouts, GPU transform tile transitions, pointer drag-to-swap without reloading
@@ -419,7 +420,7 @@ export function init(ctx: any) {
   }
 
   const streams = (): WeeloStream[] => (ctx.sources || [])
-    .filter((s: any) => (s.weelo || s.weellzUrls?.length) && !s.hidden)
+    .filter((s: any) => (s.weelo || s.weellzUrls?.length) && !s.hidden && !(ctx.relaysDisabled && (s.stripped || /\/api\/stream\/(?:weellz-embed|embdlol-embed|strmfree-embed|ppv-embed)/i.test(String(s.links?.[0]?.url || '')))))
     .map((s: any): WeeloStream => {
       const custom = s.links?.[0]?.provider === 'custom' ? String(s.links[0].url || '') : '';
       const synced = Array.isArray(s.weellzUrls) && s.weellzUrls.length ? String(s.weellzUrls[0] || '') : '';
@@ -1093,6 +1094,15 @@ export function init(ctx: any) {
     add,
     remove,
     wireToggle,
+    sync,
+    disableRelays: () => {
+      if (isStreamRelayUrl(parkedSrc)) parkedSrc = '';
+      for (const id of [...ids]) {
+        const frame = frames.get(id);
+        if (frame && /\/api\/stream\/(?:weellz-embed|embdlol-embed|strmfree-embed|ppv-embed)/i.test(frame.src)) remove(id);
+      }
+      sync();
+    },
   };
   ctx.multiViewer = api;
   return api;

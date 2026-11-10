@@ -1,3 +1,4 @@
+import { isStreamRelayUrl } from './lib/stream-relays';
 import { setupCustomSelects } from './ui/select';
 import { sourceTier, sourceFallbackOrder } from './features/source-groups';
 import { isHakunaCleanPlayer, fitHakunaFrame } from './features/hakuna-frame';
@@ -766,11 +767,13 @@ const sources: StreamSource[] = [
   ]}
 ];
 
+let multiViewerControl: any = null;
 let autoStreamsActive = false;
+let relaysDisabled = false;
 let sourceConfigKnown = false;
 let autoWindowState: 'unknown' | 'active' | 'closed' | 'unavailable' = 'unknown';
 let autoWindowStart: number | null = null;
-const sourceEnabled = (s) => Boolean(s) && (autoStreamsActive ? Boolean(s.managedAuto) : !s.managedAuto && !s.hidden);
+const sourceEnabled = (s) => Boolean(s) && !(relaysDisabled && ((s.stripped && s.id !== 'sky-uk') || s.links?.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url)))) && (autoStreamsActive ? Boolean(s.managedAuto) : !s.managedAuto && !s.hidden);
 
 /* ═══ Session key ═══
    Every source URL is derived from the live event + session, and the key is stamped onto feeds
@@ -1044,7 +1047,7 @@ function syncWeeloSourcesFromFeed(): boolean {
 
 function linkPool(index: number): string[] {
   const source = sources[index];
-  if (!source) return [];
+  if (!source || !sourceEnabled(source)) return [];
   /* A pasted link is the feed; the catalogue below must not overwrite it. */
   const custom = source.links[0]?.provider === 'custom';
   source.custom = custom;
@@ -1063,6 +1066,9 @@ function linkPool(index: number): string[] {
 
   /* Published mirrors first (they are the addresses the provider itself calls live), mapped through
      the stripped strmfree relay, then the static stripped list. */
+  if (source.id === 'sky-uk' && relaysDisabled) {
+    return ['https://strmfree.st/embed/racing/skyf11080p', 'https://streamfree.top/embed/racing/skyf11080p'].map(url => stampSession(url, key));
+  }
   if (source.id === 'sky-uk') {
     const strippedMirrors: StreamLink[] = [];
     for (const m of mirrorLinks('skyf1', 1080)) {
@@ -1370,7 +1376,7 @@ function updateHeader() {
     const pill = describeSourcePill(src);
     const parts = [pill.title];
     if (pill.sub) parts.push(pill.sub);
-    if (src.stripped) parts.push('Stripped');
+    if (src.stripped && !(relaysDisabled && src.id === 'sky-uk')) parts.push('Stripped');
     sourceLabel.textContent = parts.join(' · ');
   }
   if (badgeEl) badgeEl.style.display = isStreamAvailable(currentSession) ? "inline-flex" : "none";
@@ -1671,7 +1677,7 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
       b.appendChild(subSpan);
     }
 
-    if (s.stripped) {
+    if (s.stripped && !(relaysDisabled && s.id === 'sky-uk')) {
       const strippedTag = document.createElement('span');
       strippedTag.className = 'src-pill-tag is-stripped';
       strippedTag.textContent = 'Stripped';
@@ -1730,7 +1736,7 @@ let multiviewer: Promise<any> | undefined;
 /* Lazy: the grid, its button state and its own close control all live in one chunk, downloaded the
    first time somebody opens the grid (or straight away for a ?mv=1 address). */
 function openMultiViewer() {
-  void (multiviewer ??= import('./features/multiviewer').then((m) => m.init(featureContext))).then((m) => m?.show(true));
+  void (multiviewer ??= import('./features/multiviewer').then((m) => (multiViewerControl = m.init(featureContext)))).then((m) => m?.show(true));
 }
 
 function chooseMultiViewer() {
@@ -2130,6 +2136,10 @@ function load() {
 
   const videoMime = streamOverride.type === 'webm' ? 'video/webm' : streamOverride.type === 'mp4' ? 'video/mp4' : '';
   if (streamOverride.active && streamOverride.url) {
+    if (relaysDisabled && isStreamRelayUrl(streamOverride.url)) {
+      showNoStream({ blocked: true, title: 'Stream relay disabled', text: 'Race Control has disabled relay playback.' });
+      return;
+    }
     const f = document.createElement(videoMime ? 'video' : 'iframe') as HTMLVideoElement & HTMLIFrameElement;
     if (videoMime) {
       f.controls = true;
@@ -2354,6 +2364,7 @@ function applyMaintenanceMode(state, { fresh = false } = {}) {
 let autoConfig: any = null;
 let autoEpoch = 0;
 let autoApplyRevision = 0;
+let relayPlaybackStopped = false;
 let autoRefreshTimer: ReturnType<typeof setTimeout> | undefined;
 let autoNextCheckAt = 0;
 let autoEntries: any[] = [];
@@ -2372,6 +2383,9 @@ function paintAutoSourceConfig(startManual = false) {
       render: () => { renderButtons(); updateHeader(); }, reload: load
     });
     renderButtons({ quiet: true });
+    multiViewerControl?.sync?.();
+    const frame = stageBox?.querySelector('iframe');
+    if (relaysDisabled && (relayPlaybackStopped || (frame && isStreamRelayUrl(frame.getAttribute('src'))))) { relayPlaybackStopped = false; load(); }
     if (startManual && !autoStreamsActive && !stageBox?.querySelector('iframe, video')) load();
   });
 }
@@ -2429,6 +2443,13 @@ function applySourceConfig(payload) {
   const firstConfig = !sourceConfigKnown;
   sourceConfigKnown = true;
   autoConfig = payload;
+  const wasRelayDisabled = relaysDisabled;
+  relaysDisabled = payload?.relaysDisabled === true;
+  if (!wasRelayDisabled && relaysDisabled) {
+    // Stop active relayed media immediately, including hidden/parked players.
+    stageBox?.querySelectorAll('iframe').forEach(frame => { if (isStreamRelayUrl(frame.getAttribute('src'))) { relayPlaybackStopped = true; frame.src = 'about:blank'; } });
+    multiViewerControl?.disableRelays?.();
+  }
   autoStreamsActive = payload?.autoStreams === true;
   if (wasActive !== autoStreamsActive) { autoEpoch++; autoNextCheckAt = 0; }
   if (!autoStreamsActive) {
@@ -2448,8 +2469,9 @@ function applySourceConfig(payload) {
 function applySiteConfig(input: unknown, { fresh = false } = {}) {
   const config = parseSiteConfig(input);
   if (!config) return;
-  if (config.streamWindow) applyStreamWindow(config.streamWindow);
+  // Apply relay safety before a force-live update can start a player.
   if (config.sources) applySourceConfig(config.sources);
+  if (config.streamWindow) applyStreamWindow(config.streamWindow);
   if (config.streamOverride) applyStreamOverride(config.streamOverride);
   if (PUBLIC_NEWS_ENABLED && Array.isArray(config.news)) applyNewsUpdate(config.news, fresh);
   if (fresh) applyMaintenanceMode(config.maintenance, { fresh: true });
@@ -3472,6 +3494,7 @@ export const featureContext = {
   get currentEvent() { return currentEvent; },
   get currentSession() { return currentSession; },
   sources,
+  get relaysDisabled() { return relaysDisabled; },
   get currentSource() { return currentSource; },
   get activeView() { return activeView; },
   isStreamAvailable,

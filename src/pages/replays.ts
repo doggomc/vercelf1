@@ -11,6 +11,7 @@ const empty = document.querySelector<HTMLElement>('#empty')!;
 const refresh = document.querySelector<HTMLButtonElement>('#refresh')!;
 let weekends: Weekend[] = [];
 let filter = 'all';
+let loadFailed = false;
 const types: Array<[string,string]> = [['all','All'],...Object.entries(seriesNames)];
 function node<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text = ''): HTMLElementTagNameMap[K] { const el = document.createElement(tag); el.className = className; el.textContent = text; return el; }
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -46,6 +47,7 @@ function selectFilter(next: string, focus = false) {
     }
   }
   glide();
+  drawFeatured();
   window.clearTimeout(switchTimer);
   if (reducedMotion.matches) { grid.classList.remove('is-switching'); draw(); return; }
   grid.style.setProperty('--rp-direction', selected > previous ? '1' : '-1');
@@ -83,7 +85,9 @@ function circuitImage(round: number, featured = false): HTMLImageElement {
   return img;
 }
 function draw() {
-  grid.replaceChildren(); empty.hidden=true; empty.querySelector('h2')!.textContent='No replays found'; empty.querySelector('p')!.textContent='Try another series or refresh to check again.';
+  grid.replaceChildren();
+  if (loadFailed) { empty.hidden = false; empty.querySelector('h2')!.textContent = 'Replays unavailable'; empty.querySelector('p')!.textContent = 'Please check your connection and try refreshing.'; return; }
+  empty.hidden=true; empty.querySelector('h2')!.textContent='No replays found'; empty.querySelector('p')!.textContent='Try another series or refresh to check again.';
   const list=weekends.map(w=>({...w,events:w.events.filter(e=>filter==='all'||e.series===filter)})).filter(w=>w.events.length);
   for (const [index,w] of list.entries()) {
     const card=node('article','rp-card'); card.style.setProperty('--stagger',`${Math.min(index,8)*35}ms`);
@@ -97,10 +101,10 @@ function draw() {
 }
 function drawFeatured() {
   featured.replaceChildren(); let latest: {w:Weekend;e:Event;s:Session}|null=null;
-  for(const w of weekends) for(const e of w.events) for(const s of e.sessions) if(!latest || (Date.parse(s.replay.publishedAt || '') || 0) > (Date.parse(latest.s.replay.publishedAt || '') || 0)) latest={w,e,s};
+  for(const w of weekends) for(const e of w.events) for(const s of e.sessions) if((filter === 'all' || e.series === filter) && (!latest || (Date.parse(s.replay.publishedAt || '') || 0) > (Date.parse(latest.s.replay.publishedAt || '') || 0))) latest={w,e,s};
   if(!latest)return; const {w,e,s}=latest;
   const hero=link(e,s,'rp-feature',''); const copy=node('div','rp-feature-copy');copy.append(node('span','rp-feature-label','●  JUST ADDED'),node('h2','',weekendTitle(w)),node('p','',`${seriesNames[e.series]} · ${s.name} · ${w.season}`),node('span','rp-watch','Watch replay  ↗'));hero.append(copy);
   if(w.season===2026 && w.round>=1 && w.round<=23){hero.append(circuitImage(w.round, true));}featured.append(hero);
 }
-async function load(){refresh.disabled=true;refresh.classList.add('is-spinning');try{weekends=await fetchWeekends();const count=weekends.reduce((n,w)=>n+w.events.reduce((a,e)=>a+e.sessions.length,0),0);summary.textContent=`${weekends.length} weekends · ${count} replays`;drawFeatured();draw();}catch{summary.textContent='Unable to load replays';grid.replaceChildren();empty.hidden=false;empty.querySelector('h2')!.textContent='Replays unavailable';empty.querySelector('p')!.textContent='Please check your connection and try refreshing.';}finally{refresh.disabled=false;refresh.classList.remove('is-spinning');}}
+async function load(){refresh.disabled=true;refresh.classList.add('is-spinning');try{weekends=await fetchWeekends();loadFailed=false;const count=weekends.reduce((n,w)=>n+w.events.reduce((a,e)=>a+e.sessions.length,0),0);summary.textContent=`${weekends.length} weekends · ${count} replays`;drawFeatured();draw();}catch{loadFailed=true;weekends=[];featured.replaceChildren();summary.textContent='Unable to load replays';grid.replaceChildren();empty.hidden=false;empty.querySelector('h2')!.textContent='Replays unavailable';empty.querySelector('p')!.textContent='Please check your connection and try refreshing.';}finally{refresh.disabled=false;refresh.classList.remove('is-spinning');}}
 refresh.addEventListener('click',load);window.addEventListener('resize',glide);drawFilters();load();

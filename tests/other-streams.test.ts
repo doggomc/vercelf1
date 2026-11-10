@@ -84,7 +84,7 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
       '33333333-4444-5555-6666-777777777777',
     ]);
     expect(parsed[0]?.embedUrl).toBe(
-      'https://f1admin.onrender.com/api/stream/embdlol-embed?id=22222222-3333-4444-5555-666666666666',
+      'https://embdlol.st/embed/22222222-3333-4444-5555-666666666666',
     );
     expect(parsed[0]?.fallbackUrl).toBe(
       'https://embdlol.st/embed/22222222-3333-4444-5555-666666666666',
@@ -180,7 +180,7 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
     ]);
     const nflNet = parsed.find((i) => i.id === 'nfl-network')!;
     expect(nflNet.embedUrl).toBe(
-      'https://f1admin.onrender.com/api/stream/ppv-embed?slug=nfl-network&host=taifood-blog.asia',
+      'https://taifood-blog.asia/embed/nfl-network',
     );
     const liveGame = parsed.find((i) => i.id === 'nfl/2026-11-09/buf-min')!;
     expect(liveGame.embedUrl).toBe('https://taifood-blog.asia/embed/nfl/2026-11-09/buf-min');
@@ -237,7 +237,7 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
 
     expect(parsed.map((item) => item.id)).toEqual(['f2worldfeed99', 'f2espfeed8888']);
     expect(parsed[0]?.embedUrl).toBe(
-      'https://f1admin.onrender.com/api/stream/weellz-embed?stream=f2worldfeed99',
+      'https://weellz.live/beta?stream=f2worldfeed99',
     );
     expect(parsed[0]?.fallbackUrl).toBe('https://weellz.live/beta?stream=f2worldfeed99');
   });
@@ -278,7 +278,7 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
     expect(resolved?.stagePath).toBe('freef1://live/other/willow');
     expect(resolved?.stagePath).not.toMatch(/ppv|embdlol|weelo/i);
     expect(resolved?.embedUrl).toBe(
-      'https://f1admin.onrender.com/api/stream/ppv-embed?slug=247-willow&host=taifood-blog.asia',
+      'https://taifood-blog.asia/embed/247-willow',
     );
 
     expect(parsePrivateCockpitParams('s=2&id=f1/2026/vegas/sky&title=Formula+1')).toBeNull();

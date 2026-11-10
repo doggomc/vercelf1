@@ -157,11 +157,8 @@ export function buildEmbdlolUrls(rawId: string, backend = DEFAULT_BACKEND): { em
   const match = clean.match(/\/embed\/([A-Za-z0-9_-]{4,80})(?:[/?#]|$)/i);
   const id = match ? match[1] : clean;
   if (!/^[A-Za-z0-9_-]{4,80}$/.test(id)) return null;
-  const origin = resolveBackendOrigin(backend);
-  return {
-    embedUrl: `${origin}/api/stream/embdlol-embed?id=${encodeURIComponent(id)}`,
-    fallbackUrl: `https://embdlol.st/embed/${encodeURIComponent(id)}`,
-  };
+  const direct = `https://embdlol.st/embed/${encodeURIComponent(id)}`;
+  return { embedUrl: direct, fallbackUrl: direct };
 }
 
 export function buildWeeloUrls(rawStreamId: string, backend = DEFAULT_BACKEND): { embedUrl: string; fallbackUrl: string } | null {
@@ -169,11 +166,8 @@ export function buildWeeloUrls(rawStreamId: string, backend = DEFAULT_BACKEND): 
   const match = clean.match(/[?&]stream=([A-Za-z0-9_-]{4,80})(?:[&#]|$)/i);
   const id = match ? match[1] : clean;
   if (!/^[A-Za-z0-9_-]{4,80}$/.test(id)) return null;
-  const origin = resolveBackendOrigin(backend);
-  return {
-    embedUrl: `${origin}/api/stream/weellz-embed?stream=${encodeURIComponent(id)}`,
-    fallbackUrl: `https://weellz.live/beta?stream=${encodeURIComponent(id)}`,
-  };
+  const direct = `https://weellz.live/beta?stream=${encodeURIComponent(id)}`;
+  return { embedUrl: direct, fallbackUrl: direct };
 }
 
 export function normalizePpvPath(rawSlug: string): string {
@@ -214,19 +208,7 @@ export function buildPpvUrls(
   if (!slug || isFormula1Text(slug)) return null;
 
   const directUrl = `https://${host}/embed/${slug}`;
-  const origin = resolveBackendOrigin(backend);
-
-  /* Live Render /api/stream/ppv-embed supports single-segment non-F1 slugs on taifood-blog.asia.
-     Multi-segment event slugs (e.g. nfl/2026-11-09/buf-min) load directly via HTTPS embed. */
-  const canUseStripped = host === PPV_STRIPPED_HOST && /^[a-z0-9][a-z0-9_-]{1,150}$/i.test(slug);
-  return {
-    slug,
-    host,
-    embedUrl: canUseStripped
-      ? `${origin}/api/stream/ppv-embed?slug=${encodeURIComponent(slug)}&host=${encodeURIComponent(host)}`
-      : directUrl,
-    fallbackUrl: directUrl,
-  };
+  return { slug, host, embedUrl: directUrl, fallbackUrl: directUrl };
 }
 
 /** StreamFree embeds are used directly, without the stripped backend player. */

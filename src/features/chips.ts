@@ -2,6 +2,7 @@
    Loaded the first time a site snapshot arrives, so the editing path costs the startup bundle
    nothing: most visitors never see a snapshot field they would use. */
 import type { StreamSource } from './chip-types';
+import { isStreamRelayUrl } from '../lib/stream-relays';
 
 export interface ChipOverrides { [id: string]: { label?: string; url?: string } }
 let previousSignature = '';
@@ -25,7 +26,7 @@ export function applySourceConfig(payload: any, host: {
   render: () => void;
   reload: () => void;
 }) {
-  const signature = JSON.stringify({ disabled: payload?.disabled || [], overrides: payload?.overrides || {}, custom: payload?.custom || [], order: payload?.order || [], autoStreams: payload?.autoStreams === true, autoEntries: payload?.autoEntries || [] });
+  const signature = JSON.stringify({ disabled: payload?.disabled || [], overrides: payload?.overrides || {}, custom: payload?.custom || [], order: payload?.order || [], autoStreams: payload?.autoStreams === true, relaysDisabled: payload?.relaysDisabled === true, autoEntries: payload?.autoEntries || [] });
   if (signature === previousSignature) return;
   previousSignature = signature;
   const previous = host.sources[host.current()];
@@ -39,8 +40,13 @@ export function applySourceConfig(payload: any, host: {
   }));
   const disabled = new Set<string>(Array.isArray(payload?.disabled) ? payload.disabled : []);
   const overrides: ChipOverrides = payload?.overrides || {};
-  builtins.forEach(source => { source.hidden = payload?.autoStreams === true || disabled.has(source.id); setChip(source, overrides[source.id]); });
-  custom.forEach(source => { source.hidden = payload?.autoStreams === true || disabled.has(source.id); });
+  builtins.forEach(source => {
+    setChip(source, overrides[source.id]);
+    const relayOverride = source.links.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url));
+    source.hidden = payload?.autoStreams === true || disabled.has(source.id) ||
+      (payload?.relaysDisabled === true && ((source.stripped && source.id !== 'sky-uk') || relayOverride));
+  });
+  custom.forEach(source => { source.hidden = payload?.autoStreams === true || disabled.has(source.id) || (payload?.relaysDisabled === true && source.links.some(link => isStreamRelayUrl(link.url))); });
   const automatic: StreamSource[] = payload?.autoStreams && Array.isArray(payload?.autoEntries) ? payload.autoEntries.map((item: any) => ({
     id: item.id, label: item.label, lang: item.tab === 'other' ? 'other' : 'en',
     managedAuto: true, autoProvider: item.provider, autoTag: item.tag,
