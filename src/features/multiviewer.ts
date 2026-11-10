@@ -463,6 +463,7 @@ export function init(ctx: any) {
     const w = stageEl.clientWidth;
     const h = stageEl.clientHeight;
     stageEl.classList.toggle('is-empty', ids.length === 0);
+    stageEl.classList.toggle('no-streams', streams().length === 0);
     if (!w || !h || !ids.length) return;
     /* Reserve 2px around the stage perimeter so the 2px #e10600 outer ring on the audio tile never clips. */
     const pad = 2;
@@ -647,6 +648,7 @@ export function init(ctx: any) {
 
   function add(id: string) {
     if (ids.includes(id) || ids.length >= MAX_TILES || !byId(id)) return;
+    if (!didPark) { park(true); didPark = true; }
     ids.push(id);
     if (!audio) audio = id;
     draw();
@@ -715,7 +717,7 @@ export function init(ctx: any) {
     });
 
     if (!filtered.length) {
-      listEl.innerHTML = `<p class="mvx-lib-empty">${q ? `Nothing found for “${escapeText(query.trim())}”.` : 'No streams available in this category.'}</p>`;
+      listEl.innerHTML = `<p class="mvx-lib-empty">${q ? `Nothing found for “${escapeText(query.trim())}”.` : all.length ? 'No streams available in this category.' : 'No streams found. Weelo feeds will appear here when available.'}</p>`;
       return;
     }
 
@@ -793,6 +795,7 @@ export function init(ctx: any) {
 
   let parkedSrc = '';
   let savedSource = -1;
+  let didPark = false;
 
   function park(on: boolean) {
     const p = document.getElementById('player');
@@ -807,7 +810,6 @@ export function init(ctx: any) {
     }
   }
 
-  const available = () => (ctx.sources || []).some((s: any) => (s.weelo || s.weellzUrls?.length) && !s.hidden);
 
   function mirrorCounter() {
     const src = document.getElementById('viewerCount');
@@ -836,7 +838,6 @@ export function init(ctx: any) {
   }
 
   function show(on: boolean) {
-    if (on && !available()) return;
     open = on;
     panel.hidden = !on;
     document.documentElement.classList.toggle('has-mvx', on);
@@ -854,7 +855,7 @@ export function init(ctx: any) {
         if (!audio || !ids.includes(audio)) audio = ids[0] || null;
       }
       panel.hidden = false;
-      park(true);
+      if (ids.length) { park(true); didPark = true; }
       mirrorCounter();
       markButton(true);
       btnUrl?.(true);
@@ -875,9 +876,12 @@ export function init(ctx: any) {
       tilesEl.replaceChildren();
       library(false);
       markButton(false);
-      park(false);
+      if (didPark) {
+        park(false);
+        didPark = false;
+        ctx.reloadTop?.(savedSource);
+      }
       btnUrl?.(false);
-      ctx.reloadTop?.(savedSource);
     }
   }
 
@@ -1036,9 +1040,7 @@ export function init(ctx: any) {
     const b = document.getElementById('mvToggle');
     if (!b) return;
     b.dataset.wired = '1';
-    const hasFeeds = available();
-    b.hidden = !hasFeeds;
-    if (!hasFeeds) return;
+    b.hidden = false;
     btnUrl = (on) => {
       const url = new URL(location.href);
       if (on) url.searchParams.set('mv', '1');

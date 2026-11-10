@@ -6002,6 +6002,8 @@ html.has-mvx body {
   pointer-events: none;
 }
 
+.mvx-stage.is-empty.no-streams::after { content: 'No streams found'; }
+
 .mvx-tiles {
   position: absolute;
   inset: 0;

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { MAX_TILES, describeFeed, focusLayout, layout, strippedPlayerUrl, tileUrl } from '../src/features/multiviewer';
 
 describe('multiviewer geometry & feed classification', () => {
@@ -93,5 +94,13 @@ describe('multiviewer geometry & feed classification', () => {
       category: 'broadcast',
       badgeKind: 'sky',
     });
+  });
+  it('allows the multiviewer to open with no feeds and shows an empty state', () => {
+    const source = readFileSync(new URL('../src/features/multiviewer.ts', import.meta.url), 'utf8');
+    expect(source).not.toContain('if (on && !available()) return');
+    expect(source).not.toContain('b.hidden = !hasFeeds');
+    expect(source).toContain('No streams found. Weelo feeds will appear here when available.');
+    expect(source).toContain('if (didPark)');
+    expect(source).toContain('(s.weelo || s.weellzUrls?.length) && !s.hidden');
   });
 });
