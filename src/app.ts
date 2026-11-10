@@ -752,12 +752,12 @@ const sources: StreamSource[] = [
       { provider: 'ppv-stripped', quality: 1080, taid: 31861 }
   ]},
 
-  /* Three entry points, one upstream channel (/hls/stream.m3u8?ch=spn). Failover only. */
-  { id: "wikisport", label: "WikiSport", links: [
-      { provider: 'wikisport', url: "https://wikisport.info/strm/f1.php" },
-      { provider: 'wikisport', url: "https://wikisport.info/fsl/f1s2.php" },
-      { provider: 'wikisport', url: "https://wikisport.info/fsl/f1s3.php" }
-  ]},
+  /* WikiSport supplies discovery only; each chip opens the provider iframe directly. */
+  ...[1, 2, 3, 4, 5].map((number) => ({
+    id: number === 1 ? 'wikisport' : `wikisport-${number}`,
+    label: `WikiSport · Stream ${number}`,
+    links: [{ provider: 'wikisport', addressing: 'dynamic' as const, url: `wikisport/${number}` }],
+  })),
 
   { id: "westream", label: "WeStream F1", links: [
       { provider: 'westream', url: "https://westreamf1.com/westreamf1.php" }
@@ -1129,7 +1129,7 @@ function linkPool(index: number): string[] {
      then shows a "Link expired" page, so a stale one is refreshed before its address is offered. */
   for (const link of dynamic) {
     const ready = cachedDynamicUrl(link.url || '');
-    if (ready) pool.push(stampSession(ready, key));
+    if (ready) pool.push(link.url?.startsWith('wikisport/') ? ready : stampSession(ready, key));
     else if (link.url) void resolveDynamicLink(link.url);
   }
 
