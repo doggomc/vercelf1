@@ -767,6 +767,9 @@ const sources: StreamSource[] = [
 ];
 
 let autoStreamsActive = false;
+let sourceConfigKnown = false;
+let autoWindowState: 'unknown' | 'active' | 'closed' | 'unavailable' = 'unknown';
+let autoWindowStart: number | null = null;
 const sourceEnabled = (s) => Boolean(s) && (autoStreamsActive ? Boolean(s.managedAuto) : !s.managedAuto && !s.hidden);
 
 /* ═══ Session key ═══
@@ -1617,6 +1620,15 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
   const visible = sources.map((_s, i) => i).filter((i) => sourceEnabled(sources[i]) && inTab(sources[i]));
   const countEl = $('sourcesCount');
   if (countEl) countEl.textContent = `${visible.length} ${visible.length === 1 ? 'feed' : 'feeds'}`;
+  if (autoStreamsActive && autoWindowState !== 'active') {
+    const status = document.createElement('p');
+    status.className = 'auto-stream-status';
+    status.setAttribute('role', 'status');
+    status.textContent = autoWindowState === 'closed'
+      ? `Auto-Streams is paused outside race weekends.${autoWindowStart ? ` Next check starts ${new Date(autoWindowStart).toLocaleString()}.` : ''}`
+      : autoWindowState === 'unavailable' ? 'Auto-Streams is waiting for the race schedule.' : 'Checking the race-weekend schedule…';
+    linksEl.appendChild(status);
+  }
 
   const chipFor = (s: StreamSource, i: number) => {
     const b = document.createElement("button");
@@ -2190,7 +2202,7 @@ function load() {
   }
 
   if (autoStreamsActive && !sources.some(sourceEnabled)) {
-    showNoStream({ blocked: true, title: 'No automatic streams available', text: 'No supported provider has published a Formula 1 feed yet. Auto-Streams will check again shortly.' });
+    showNoStream({ blocked: true, title: autoWindowState === 'closed' ? 'Auto-Streams paused' : 'No automatic streams available', text: autoWindowState === 'closed' ? 'Automatic discovery runs during race weekends. Your manual sources remain saved.' : 'No supported provider has published a Formula 1 feed yet. Auto-Streams will check again shortly.' });
     return;
   }
   const selectedSource = sources[currentSource];
@@ -2340,44 +2352,97 @@ function applyMaintenanceMode(state, { fresh = false } = {}) {
 
 /* Names, links and visibility live in features/chips.ts, fetched on the first snapshot. */
 let autoConfig: any = null;
-let autoGeneration = 0;
+let autoEpoch = 0;
+let autoApplyRevision = 0;
 let autoRefreshTimer: ReturnType<typeof setTimeout> | undefined;
+let autoNextCheckAt = 0;
 let autoEntries: any[] = [];
-function applySourceConfig(payload) {
-  autoConfig = payload;
-  autoStreamsActive = payload?.autoStreams === true;
-  const generation = ++autoGeneration;
-  if (autoRefreshTimer) clearTimeout(autoRefreshTimer);
-  const apply = (entries: any[]) => {
-    void import('./features/chips').then(({ applySourceConfig: applyChips }) => {
-      if (generation !== autoGeneration) return;
-      applyChips({ ...payload, autoEntries: entries }, {
-        sources, current: () => currentSource,
-        setCurrent: (index) => { currentSource = index; },
-        usable: (source) => Boolean(source) && sourceEnabled(source),
-        normalize: normalizeCurrentSource,
-        render: () => { renderButtons(); updateHeader(); }, reload: load
-      });
+const AUTO_RETRY_MS = 10 * 60_000;
+const AUTO_MAX_WAIT_MS = 12 * 60 * 60_000;
+function paintAutoSourceConfig(startManual = false) {
+  const payload = autoConfig;
+  const revision = ++autoApplyRevision;
+  void import('./features/chips').then(({ applySourceConfig: applyChips }) => {
+    if (revision !== autoApplyRevision) return;
+    applyChips({ ...payload, autoEntries }, {
+      sources, current: () => currentSource,
+      setCurrent: (index) => { currentSource = index; },
+      usable: (source) => Boolean(source) && sourceEnabled(source),
+      normalize: normalizeCurrentSource,
+      render: () => { renderButtons(); updateHeader(); }, reload: load
     });
-  };
-  if (!payload?.autoStreams) { autoEntries = []; apply([]); return; }
-  apply(autoEntries);
-  const refresh = async () => {
-    try {
-      const response = await fetchWithTimeout(`${STREAM_API}/api/stream/auto`, { headers: { Accept: 'application/json' }, cache: 'default' }, 9000);
-      if (!response.ok) throw new Error('Auto-Streams unavailable');
-      const json = await response.json();
-      if (generation !== autoGeneration || !autoConfig?.autoStreams) return;
+    renderButtons({ quiet: true });
+    if (startManual && !autoStreamsActive && !stageBox?.querySelector('iframe, video')) load();
+  });
+}
+function scheduleAutoCheck() {
+  if (autoRefreshTimer) clearTimeout(autoRefreshTimer);
+  if (!autoStreamsActive || document.hidden) return;
+  const delay = Math.min(AUTO_MAX_WAIT_MS, Math.max(0, autoNextCheckAt - Date.now()));
+  autoRefreshTimer = setTimeout(() => void refreshAutoStreams(), delay);
+}
+async function refreshAutoStreams() {
+  if (!autoStreamsActive || document.hidden) return;
+  const epoch = autoEpoch;
+  // Also prevents repeated site-configuration updates from multiplying requests while one is pending.
+  autoNextCheckAt = Date.now() + AUTO_RETRY_MS;
+  try {
+    const response = await fetchWithTimeout(`${STREAM_API}/api/stream/auto`, { headers: { Accept: 'application/json' }, cache: 'default' }, 9000);
+    if (!response.ok) throw new Error('Auto-Streams unavailable');
+    const json = await response.json();
+    if (epoch !== autoEpoch || !autoStreamsActive) return;
+    const window = json.window;
+    if (!window || typeof window.active !== 'boolean' || !Number.isFinite(window.serverTime) || !Number.isFinite(window.nextCheckAt)) throw new Error('Race schedule unavailable');
+    autoWindowState = window.active ? 'active' : window.reason === 'schedule-unavailable' ? 'unavailable' : 'closed';
+    autoWindowStart = Number.isFinite(window.start) ? window.start : null;
+    // Prefer the absolute deadline so a cached response does not add a second refresh interval.
+    // Fall back to the server's interval if the viewer's clock is badly out of sync.
+    const now = Date.now();
+    const remaining = Math.abs(now - window.serverTime) < AUTO_MAX_WAIT_MS
+      ? window.nextCheckAt - now : window.nextCheckAt - window.serverTime;
+    autoNextCheckAt = now + Math.min(AUTO_MAX_WAIT_MS, Math.max(1000, remaining));
+    if (window.active) {
       const hosts: Record<string, string[]> = { weelo: ['weellz.live'], ppv: ['taifood-blog.asia'], strmfree: ['strmfree.st', 'streamfree.top'], embdlol: ['embdlol.st'] };
-      autoEntries = (Array.isArray(json.streams) ? json.streams : []).slice(0, 200).filter((row: any) => {
+      const nextEntries = (Array.isArray(json.streams) ? json.streams : []).slice(0, 200).filter((row: any) => {
         if (!row || !/^auto-(weelo|ppv|strmfree|embdlol)-[a-f0-9]{16}$/.test(row.id) || typeof row.label !== 'string' || !hosts[row.provider]) return false;
         try { const url = new URL(row.url); return url.protocol === 'https:' && !url.username && !url.password && hosts[row.provider].includes(url.hostname); } catch { return false; }
       });
-      apply(autoEntries);
-    } catch { /* Keep the last successful catalogue if a provider request fails. */ }
-    if (generation === autoGeneration) autoRefreshTimer = setTimeout(refresh, 120_000);
-  };
-  void refresh();
+      // Do not unmount an active player just because the provider's next listing changes or fails.
+      const playing = sources[currentSource];
+      if (playing?.managedAuto && stageBox?.querySelector('iframe, video') && !nextEntries.some((entry: any) => entry.id === playing.id)) {
+        const previous = autoEntries.find((entry: any) => entry.id === playing.id);
+        if (previous) nextEntries.push(previous);
+      }
+      autoEntries = nextEntries;
+    }
+    // When the weekend closes, retain any already-open player; stop discovery without interrupting it.
+    paintAutoSourceConfig();
+  } catch {
+    if (epoch !== autoEpoch || !autoStreamsActive) return;
+    if (!autoEntries.length) autoWindowState = 'unavailable';
+    renderButtons({ quiet: true });
+  }
+  if (epoch === autoEpoch) scheduleAutoCheck();
+}
+function applySourceConfig(payload) {
+  const wasActive = autoStreamsActive;
+  const firstConfig = !sourceConfigKnown;
+  sourceConfigKnown = true;
+  autoConfig = payload;
+  autoStreamsActive = payload?.autoStreams === true;
+  if (wasActive !== autoStreamsActive) { autoEpoch++; autoNextCheckAt = 0; }
+  if (!autoStreamsActive) {
+    if (autoRefreshTimer) clearTimeout(autoRefreshTimer);
+    autoEntries = []; autoWindowState = 'unknown'; autoWindowStart = null;
+    paintAutoSourceConfig(firstConfig);
+    if (wasActive || firstConfig) {
+      void loadCatalogues().then(() => { renderButtons({ quiet: true }); updateCurrentStreamButton(); });
+      if (!document.hidden) void loadProviderHealth();
+    }
+    return;
+  }
+  paintAutoSourceConfig();
+  scheduleAutoCheck();
 }
 
 function applySiteConfig(input: unknown, { fresh = false } = {}) {
@@ -3276,6 +3341,7 @@ applyTeamTheme(store.get('freef1_team') || 'default');
 /* Fetch fresh Weelo channel links from weellz.live every 3 minutes.
    CRITICAL: Never reload, unmount, or touch #player while a stream is actively on stage. */
 async function refreshWeeloFeeds(): Promise<void> {
+  if (autoStreamsActive) return;
   try {
     const { refreshWeeloCatalogues } = await import('./features/catalogues');
     catalogues = await refreshWeeloCatalogues({ fetchWithTimeout, backend: STREAM_API });
@@ -3302,6 +3368,7 @@ async function refreshWeeloFeeds(): Promise<void> {
 
 // Defer full catalogue & advisory health sync briefly so the primary video stream gets 100% network priority on boot.
 window.setTimeout(() => {
+  if (autoStreamsActive || !sourceConfigKnown) return;
   void loadCatalogues().then(() => {
     renderButtons({ quiet: true });
     updateCurrentStreamButton();
@@ -3313,17 +3380,26 @@ window.setTimeout(() => {
 }, 250);
 // Refresh Weelo stream links every 3 minutes only when tab is visible and relevant, without interrupting playback.
 window.setInterval(() => {
-  if (document.hidden) return;
+  if (document.hidden || autoStreamsActive || !sourceConfigKnown) return;
   if (isStreamPlayingOnStage() && !sources[currentSource]?.special) return;
   void refreshWeeloFeeds();
 }, WEELO_REFRESH_INTERVAL_MS);
 
 window.setTimeout(() => {
-  if (!document.hidden) void loadProviderHealth();
+  if (!document.hidden && !autoStreamsActive && sourceConfigKnown) void loadProviderHealth();
 }, 1500);
 window.setInterval(() => {
-  if (!document.hidden && !isStreamPlayingOnStage()) void loadProviderHealth();
+  if (!document.hidden && !autoStreamsActive && sourceConfigKnown && !isStreamPlayingOnStage()) void loadProviderHealth();
 }, 5 * 60_000);
+
+// If Race Control is unreachable and no cached config exists, retain the manual-mode offline fallback.
+window.setTimeout(() => {
+  if (sourceConfigKnown || autoStreamsActive) return;
+  sourceConfigKnown = true;
+  void loadCatalogues().then(() => { renderButtons({ quiet: true }); updateCurrentStreamButton(); });
+  if (!document.hidden) void loadProviderHealth();
+  if (!stageBox?.querySelector('iframe, video')) load();
+}, 8000);
 
 // The 4K address is resolved on first click; nothing here talks to Discord.
 void handleResetRequest();
@@ -3332,7 +3408,7 @@ void handleResetRequest();
 populate();
 updateHeader();
 renderButtons();
-load();
+// Wait for Race Control before opening any default player; auto mode may be paused.
 setupCustomSelects();
 updateClocks();
 updateOverridePill(streamOverride);
@@ -3354,7 +3430,8 @@ document.addEventListener('visibilitychange', () => {
     syncActiveSession();
     updateClocks();
     updateCurrentStreamButton();
-    if (Date.now() - lastWeeloRefreshAt >= WEELO_REFRESH_INTERVAL_MS) {
+    if (autoStreamsActive) scheduleAutoCheck();
+    if (!autoStreamsActive && Date.now() - lastWeeloRefreshAt >= WEELO_REFRESH_INTERVAL_MS) {
       void refreshWeeloFeeds();
     }
   }

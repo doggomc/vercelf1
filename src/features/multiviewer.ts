@@ -419,7 +419,7 @@ export function init(ctx: any) {
   }
 
   const streams = (): WeeloStream[] => (ctx.sources || [])
-    .filter((s: any) => (s.weelo || s.weellzUrls?.length) && (!s.hidden || s.links?.[0]?.provider === 'custom'))
+    .filter((s: any) => (s.weelo || s.weellzUrls?.length) && !s.hidden)
     .map((s: any): WeeloStream => {
       const custom = s.links?.[0]?.provider === 'custom' ? String(s.links[0].url || '') : '';
       const synced = Array.isArray(s.weellzUrls) && s.weellzUrls.length ? String(s.weellzUrls[0] || '') : '';

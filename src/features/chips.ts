@@ -44,6 +44,7 @@ export function applySourceConfig(payload: any, host: {
   const automatic: StreamSource[] = payload?.autoStreams && Array.isArray(payload?.autoEntries) ? payload.autoEntries.map((item: any) => ({
     id: item.id, label: item.label, lang: item.tab === 'other' ? 'other' : 'en',
     managedAuto: true, autoProvider: item.provider, autoTag: item.tag,
+    weelo: item.provider === 'weelo' ? new URL(item.url).searchParams.get('stream') || undefined : undefined,
     special: ['onboard', 'data', 'feed'].includes(item.special) ? item.special : undefined,
     links: [{ provider: 'custom', quality: 0, url: item.url }]
   })) : [];

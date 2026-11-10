@@ -38,6 +38,7 @@ describe('managed cockpit sources', () => {
     applySourceConfig({...config,autoStreams:true,autoEntries:[item]},host);
     expect(sources.filter(s=>!s.hidden).map(s=>s.id)).toEqual([item.id]);
     expect(sources[index].id).toBe(item.id);
+    expect(sources[index].weelo).toBe('abc');
     applySourceConfig({...config,autoStreams:false},host);
     expect(sources.filter(s=>!s.hidden).map(s=>s.id)).toEqual(['manual-one','custom-extra']);
     expect(sources[0].label).toBe('Renamed');
