@@ -1,4 +1,4 @@
-/* A quiet creator credit that lights up without navigating away. */
+/* A quiet creator credit with a red-to-black wave on interaction. */
 footer.footer .footer-credit {
   margin: 9px 0 0;
   color: var(--fg-4, #92949b);
@@ -16,16 +16,24 @@ footer.footer .footer-credit-name {
   font: inherit;
   font-weight: 650;
   cursor: pointer;
-  transition: color .2s ease, text-shadow .2s ease, background-color .2s ease;
+  transition: color .2s ease;
 }
 footer.footer .footer-credit-name:hover,
 footer.footer .footer-credit-name:focus,
 footer.footer .footer-credit-name:active {
-  color: #fff;
-  background: rgba(225, 6, 0, .1);
-  text-shadow: 0 0 8px rgba(255, 100, 86, .95), 0 0 18px rgba(225, 6, 0, .8);
+  color: #e10600;
+  background-image: linear-gradient(90deg, #e10600 0%, #e10600 20%, #09090a 35%, #e10600 50%, #e10600 70%, #09090a 85%, #e10600 100%);
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: footer-credit-wave 2s linear infinite;
+}
+@keyframes footer-credit-wave {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
 }
 footer.footer .footer-credit-name:focus-visible { outline: 2px solid #ff655c; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
-  footer.footer .footer-credit-name { transition: none; }
+  footer.footer .footer-credit-name { transition: none; animation: none !important; }
 }
