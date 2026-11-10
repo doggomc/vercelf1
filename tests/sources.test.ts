@@ -190,8 +190,8 @@ describe('stream source link pools', () => {
   });
 
   it('fails over at link level before source level', () => {
-    expect(app).toContain('function attemptSource(token, order, idx, startedAt, linkIdx = 0)');
-    expect(app).toContain('attemptSource(token, order, idx, startedAt, linkIdx + 1)');
+    expect(app).toContain('function attemptSource(token, order, idx, startedAt, linkIdx = 0, triedDynamic');
+    expect(app).toContain('attemptSource(token, order, idx, startedAt, linkIdx + 1, triedDynamic)');
   });
 
   it('stamps the session key onto links that cannot carry one', () => {

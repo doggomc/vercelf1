@@ -6873,3 +6873,11 @@ body[data-page="cockpit"]:not(.theater) #watch .wsources { animation: cockpitRis
   body[data-page="cockpit"] #watch .side-link:hover,
   body[data-page="cockpit"] #watch .side-link:hover svg { transform: none; }
 }
+
+/* Keep broadcasts and backups distinct without moving or reloading players. */
+.wsource-list .source-tier-heading {
+  flex: 1 0 100%; grid-column: 1 / -1; width: 100%; min-width: 0;
+  margin: 9px 0 0; padding-top: 12px; border-top: 1px solid #ffffff12;
+  color: var(--rr-fg-3); font-size: 11.5px; font-weight: 650; letter-spacing: .02em;
+}
+.wsource-list .source-tier-heading:first-child { margin: 0; padding: 0; border: 0; }

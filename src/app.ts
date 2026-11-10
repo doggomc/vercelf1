@@ -1,4 +1,5 @@
 import { setupCustomSelects } from './ui/select';
+import { sourceTier, sourceFallbackOrder } from './features/source-groups';
 import { isHakunaCleanPlayer, fitHakunaFrame } from './features/hakuna-frame';
 import { TEAM_LOGO, TEAM_HEX, TEAM_ALIAS, teams } from './data/teams';
 import { NO_STREAM_MESSAGES, LOADER_LINES, BLOCKED_TITLE, BLOCKED_COPY_IOS, BLOCKED_COPY, HIJACK_TITLE, HIJACK_COPY } from './data/cockpit-messages';
@@ -1130,7 +1131,7 @@ function linkPool(index: number): string[] {
   for (const link of dynamic) {
     const ready = cachedDynamicUrl(link.url || '');
     if (ready) pool.push(link.url?.startsWith('wikisport/') ? ready : stampSession(ready, key));
-    else if (link.url) void resolveDynamicLink(link.url);
+    // Resolve on selection or fallback, not when merely drawing or inspecting a source.
   }
 
   const good = lastGoodLink[source.id];
@@ -1682,19 +1683,26 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     return b;
   };
 
-  /* Broadcasters in row order, then the specials in their own block, so an onboard cannot be
-     mistaken for another broadcaster. */
-  const broadcasters = visible.filter((i) => !sources[i].special);
-  const specials = visible.filter((i) => sources[i].special);
-  broadcasters.forEach((i) => linksEl.appendChild(chipFor(sources[i], i)));
-
+  const main = visible.filter(i => !sources[i].special && sourceTier(sources[i]) === 'main');
+  const specials = visible.filter(i => sources[i].special && sourceTier(sources[i]) === 'main');
+  const custom = visible.filter(i => sourceTier(sources[i]) === 'custom');
+  const backups = visible.filter(i => sourceTier(sources[i]) === 'backup');
+  const addHeading = (text: string) => {
+    const heading = document.createElement('div');
+    heading.className = 'source-tier-heading';
+    heading.textContent = text;
+    linksEl.appendChild(heading);
+  };
+  if (main.length) { addHeading('Main streams'); main.forEach(i => linksEl.appendChild(chipFor(sources[i], i))); }
   if (specials.length) {
     const block = document.createElement('div');
     block.className = 'special-row';
-    block.innerHTML = '<span class="special-head">Onboards &amp; pit wall</span>';
-    specials.forEach((i) => block.appendChild(chipFor(sources[i], i)));
+    block.innerHTML = '<span class="special-head">Weelo · Onboards &amp; pit wall</span>';
+    specials.forEach(i => block.appendChild(chipFor(sources[i], i)));
     linksEl.appendChild(block);
   }
+  if (custom.length) { addHeading('Custom streams'); custom.forEach(i => linksEl.appendChild(chipFor(sources[i], i))); }
+  if (backups.length) { addHeading('Backup streams'); backups.forEach(i => linksEl.appendChild(chipFor(sources[i], i))); }
 }
 
 let multiviewer: Promise<any> | undefined;
@@ -1990,22 +1998,31 @@ function watchFrameNavigation(f, token, isSettled) {
   });
 }
 
-function attemptSource(token, order, idx, startedAt, linkIdx = 0) {
+function attemptSource(token, order, idx, startedAt, linkIdx = 0, triedDynamic = new Set<number>()) {
   if (token !== playerLoadToken) return;
   if (idx >= order.length) return showNoStream({ text: BLOCKED_COPY });
   const sourceIndex = order[idx];
   const candidate = sources[sourceIndex];
   /* Never automatically fail over from another source onto an off-air Weelo feed; direct clicks (idx === 0) still open weellz.live's player. */
   if (idx > 0 && candidate?.special && !isCustom(sourceIndex) && specialDown(candidate)) {
-    attemptSource(token, order, idx + 1, startedAt, 0);
+    attemptSource(token, order, idx + 1, startedAt, 0, triedDynamic);
     return;
   }
   const pool = linkPool(sourceIndex);
   if (linkIdx >= pool.length) {
+    const missing = !triedDynamic.has(sourceIndex) ? missingTokens(sourceIndex) : [];
+    if (missing.length) {
+      triedDynamic.add(sourceIndex);
+      setLoaderText('Checking backup feed…');
+      void Promise.all(missing.map(link => resolveDynamicLink(link.url as string))).then(() => {
+        if (token === playerLoadToken) attemptSource(token, order, idx, startedAt, linkIdx, triedDynamic);
+      });
+      return;
+    }
     /* A chip with nothing upstream says so instead of silently playing another provider. */
     if (!idx && sources[sourceIndex].gated) return showNoStream({ title: '4K is not upstream', text: 'embdlol is not publishing a 4K channel for this race. It appears a few hours before lights out — the UHD chip will come back on its own, nothing to reload.' });
     if (!idx && !isCustom(sourceIndex) && (sources[sourceIndex].embdlol || sources[sourceIndex].weelo)) return showNoStream({ title: 'No link upstream', text: 'This feed has no channel upstream right now.' });
-    attemptSource(token, order, idx + 1, startedAt, 0);
+    attemptSource(token, order, idx + 1, startedAt, 0, triedDynamic);
     return;
   }
 
@@ -2046,12 +2063,12 @@ function attemptSource(token, order, idx, startedAt, linkIdx = 0) {
       delete healthState.dynamic[dynamicPath];
       if (!freshMints.has(dynamicPath)) {
         freshMints.add(dynamicPath);
-        attemptSource(token, order, idx, Date.now(), 0);
+        attemptSource(token, order, idx, Date.now(), 0, triedDynamic);
         return;
       }
       freshMints.delete(dynamicPath);
     }
-    attemptSource(token, order, idx, startedAt, linkIdx + 1);
+    attemptSource(token, order, idx, startedAt, linkIdx + 1, triedDynamic);
   };
 
   let loaded = false;
@@ -2189,11 +2206,7 @@ function load() {
   }
 
   normalizeCurrentSource();
-  const order = [];
-  if (sourceEnabled(sources[currentSource])) order.push(currentSource);
-  for (let i = 0; i < sources.length; i++) {
-    if (i !== currentSource && sourceEnabled(sources[i])) order.push(i);
-  }
+  const order = sourceFallbackOrder(sources, currentSource);
   if (!order.length) {
     showNoStream({
       blocked: true,
@@ -2217,7 +2230,7 @@ function load() {
     setLoaderText('Fetching a token…');
     return void Promise.all(missing.map((link) => resolveDynamicLink(link.url as string))).then((urls) => {
       if (token !== playerLoadToken) return;
-      urls.some(Boolean) ? load() : attemptSource(token, order, 0, performance.now());
+      urls.some(Boolean) ? load() : attemptSource(token, order, 0, performance.now(), 0, new Set([currentSource]));
     });
   }
   attemptSource(token, order, 0, performance.now());
