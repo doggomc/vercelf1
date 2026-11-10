@@ -262,4 +262,11 @@ document.querySelectorAll<HTMLButtonElement>('.tab[data-type]').forEach((button)
   });
 });
 
-void load('drivers');
+// Wait for the table to establish its height before observing the charts.
+void load('drivers').finally(() => {
+const chart = $('standingsProgression');
+if (chart && 'IntersectionObserver' in window) {
+  const observer = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) { observer.disconnect(); void import('../features/progression-ui'); } }, {rootMargin: '300px'});
+  observer.observe(chart);
+} else if (chart) void import('../features/progression-ui');
+});

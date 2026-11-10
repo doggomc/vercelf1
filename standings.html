@@ -107,6 +107,19 @@
         </table>
       </div>
     </section>
+
+    <section class="st-progression" id="standingsProgression" aria-label="Championship points progression">
+      <figure class="card st-chart">
+        <figcaption><span>Drivers: points progression</span><span id="driversProgressionRound" class="st-chart-round"></span></figcaption>
+        <div id="driversProgression" class="st-chart-body" aria-live="polite">Loading points progression…</div>
+      </figure>
+      <figure class="card st-chart">
+        <figcaption><span>Constructors: points progression</span><span id="constructorsProgressionRound" class="st-chart-round"></span></figcaption>
+        <div id="constructorsProgression" class="st-chart-body" aria-live="polite">Loading points progression…</div>
+      </figure>
+      <p class="st-chart-note">Top six in the current standings · cumulative points after each Grand Prix, including sprint points · Jolpica F1</p>
+      <button type="button" id="progressionRetry" class="st-chart-retry" hidden>Retry charts</button>
+    </section>
   </div>
 </main>
 

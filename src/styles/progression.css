@@ -1,0 +1,12 @@
+/* Championship points progression charts. */
+.st-progression { display: grid; grid-template-columns: minmax(0,1fr); gap: 24px; margin-top: 48px; }
+@media (min-width: 1024px) { .st-progression { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+.st-chart { min-width: 0; margin: 0; padding: 24px; }
+.st-chart figcaption { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; color: #f5f6f8; font-size: 15px; font-weight: 650; }
+.st-chart-round { font-size: 12px; color: var(--fg-3); font-weight: 500; white-space: nowrap; }
+.st-chart-body { color: var(--fg-3); font-size: 13px; min-height: 70px; }
+.st-chart-body svg { display: block; width: 100%; height: auto; overflow: visible; }
+.st-chart-note { grid-column: 1 / -1; margin: -12px 0 0; color: var(--fg-3); font-size: 12px; }
+.st-chart-retry { grid-column: 1 / -1; justify-self: start; color: var(--white); padding: 8px 12px; border: 1px solid var(--line-2); border-radius: 8px; background: rgba(255,255,255,.04); cursor: pointer; }
+.st-chart-retry:hover, .st-chart-retry:focus-visible { background: rgba(255,255,255,.1); }
+@media (max-width: 600px) { .st-chart { padding: 16px; } .st-chart figcaption { font-size: 13px; } }

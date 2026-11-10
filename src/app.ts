@@ -1475,10 +1475,20 @@ async function playFourK(targetIndex?: number) {
     ? targetIndex
     : sources.findIndex((source) => source.gated && !source.stripped);
   if (index < 0) return;
-  const url = await fetchFourKUrl();
+  // Select immediately and show the standard loading state while the rotating ID resolves.
+  // Invalidate the old player so its delayed callbacks cannot bring it back.
+  const selected = sources[index];
+  const token = ++playerLoadToken;
   currentSource = index;
   renderButtons();
   updateHeader();
+  hideNoStream();
+  loaderEl?.classList.remove('hidden');
+  setLoaderText('Loading channels…');
+  playerEl?.querySelectorAll('iframe, video').forEach((element) => element.remove());
+  setStreamOnScreen(false);
+  const url = await fetchFourKUrl();
+  if (token !== playerLoadToken || sources[currentSource] !== selected || !sourceEnabled(selected)) return;
   load();
   if (url && !canPlayHevc()) showToast(HEVC_WARNING, 'warning');
 }
