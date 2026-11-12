@@ -54,7 +54,7 @@ function releaseSite() {
 function applyConfig(input: unknown) {
   const config = parseSiteConfig(input);
   if (!config) return;
-  if (config.failover?.active && applyFailover(true)) return;
+  if (config.failover && applyFailover(config.failover.active)) return;
   if (!config.maintenance) return;
   saveConfig(config);
   const maintenance = config.maintenance;

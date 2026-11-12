@@ -2474,7 +2474,7 @@ function applySourceConfig(payload) {
 function applySiteConfig(input: unknown, { fresh = false } = {}) {
   const config = parseSiteConfig(input);
   if (!config) return;
-  if (fresh && config.failover?.active && applyFailover(true)) return;
+  if (fresh && config.failover && applyFailover(config.failover.active)) return;
   // Apply relay safety before a force-live update can start a player.
   if (config.sources) applySourceConfig(config.sources);
   if (config.streamWindow) applyStreamWindow(config.streamWindow);

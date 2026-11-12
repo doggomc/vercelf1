@@ -1,3 +1,4 @@
+if (typeof location !== 'undefined' && location.hostname === 'freef1-backup.vercel.app') void import('./features/failover');
 import { BACKEND_API } from './config';
 import './interaction-guard';
 import type { HelpResponse } from "./types/help";

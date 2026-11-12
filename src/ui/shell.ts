@@ -1,3 +1,4 @@
+if (typeof location !== 'undefined' && location.hostname === 'freef1-backup.vercel.app') void import('../features/failover');
 type ShellOptions = {
   nav?: boolean;
   transitions?: boolean;

@@ -60,7 +60,7 @@ function toGateSnapshot(raw: unknown): SiteConfig | null {
 
 export function applyPageGate(config: SiteConfig | null, { fresh = false }: { fresh?: boolean } = {}): boolean {
   if (!config) return false;
-  if (fresh && config.failover?.active && applyFailover(true)) return true;
+  if (fresh && config.failover && applyFailover(config.failover.active)) return true;
   if (fresh && config.maintenance?.active === true) {
     location.replace('/maintenance');
     return true;
