@@ -1,3 +1,5 @@
+import { BACKEND_API } from '../config';
+
 export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree';
 
 export interface OtherStreamItem {
@@ -22,7 +24,7 @@ export interface OtherStreamsResult {
   providerOk: Record<OtherStreamProvider, boolean>;
 }
 
-const DEFAULT_BACKEND = 'https://f1admin.onrender.com';
+const DEFAULT_BACKEND = BACKEND_API;
 const EMBDLOL_STRUCT_URL = 'https://api.embdlol.st/struct';
 const STREAMFREE_STREAMS_URL = 'https://strmfree.st/api/v1/streams';
 const STREAMFREE_CACHE_KEY = 'freef1-streamfree-v1';

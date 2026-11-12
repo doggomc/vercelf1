@@ -15,6 +15,22 @@ import { existsSync, readdirSync, readFileSync, statSync, cpSync, writeFileSync,
    In dev the plugin also emulates the Netlify rules: _redirects (301/302/200)
    and _headers Cache-Control, so `npm run dev` matches a deploy preview. */
 
+function configuredBackend(): Plugin {
+  let backend = '';
+  return {
+    name: 'configured-backend', apply: 'build',
+    configResolved(config) {
+      const raw = String(config.env.VITE_BACKEND_URL || '').trim();
+      if (!raw) return;
+      let url: URL;
+      try { url = new URL(raw); } catch { throw new Error('VITE_BACKEND_URL must be an HTTPS origin'); }
+      if (url.protocol !== 'https:' || url.username || url.password || url.pathname !== '/' || url.search || url.hash) throw new Error('VITE_BACKEND_URL must be an HTTPS origin without a path, credentials, query or fragment');
+      backend = url.origin;
+    },
+    transformIndexHtml: { order: 'pre', handler(html) { return backend ? html.replaceAll('https://f1admin.onrender.com', backend) : html; } },
+  };
+}
+
 const ROOT = import.meta.dirname;
 const ASSETS_DIR = resolve(ROOT, 'assets');
 const SITE_ASSETS_DIR = resolve(ROOT, 'site-assets');
@@ -294,7 +310,7 @@ function dedupeRootAssets(): Plugin {
 
 export default defineConfig({
   publicDir: false,
-  plugins: [serveStaticFolders(), dedupeRootAssets(), driverPages(), teamPages()],
+  plugins: [configuredBackend(), serveStaticFolders(), dedupeRootAssets(), driverPages(), teamPages()],
   server: {
     host: '0.0.0.0', port: 4173,
     allowedHosts: ['.e2b.app', 'localhost'],
