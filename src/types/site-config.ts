@@ -28,6 +28,7 @@ export interface PageControl { disabled: ControllablePageId[]; updatedAt?: numbe
 export interface StreamOverride { active: boolean; url?: string; type?: string; }
 export interface StreamWindow { active: boolean; reason?: string; startedAt?: number; updatedAt?: number; }
 export interface SiteConfig {
+  failover?: { active: boolean; updatedAt?: number };
   maintenance?: Maintenance;
   pages?: PageControl;
   streamOverride?: StreamOverride;
@@ -43,6 +44,7 @@ const timestamp = (value: unknown): number | undefined => typeof value === 'numb
 export function parseSiteConfig(value: unknown): SiteConfig | null {
   if (!record(value)) return null;
   const result: SiteConfig = {};
+  if (record(value.failover) && typeof value.failover.active === 'boolean') result.failover = { active: value.failover.active, updatedAt: timestamp(value.failover.updatedAt) };
   if (record(value.maintenance) && typeof value.maintenance.active === 'boolean') {
     const m = value.maintenance;
     result.maintenance = { active: m.active as boolean, message: text(m.message, 500), eta: text(m.eta, 120), startedAt: timestamp(m.startedAt), updatedAt: timestamp(m.updatedAt) };

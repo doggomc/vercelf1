@@ -1,4 +1,5 @@
 import { BACKEND_API, SITE_CONFIG_CACHE_KEY } from '../config';
+import { applyFailover } from './failover';
 import type { ControllablePageId, SiteConfig } from '../types/site-config';
 
 const DISCORD_INVITE = 'https://discord.gg/KYXHCAzhN4';
@@ -41,6 +42,8 @@ function toGateSnapshot(raw: unknown): SiteConfig | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const obj = raw as Record<string, unknown>;
   const out: SiteConfig = {};
+  const failover = obj.failover as Record<string, unknown> | undefined;
+  if (failover && typeof failover.active === 'boolean') out.failover = { active: failover.active };
   const m = obj.maintenance as Record<string, unknown> | undefined;
   if (m && typeof m.active === 'boolean') out.maintenance = { active: m.active };
   const p = obj.pages as Record<string, unknown> | undefined;
@@ -57,6 +60,7 @@ function toGateSnapshot(raw: unknown): SiteConfig | null {
 
 export function applyPageGate(config: SiteConfig | null, { fresh = false }: { fresh?: boolean } = {}): boolean {
   if (!config) return false;
+  if (fresh && config.failover?.active && applyFailover(true)) return true;
   if (fresh && config.maintenance?.active === true) {
     location.replace('/maintenance');
     return true;

@@ -1,3 +1,4 @@
+import { applyFailover } from './features/failover';
 import { BACKEND_API, SITE_CONFIG_CACHE_KEY } from './config';
 import { parseSiteConfig } from './types/site-config';
 import './interaction-guard';
@@ -52,7 +53,9 @@ function releaseSite() {
 
 function applyConfig(input: unknown) {
   const config = parseSiteConfig(input);
-  if (!config || !config.maintenance) return;
+  if (!config) return;
+  if (config.failover?.active && applyFailover(true)) return;
+  if (!config.maintenance) return;
   saveConfig(config);
   const maintenance = config.maintenance;
   if (maintenance.active !== true) {
