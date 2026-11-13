@@ -32,7 +32,8 @@ assert(initialJs < BUDGET, `Startup JS exceeds ${BUDGET} B gzip budget: ${initia
 /* Every page except the cockpit is a thin shell. If a page bundle climbs past this,
    markup has been pasted into a page that should be composing from data. */
 /* One-time notice bootstrap adds a small shared guard; its UI stays lazy. */
-const SHELL_BUDGET = 6 * 1024 + 512;
+// Account for the small, lazy session-context hook on the existing counter.
+const SHELL_BUDGET = 6 * 1024 + 640;
 const pageGzip = (page) => {
   const entry = manifest[page];
   assert(entry, `missing entry ${page}`);
@@ -47,7 +48,7 @@ for (const page of ['drivers.html', 'teams.html']) {
 }
 /* Live timing speaks F1's SignalR Core WebSocket protocol and OpenF1's REST feed
    for off-session / blocked-network fallback, plus tower, race control & radio UI. */
-const LIVE_TIMING_BUDGET = 16 * 1024 + 512;
+const LIVE_TIMING_BUDGET = 16 * 1024 + 640;
 const liveTimingSize = pageGzip('live-timing.html');
 console.log(`live-timing gzip: ${liveTimingSize} B of ${LIVE_TIMING_BUDGET}`);
 assert(liveTimingSize < LIVE_TIMING_BUDGET, `live-timing.html ships ${liveTimingSize} B gzip — over the ${LIVE_TIMING_BUDGET} B budget`);
@@ -75,7 +76,7 @@ assert(existsSync('dist/assets/circuits/1.webp') && existsSync('dist/assets/circ
    two live tables: it fetches both championships, caches each, paints the two
    leader cards, and has an error state. That is a page of work, so it gets its
    own allowance rather than forcing the shell budget up for everyone else. */
-const STANDINGS_BUDGET = 8 * 1024 + 512;
+const STANDINGS_BUDGET = 8 * 1024 + 640;
 const standingsSize = pageGzip('standings.html');
 console.log(`standings gzip: ${standingsSize} B of ${STANDINGS_BUDGET}`);
 assert(standingsSize < STANDINGS_BUDGET, `standings.html ships ${standingsSize} B gzip — over the ${STANDINGS_BUDGET} B budget`);
@@ -83,7 +84,7 @@ assert(standingsSize < STANDINGS_BUDGET, `standings.html ships ${standingsSize} 
    sprint rounds, the teammate comparison and the career line are all fetched and
    formatted here. It gets its own budget so the cockpit's budget does not have to
    absorb it either. */
-const PROFILE_BUDGET = 14 * 1024 + 512;
+const PROFILE_BUDGET = 14 * 1024 + 640;
 const profileSize = pageGzip('driver.html');
 console.log(`driver profile gzip: ${profileSize} B of ${PROFILE_BUDGET}`);
 assert(profileSize < PROFILE_BUDGET, `driver.html ships ${profileSize} B gzip — over the ${PROFILE_BUDGET} B profile budget`);

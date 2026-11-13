@@ -80,6 +80,10 @@
       } catch (_) {
         return;
       }
+      if (payload?.type === 'capabilities' && payload.contexts === true && ['cockpit', 'private-cockpit'].includes(document.body?.dataset?.page || '')) {
+        void import('./features/counter-context').then(m => { if (socket === candidate) m.attachCounterSocket(candidate); });
+        return;
+      }
       if (!payload || payload.type !== 'count' || !Number.isSafeInteger(payload.count) || payload.count < 0) return;
 
       retryAttempt = 0;
@@ -134,5 +138,6 @@
   setStatus('connecting');
   connect();
 })();
+
 
 export {};

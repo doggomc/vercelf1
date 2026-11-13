@@ -2,6 +2,7 @@ import '../interaction-guard';
 import { initShell } from '../ui/shell';
 import { initPageGate } from '../features/page-gate';
 import '../viewer-counter';
+import { setCounterContext } from '../features/counter-context';
 import { mountCockpitViewerCount } from '../features/cockpit-viewers';
 import { fetchWeekends, safeSource, seriesNames, weekendTitle, type Weekend, type Event, type Session } from '../lib/replays-feed';
 initShell({ nav:false, transitions:false });
@@ -31,6 +32,7 @@ function display() {
   const sources=session.replay.sources.filter(s=>safeSource(s.url)); if(sourceIndex>=sources.length)sourceIndex=0;
   const source=sources[sourceIndex]; const url=source&&safeSource(source.url);
   const weekend=weekends.find(w=>w.events.some(e=>e.id===event!.id));
+  setCounterContext({ kind:'replay', key:`${event.season}:${event.round}:${event.series}:${session.key}`.replace(/[^a-zA-Z0-9._:-]/g,'_').slice(0,100), label:`${event.season} ${event.title} · ${session.name}`.replace(/[\x00-\x1f<>]/g,'').slice(0,160) });
   $('watchSessionTitle').textContent=`${weekend ? weekendTitle(weekend) : event.title} · ${session.name}`;
   $('watchSessionCountdown').textContent=seriesNames[event.series]; $('watchSessionMeta').textContent=`${event.season} · ${event.circuit}`;
   $('loader').hidden=true; $('noStream').classList.remove('visible');

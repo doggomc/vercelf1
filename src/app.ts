@@ -1,3 +1,4 @@
+import { setCounterContext } from './features/counter-context';
 import { applyFailover } from './features/failover';
 import { isStreamRelayUrl } from './lib/stream-relays';
 import { setupCustomSelects } from './ui/select';
@@ -1278,6 +1279,10 @@ function updateWatchSessionState() {
 
   const live = getCurrentLiveSession();
   const isLive = Boolean(live) || streamOverride.active;
+  setCounterContext(isLive && live ? {
+    kind: 'live', key: `${SITE_SEASON}:${live.event.round}:${live.session.ts}`,
+    label: `${SITE_SEASON} ${live.event.name} · ${live.session.name}`.replace(/[\x00-\x1f<>]/g, '').slice(0, 160)
+  } : null);
   const now = Date.now();
   const diff = currentSession.ts - now;
 

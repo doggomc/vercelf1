@@ -2,6 +2,7 @@ import '../interaction-guard';
 import { initShell } from '../ui/shell';
 import { initPageGate } from '../features/page-gate';
 import '../viewer-counter';
+import { setCounterContext } from '../features/counter-context';
 import { mountCockpitViewerCount } from '../features/cockpit-viewers';
 import { parsePrivateCockpitParams } from '../lib/other-streams';
 
@@ -92,6 +93,10 @@ function mountStream(useFallback = false): void {
     return;
   }
 
+  // Aggregate by display name, without sending provider URLs or visitor identifiers.
+  const label = resolved.title.replace(/[\x00-\x1f<>]/g, '').replace(/https?:\/\/\S+/gi, '').trim().slice(0, 160) || 'Other stream';
+  let hash = 2166136261; for (const c of label) hash = Math.imul(hash ^ c.charCodeAt(0), 16777619);
+  setCounterContext({ kind: 'other', key: `stream:${(hash >>> 0).toString(36)}`, label });
   const token = ++activeToken;
   /* f1admin stripped embeds restrict frame-ancestors to *.vercel.app / *.netlify.app,
      so local dev/preview uses the direct upstream embed URL. */
