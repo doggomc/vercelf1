@@ -19,3 +19,14 @@ describe('Discord link in private cockpit controls', () => {
     expect(html).not.toMatch(/>\s*Open player\s*</i);
   });
 });
+
+describe('replay cockpit session rail', () => {
+  it('places session and feed controls in a responsive right-hand rail', () => {
+    const html = readFileSync(new URL('../replay-cockpit.html', import.meta.url), 'utf8');
+    expect(html).toMatch(/<aside class="replay-rail"[\s\S]*id="replayControls"[\s\S]*<\/aside>/);
+    expect(html).toContain('grid-template-columns: minmax(0, 1fr) 300px');
+    expect(html).toContain('@media (max-width: 1000px)');
+    expect(html).toContain('grid-template-columns: minmax(0, 1fr)');
+    expect(html).toContain('overflow-y: auto');
+  });
+});
