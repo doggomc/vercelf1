@@ -1,6 +1,7 @@
 import PRELOADED_SESSION_RESULTS from '../data/session-results.json';
 import type { FeatureContext } from '../app';
 import { $ } from '../services/dom';
+import { resultCacheFresh } from './session-data-cache';
 export function init(ctx: FeatureContext) {
 const { schedule, store, fetchWithTimeout, scheduleAnimationFrame, hexFor, inkOn, escapeHtml, openModal, closeModal } = ctx;
 /* ═══════════════ 17. SHARED CLASSIFICATION & SESSION RESULTS MODAL ═══════════════ */
@@ -9,7 +10,7 @@ const { schedule, store, fetchWithTimeout, scheduleAnimationFrame, hexFor, inkOn
 const sessionResultsCache = new Map();
 if (typeof PRELOADED_SESSION_RESULTS === "object") {
   for (const [key, val] of Object.entries(PRELOADED_SESSION_RESULTS)) {
-    sessionResultsCache.set(key, { results: val, rcMessages: [], at: Date.now() });
+    sessionResultsCache.set(key, { results: val, rcMessages: [], at: 0 });
   }
 }
 
@@ -55,7 +56,12 @@ function getAvailableResultSessions(ev) {
 async function fetchSessionClassification(round, sessionType = "results") {
   const cacheKey = `${round}_${sessionType}`;
   const memoryHit = sessionResultsCache.get(cacheKey);
-  if (memoryHit && memoryHit.results?.length) return memoryHit.results;
+  const event = schedule.find(ev => Number(ev.round) === Number(round));
+  const slug = sessionType === 'results' || sessionType === 'race' ? 'race' : sessionType;
+  const start = event?.sessions.find(session => session.slug === slug)?.start;
+  const isFresh = entry => entry?.results?.length && resultCacheFresh(entry.at, start);
+  if (isFresh(memoryHit)) return memoryHit.results;
+  let fallback = memoryHit?.results?.length ? memoryHit.results : [];
 
   // Check localStorage
   try {
@@ -64,7 +70,8 @@ async function fetchSessionClassification(round, sessionType = "results") {
       const parsed = JSON.parse(raw);
       if (parsed && Array.isArray(parsed.results) && parsed.results.length) {
         sessionResultsCache.set(cacheKey, { results: parsed.results, rcMessages: parsed.rcMessages || [], at: parsed.at });
-        return parsed.results;
+        fallback = parsed.results;
+        if (isFresh(parsed)) return parsed.results;
       }
     }
   } catch (_) {}
@@ -73,7 +80,7 @@ async function fetchSessionClassification(round, sessionType = "results") {
   try {
     const endpoint = sessionType === "race" ? "results" : sessionType;
     const jolpicaUrl = `https://api.jolpi.ca/ergast/f1/2026/${round}/${endpoint}.json`;
-    const r = await fetchWithTimeout(jolpicaUrl, { cache: "no-store" }, 5000);
+    const r = await fetchWithTimeout(jolpicaUrl, {}, 5000);
     if (r.ok) {
       const data = await r.json();
       const race = data.MRData?.RaceTable?.Races?.[0];
@@ -89,7 +96,7 @@ async function fetchSessionClassification(round, sessionType = "results") {
       }
     }
   } catch (_) {}
-  return [];
+  return fallback;
 }
 
 // ── Session Results Modal Engine ──
@@ -172,12 +179,11 @@ async function loadSessionResults() {
   if (cached && cached.results?.length) {
     setSessionResultsLoading(false);
     renderModalSessionResults(cached.results, type);
-    return;
+  } else {
+    setSessionResultsLoading(true);
+    sRes.replaceChildren();
+    sRes.classList.remove("results-fade-in");
   }
-
-  setSessionResultsLoading(true);
-  sRes.replaceChildren();
-  sRes.classList.remove("results-fade-in");
 
   const results = await fetchSessionClassification(round, type);
   // A fast session/race change may start another request before this one returns.

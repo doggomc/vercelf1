@@ -1,5 +1,6 @@
 /* Cumulative points from Jolpica's classified race and sprint results. No backend proxy. */
 import { JOLPI, SITE_SEASON } from '../config';
+import { fetchStandings } from '../services/standings-data';
 const TEAM_HEX: Record<string, string> = { 'McLaren':'#FF8000', 'Ferrari':'#DC0000', 'Red Bull':'#1E41FF', 'Mercedes':'#00D2BE', 'Williams':'#005AFF', 'Aston Martin':'#006F62', 'Alpine F1 Team':'#FF0080', 'Alpine':'#FF0080', 'Haas F1 Team':'#B6BABD', 'Haas':'#B6BABD', 'Audi':'#E62213', 'Sauber':'#00E701', 'RB F1 Team':'#6692FF', 'Racing Bulls':'#6692FF', 'Cadillac F1 Team':'#B4A07A', 'Cadillac':'#B4A07A' };
 const teamName = (name: string) => ({'Red Bull':'Red Bull Racing','RB F1 Team':'Racing Bulls','Alpine F1 Team':'Alpine','Haas F1 Team':'Haas','Cadillac F1 Team':'Cadillac'} as Record<string,string>)[name] || name;
 
@@ -67,7 +68,7 @@ async function results(kind: 'results' | 'sprint'): Promise<Race[]> {
 const CACHE_KEY = `freef1_progression_${SITE_SEASON}`;
 const CACHE_MS = 15 * 60_000;
 export async function loadProgression(): Promise<Progression> {
-  const [driverData, constructorData] = await Promise.all(['driverstandings','constructorstandings'].map(endpoint => getJson(`${JOLPI}/${SITE_SEASON}/${endpoint}/?limit=100`)));
+  const [driverData, constructorData] = await Promise.all((['driverstandings','constructorstandings'] as const).map(fetchStandings));
   const dl = driverData?.MRData?.StandingsTable?.StandingsLists?.[0];
   const cl = constructorData?.MRData?.StandingsTable?.StandingsLists?.[0];
   const drivers: Standing[] = dl?.DriverStandings, constructors: Standing[] = cl?.ConstructorStandings;

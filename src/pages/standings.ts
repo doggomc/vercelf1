@@ -1,7 +1,7 @@
 import { initShell } from '../ui/shell';
 /* Every page except the cockpit carries the open-page counter in its header. */
 import '../viewer-counter';
-import { JOLPI, SITE_SEASON } from '../config';
+import { fetchStandings } from '../services/standings-data';
 import { TEAM_CAR, TEAM_HEX, TEAM_LOGO } from '../data/teams';
 import { headshot, portrait } from '../data/driver-portraits';
 import { driverSlug, esc, gapToLeader, teamName, teamSlug } from './driver-core';
@@ -98,9 +98,7 @@ const cache = new Map<Table, { html: string; leader: unknown }>();
 
 async function fetchTable(type: Table): Promise<{ rows: Array<DriverRow | ConstructorRow>; round: string }> {
   const endpoint = type === 'drivers' ? 'driverstandings' : 'constructorstandings';
-  const response = await fetch(`${JOLPI}/${SITE_SEASON}/${endpoint}/?limit=40`, { headers: { accept: 'application/json' } });
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const data = await response.json();
+  const data = await fetchStandings(endpoint);
   const list = data?.MRData?.StandingsTable?.StandingsLists?.[0];
   const rows = type === 'drivers' ? list?.DriverStandings : list?.ConstructorStandings;
   if (!Array.isArray(rows) || !rows.length) throw new Error('Empty standings');

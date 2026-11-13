@@ -2,6 +2,7 @@ import { initShell } from '../ui/shell';
 /* Every page except the cockpit carries the open-page counter in its header. */
 import '../viewer-counter';
 import { OPENF1_API } from '../config';
+import { createRosterCache } from '../features/session-data-cache';
 import {
   extrapolatedRemainingMs, F1SignalRClient, formatRemainingMs,
   snapshotFromF1State, snapshotFromOpenF1,
@@ -383,6 +384,7 @@ const f1Client = new F1SignalRClient();
 let pinnedSessionKey: number | 'live' | null = null;
 let weekendSessions: OpenF1Session[] = [];
 const bundleCache = new Map<number, OpenF1Bundle>();
+const loadRoster = createRosterCache<any>();
 let lastOf1At = 0;
 let of1Queue: Promise<unknown> = Promise.resolve();
 
@@ -436,7 +438,7 @@ async function loadOpenF1Bundle(session: OpenF1Session, bypassCache = false): Pr
     } catch { /* ignore storage quota/privacy mode */ }
   }
 
-  const drivers = await fetchOpenF1('drivers', { session_key: sk });
+  const drivers = await loadRoster(sk, () => fetchOpenF1('drivers', { session_key: sk }));
   const results = await fetchOpenF1('session_result', { session_key: sk });
   const laps = await fetchOpenF1('laps', { session_key: sk });
   const stints = await fetchOpenF1('stints', { session_key: sk });
