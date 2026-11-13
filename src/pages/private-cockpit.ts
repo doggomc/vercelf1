@@ -2,6 +2,7 @@ import '../interaction-guard';
 import { initShell } from '../ui/shell';
 import { initPageGate } from '../features/page-gate';
 import '../viewer-counter';
+import { mountCockpitViewerCount } from '../features/cockpit-viewers';
 import { parsePrivateCockpitParams } from '../lib/other-streams';
 
 initShell({ nav: false, transitions: false });
@@ -25,25 +26,9 @@ const titleEl = document.getElementById('watchSessionTitle');
 const metaEl = document.getElementById('watchSessionMeta');
 const reloadBtn = document.getElementById('reloadFeedBtn') as HTMLButtonElement | null;
 const retryBtn = document.getElementById('nsRetryBtn') as HTMLButtonElement | null;
-const theaterOnline = document.getElementById('theaterOnline');
-const theaterOnlineCount = document.getElementById('theaterOnlineCount');
-const viewerCountSrc = document.getElementById('viewerCount');
 const backendMeta = document.querySelector<HTMLMetaElement>('meta[name="freef1-help-api"]')?.content;
 
-function syncOnlineCount(): void {
-  if (!viewerCountSrc || !theaterOnline || !theaterOnlineCount) return;
-  const text = (viewerCountSrc.textContent || '').trim();
-  if (text && text !== '—') {
-    theaterOnlineCount.textContent = text;
-    theaterOnline.hidden = false;
-  }
-}
-
-if (viewerCountSrc) {
-  syncOnlineCount();
-  const obs = new MutationObserver(syncOnlineCount);
-  obs.observe(viewerCountSrc, { childList: true, characterData: true, subtree: true });
-}
+mountCockpitViewerCount();
 
 function isStrippedEmbed(url: string): boolean {
   return (

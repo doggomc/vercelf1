@@ -129,7 +129,10 @@
     connect();
   });
 
-  counter.hidden = false;
+  // Cockpit pages use an aria-hidden source node and display the count elsewhere.
+  if (counter.getAttribute('aria-hidden') !== 'true') counter.hidden = false;
   setStatus('connecting');
   connect();
 })();
+
+export {};
