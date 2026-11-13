@@ -80,6 +80,13 @@
       } catch (_) {
         return;
       }
+      if (payload?.type === 'capabilities' && payload.pages === true) {
+        const body = document.body;
+        const page = body?.classList?.contains('replay-page') ? 'replay-cockpit' : body?.dataset?.page;
+        if (page && /^[a-z-]{1,32}$/.test(page) && candidate.readyState === WebSocket.OPEN) {
+          candidate.send(JSON.stringify({ type: 'page', page }));
+        }
+      }
       if (payload?.type === 'capabilities' && payload.contexts === true && ['cockpit', 'private-cockpit'].includes(document.body?.dataset?.page || '')) {
         void import('./features/counter-context').then(m => { if (socket === candidate) m.attachCounterSocket(candidate); });
         return;
