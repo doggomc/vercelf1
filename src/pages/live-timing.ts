@@ -470,7 +470,7 @@ function renderSessionTabs(activeKey: number | 'live'): void {
   const bar = $('ltSessionsBar');
   const tabs = $('ltSessionTabs');
   if (!bar || !tabs) return;
-  const hasLiveWs = Boolean(f1Client.state?.SessionInfo && snapshotFromF1State(f1Client.state)?.isLive);
+  const hasLiveWs = Boolean(f1Client.state?.SessionInfo && (pinnedSessionKey === 'live' || snapshotFromF1State(f1Client.state)?.isLive));
   if (weekendSessions.length <= 1 && !hasLiveWs) {
     bar.hidden = true;
     return;
@@ -534,8 +534,10 @@ f1Client.addEventListener('update', () => {
     if (snap.isLive && pinnedSessionKey !== 'live' && typeof pinnedSessionKey !== 'number') {
       pinnedSessionKey = 'live';
     }
-    if (pinnedSessionKey === 'live' || !activeSnap) {
+    if (pinnedSessionKey === 'live') {
       renderSessionTabs('live');
+      paintSnapshot(snap);
+    } else if (pinnedSessionKey === null && !activeSnap) {
       paintSnapshot(snap);
     }
   }, 220);
@@ -564,7 +566,7 @@ async function bootstrapOpenF1(): Promise<void> {
     const now = Date.now();
     weekendSessions = meetingSessions.filter((s) => Date.parse(s.date_start) <= now + 10 * 60_000);
 
-    if (pinnedSessionKey === 'live') return;
+    if (pinnedSessionKey === 'live') { renderSessionTabs('live'); return; }
     pinnedSessionKey = latest.session_key;
     renderSessionTabs(latest.session_key);
 
