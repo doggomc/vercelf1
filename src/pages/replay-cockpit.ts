@@ -8,6 +8,20 @@ initShell({ nav:false, transitions:false });
 mountCockpitViewerCount();
 const gateReady = initPageGate();
 const $ = (id:string) => document.getElementById(id)!;
+// Match the Other Streams player exactly. Only use the unused space to its
+// right; on tighter screens the controls remain in the document below it.
+const rail = document.querySelector<HTMLElement>('.replay-rail')!;
+const player = $('player');
+function fitReplayRail() {
+  const available = window.innerWidth - player.getBoundingClientRect().right - 28;
+  const beside = window.innerWidth > 1100 && available >= 145;
+  rail.classList.toggle('is-beside', beside);
+  if (beside) rail.style.setProperty('--rail-width', `${Math.min(320, available)}px`);
+  else rail.style.removeProperty('--rail-width');
+}
+window.addEventListener('resize', fitReplayRail);
+if ('ResizeObserver' in window) new ResizeObserver(fitReplayRail).observe(player);
+fitReplayRail();
 let weekends: Weekend[]=[]; let event: Event | undefined; let session: Session | undefined; let sourceIndex=0;
 let helpTimer=0;
 const params=new URLSearchParams(location.search);

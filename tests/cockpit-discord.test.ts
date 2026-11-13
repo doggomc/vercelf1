@@ -24,11 +24,11 @@ describe('replay cockpit session rail', () => {
   it('places session and feed controls in a responsive right-hand rail', () => {
     const html = readFileSync(new URL('../replay-cockpit.html', import.meta.url), 'utf8');
     expect(html).toMatch(/<aside class="replay-rail"[\s\S]*id="replayControls"[\s\S]*<\/aside>/);
-    expect(html).toContain('grid-template-columns: 290px minmax(0, 1fr) 290px');
-    expect(html).toContain('.watch-main { grid-column: 2;');
-    expect(html).toContain('.replay-rail { grid-column: 3;');
-    expect(html).toContain('@media (max-width: 1200px)');
-    expect(html).toContain('grid-template-columns: minmax(0, 1fr)');
+    expect(html).toContain('.replay-rail.is-beside');
+    expect(html).not.toMatch(/replay-page \.wplayer\s*\{/);
+    const script = readFileSync(new URL('../src/pages/replay-cockpit.ts', import.meta.url), 'utf8');
+    expect(script).toContain('player.getBoundingClientRect().right');
+    expect(script).toContain("rail.classList.toggle('is-beside', beside)");
     expect(html).toContain('overflow-y: auto');
   });
 });

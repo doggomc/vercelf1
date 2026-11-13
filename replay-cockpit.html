@@ -50,40 +50,27 @@
       border-radius: 12px;
     }
   }
-  /* Equal outer tracks keep the video centered in the viewport, not just
-     in the space remaining beside the session rail. */
-  body.theater.replay-page { overflow-x: hidden; overflow-y: auto; background: #090a0c; }
-  body.theater.replay-page #watch { position: relative; inset: auto; min-height: 100vh; padding: 24px 0 48px; }
-  body.theater.replay-page .wrap.watch-grid { display: grid; grid-template-columns: 290px minmax(0, 1fr) 290px; align-items: start; gap: 22px; width: min(100%, 1900px); height: auto; padding: 0 24px; margin: 0 auto; overflow: visible; }
-  body.theater.replay-page .watch-main { grid-column: 2; min-width: 0; min-height: calc(100vh - 48px); height: auto; padding: 0; align-items: center; justify-content: center; gap: 16px; }
-  body.theater.replay-page .wplayer,
-  body.theater.replay-page .wplayer-actions { width: min(100%, calc((100vh - 190px) * 16 / 9)); max-width: 100%; flex: none; }
-  body.theater.replay-page .wplayer { border-radius: 12px; border: 1px solid #292b31; box-shadow: 0 24px 70px #0009; }
-  body.theater.replay-page .wplayer-bar { background: #15161a; border-bottom: 1px solid #25262c; }
-  body.theater.replay-page #watch .wplayer-actions { background: #111216; border: 1px solid #24262d; border-radius: 12px; box-shadow: none; }
-  .replay-help { width: min(100%, calc((100vh - 190px) * 16 / 9)); margin: 0; color: #aaaeb7; font: 400 13px/1.55 'Inter', system-ui, sans-serif; }
-  .replay-rail { grid-column: 3; position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; min-width: 0; padding: 22px 18px; border: 1px solid #25272e; border-radius: 14px; background: #111216; box-shadow: 0 18px 45px #0005; scrollbar-width: thin; scrollbar-color: #42444c transparent; }
-  .replay-rail-header { display: flex; align-items: center; gap: 10px; padding: 0 3px 19px; border-bottom: 1px solid #292a30; }
-  .replay-rail-header i { width: 8px; height: 8px; border-radius: 50%; background: #ee3844; box-shadow: 0 0 14px #ee384488; flex: none; }
-  .replay-rail-header h2 { margin: 0; color: #f5f5f6; font: 700 16px/1.3 'Inter', system-ui, sans-serif; letter-spacing: -.025em; }
-  .replay-controls { display: grid; gap: 25px; padding-top: 22px; }
-  .replay-controls h2 { margin: 0 3px 10px; color: #8f919c; font: 700 10px/1.3 'Inter', system-ui, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
-  .replay-buttons { display: grid; grid-template-columns: 1fr; gap: 6px; }
-  .replay-buttons button { position: relative; width: 100%; text-align: left; border: 1px solid transparent; border-radius: 8px; background: #1a1b20; color: #c3c4cb; padding: 12px 14px; cursor: pointer; font: 600 13px/1.35 'Inter', system-ui, sans-serif; transition: background-color .18s, border-color .18s, color .18s; }
-  .replay-buttons button:hover { border-color: #3b3d46; background: #24252c; color: #fff; }
-  .replay-buttons button[aria-pressed="true"] { background: #2a191d; color: #fff; border-color: #9e303c; box-shadow: inset 3px 0 #ef3b48; }
-  .replay-buttons button:focus-visible { outline: 2px solid #f34b43; outline-offset: 2px; }
-  @media (max-width: 1200px) {
-    body.theater.replay-page .wrap.watch-grid { grid-template-columns: minmax(0, 1fr); max-width: 1000px; }
-    body.theater.replay-page .watch-main { grid-column: 1; min-height: 0; justify-content: flex-start; }
-    body.theater.replay-page .wplayer, body.theater.replay-page .wplayer-actions, .replay-help { width: 100%; }
-    .replay-rail { grid-column: 1; position: static; max-height: none; overflow: visible; }
-    .replay-buttons { grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); }
-  }
-  @media (max-width: 760px) {
-    body.theater.replay-page #watch { padding-top: 12px; }
-    body.theater.replay-page .wrap.watch-grid { padding: 0 12px; gap: 14px; }
-    .replay-rail { padding: 18px 14px; }
+  /* Keep the private cockpit's player sizing and centering unchanged. The
+     session rail uses only the space left beside it, or flows underneath. */
+  body.theater.replay-page { overflow-x: hidden; overflow-y: auto; }
+  body.theater.replay-page #watch { position: relative; inset: auto; min-height: 100vh; }
+  body.theater.replay-page .wrap.watch-grid { height: auto; min-height: 100vh; overflow: visible; }
+  .replay-help { width: min(100%, calc((100vh - 150px) * 16 / 9)); margin: 0; color: var(--rr-fg-3); font: 400 13px/1.5 'Inter', system-ui, sans-serif; }
+  .replay-rail { width: min(100%, calc((100vh - 150px) * 16 / 9)); margin: 0 auto 18px; padding: 18px; border: 1px solid #ffffff17; border-radius: 18px; background: #151619; box-shadow: 0 14px 35px #0002; }
+  .replay-rail.is-beside { position: absolute; top: 12px; right: 16px; width: var(--rail-width); max-height: calc(100vh - 24px); margin: 0; overflow-y: auto; scrollbar-width: thin; }
+  .replay-rail-header { display: flex; align-items: center; gap: 9px; margin-bottom: 18px; }
+  .replay-rail-header i { width: 7px; height: 7px; border-radius: 50%; background: #e10600; flex: none; }
+  .replay-rail-header h2 { margin: 0; color: #fff; font: 700 16px/1.3 'Inter', system-ui, sans-serif; letter-spacing: -.01em; }
+  .replay-controls { display: grid; gap: 20px; }
+  .replay-controls h2 { margin: 0 0 9px; color: var(--rr-fg-3); font: 600 11px/1.4 'Inter', system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+  .replay-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+  .replay-buttons button { min-width: 0; max-width: 100%; min-height: 36px; padding: 7px 13px; border: 0; border-radius: 999px; background: #ffffff0b; box-shadow: inset 0 0 0 1px #ffffff16; color: var(--rr-fg); text-align: left; overflow-wrap: anywhere; cursor: pointer; font: 600 13px/1.2 'Inter', system-ui, sans-serif; transition: background-color .18s var(--ease), color .18s var(--ease), transform .18s var(--ease), box-shadow .18s var(--ease); }
+  .replay-buttons button:hover { background: #ffffff14; box-shadow: inset 0 0 0 1px #ffffff2b; color: #fff; transform: translateY(-1px); }
+  .replay-buttons button[aria-pressed="true"] { background: color-mix(in srgb, var(--team, #e10600) 17%, #1a1c22); color: #fff; box-shadow: inset 0 0 0 1.5px var(--team, #e10600); }
+  .replay-buttons button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  @media (max-width: 1100px) {
+    .replay-rail, .replay-help { width: 100%; }
+    .replay-rail { margin-top: 18px; }
   }
   @media (prefers-reduced-motion: reduce) { .replay-buttons button { transition: none; } }
 </style>
