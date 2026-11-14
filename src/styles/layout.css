@@ -1896,49 +1896,19 @@ a.tp-mini-who:hover .tp-mini-name { text-decoration: underline; text-underline-o
 #ltSessionTabs .tab:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 @media (prefers-reduced-motion: reduce) { #ltSessionTabs .jr-skin { transition: none; } #ltSessionTabs .tab:active .jr-skin { transform: none; } }
 
-/* Home exploration cards — scoped here so team and stream cards retain their own layout. */
-.home-explore .team-grid { gap: 14px; }
+/* Preserve the home cards; add a gentle lift and accent glow only on hover. */
 .home-explore .team-card {
-  isolation: isolate;
-  min-height: 172px;
-  padding: 20px;
-  justify-content: space-between;
-  border: 1px solid rgba(255,255,255,.085);
-  border-radius: 18px;
-  background: linear-gradient(145deg, #24252b 0%, #191a1f 72%);
-  box-shadow: 0 12px 28px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.045);
-  transition: transform .25s cubic-bezier(.22,1,.36,1), border-color .25s ease, box-shadow .25s ease, background .25s ease;
+  transition: transform .24s cubic-bezier(.22,1,.36,1), box-shadow .24s ease, background-color .18s var(--ease);
 }
-.home-explore .team-card::before {
-  z-index: -1;
-  background: radial-gradient(ellipse at 100% 100%, color-mix(in srgb, var(--tc) 18%, transparent), transparent 62%);
-  opacity: .8;
-  transition: opacity .25s ease;
-}
-.home-explore .team-card::after {
-  content: '';
-  position: absolute; top: 22px; right: 22px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dedee2' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17 17 7M8 7h9v9'/%3E%3C/svg%3E") center / 15px 15px no-repeat;
-  width: 30px; height: 30px; border-radius: 50%;
-  border: 1px solid rgba(255,255,255,.1);
-  transition: color .25s ease, border-color .25s ease, background .25s ease, transform .25s cubic-bezier(.22,1,.36,1);
-}
-.home-explore .t-top { gap: 0; }
-.home-explore .team-card .t-bar { display: none; }
-.home-explore .team-card .t-ico {
-  width: 44px; height: 44px; border-radius: 14px;
-  color: #ececf0;
-  background: rgba(255,255,255,.06);
-  border-color: rgba(255,255,255,.1);
-}
-.home-explore .team-card .t-ico svg { width: 20px; height: 20px; }
-.home-explore .team-card .t-name { font-size: 17px; line-height: 1.2; }
-.home-explore .team-card .t-sub { margin-top: 7px; font-size: 12.5px; line-height: 1.4; color: #b0b1bb; }
+.home-explore .team-card::before { transition: filter .24s ease; }
 @media (hover: hover) {
-  .home-explore .team-card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--tc) 45%, #55565e); box-shadow: 0 18px 36px rgba(0,0,0,.28); }
-  .home-explore .team-card:hover::before { opacity: 1; }
-  .home-explore .team-card:hover::after { transform: translate(2px,-2px); border-color: rgba(255,255,255,.26); background-color: rgba(255,255,255,.08); }
+  .home-explore .team-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px color-mix(in srgb, var(--tc) 24%, transparent), var(--shadow-raised);
+  }
+  .home-explore .team-card:hover::before { filter: brightness(1.35); }
 }
-.home-explore .team-card:focus-visible { outline: 2px solid var(--tc); outline-offset: 3px; }
-@media (max-width: 420px) { .home-explore .team-card { min-height: 160px; padding: 16px; } .home-explore .team-card::after { top: 17px; right: 16px; } }
-@media (prefers-reduced-motion: reduce) { .home-explore .team-card, .home-explore .team-card::before, .home-explore .team-card::after { transition: none; } .home-explore .team-card:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .home-explore .team-card, .home-explore .team-card::before { transition: none; }
+  .home-explore .team-card:hover { transform: none; }
+}
