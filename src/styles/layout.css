@@ -1913,3 +1913,18 @@ a.tp-mini-who:hover .tp-mini-name { text-decoration: underline; text-underline-o
   .explore-cards .team-card, .explore-cards .team-card::before, .explore-cards .team-card .t-ico { transition: none; }
   .explore-cards .team-card:hover { transform: none; }
 }
+
+/* The selected championship leader or row responds before the profile opens. */
+@media (prefers-reduced-motion: no-preference) {
+  .st-leader.is-opening-profile, .st-who.is-opening-profile {
+    animation: profileOpen .36s cubic-bezier(.22,1,.36,1) both;
+    position: relative;
+    z-index: 1;
+  }
+  .st-leader.is-opening-profile { box-shadow: 0 10px 36px color-mix(in srgb, var(--team, #aaa) 28%, transparent); }
+}
+@keyframes profileOpen {
+  0% { transform: scale(1); opacity: 1; }
+  45% { transform: scale(.98); opacity: 1; }
+  100% { transform: scale(1.025); opacity: .78; }
+}

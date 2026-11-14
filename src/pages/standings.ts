@@ -6,6 +6,7 @@ import { TEAM_CAR, TEAM_HEX, TEAM_LOGO } from '../data/teams';
 import { headshot, portrait } from '../data/driver-portraits';
 import { driverSlug, esc, gapToLeader, teamName, teamSlug } from './driver-core';
 
+void import('../features/standings-navigation-motion').then(m => m.initStandingsNavigationMotion()).catch(() => {});
 initShell();
 
 type DriverRow = {
