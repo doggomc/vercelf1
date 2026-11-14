@@ -23,7 +23,6 @@
 <title>FreeF1 — F1 Live, ad-free</title>
 
 <link rel="dns-prefetch" href="https://api.jolpi.ca">
-<link rel="preload" as="image" href="/assets/hero-freef1-1200.webp" type="image/webp" imagesrcset="/assets/hero-freef1-800.webp 800w, /assets/hero-freef1-1200.webp 1200w, /assets/hero-freef1-1600.webp 1600w" imagesizes="100vw" fetchpriority="high">
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Inter-latin.woff2" crossorigin>
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Archivo-latin.woff2" crossorigin>
 <link rel="stylesheet" href="/fonts.css">
@@ -63,10 +62,7 @@
 <main id="main">
   <header class="hero">
     <div class="hero-media" aria-hidden="true">
-      <picture>
-        <source type="image/webp" srcset="/assets/hero-freef1-800.webp 800w, /assets/hero-freef1-1200.webp 1200w, /assets/hero-freef1-1600.webp 1600w" sizes="100vw">
-        <img src="/assets/hero-freef1.jpg" alt="" width="1600" height="900" fetchpriority="high" decoding="async">
-      </picture>
+      <canvas id="heroGlass" class="hero-glass"></canvas>
     </div>
     <div class="wrap hero-inner">
       <div class="hero-copy">

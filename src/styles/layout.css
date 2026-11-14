@@ -344,15 +344,15 @@ main { flex: 1 0 auto; }
 .hero { position: relative; overflow: hidden; isolation: isolate; }
 
 .hero-media { position: absolute; inset: 0; z-index: -2; }
-.hero-media img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; }
+.hero-media {
+  background: linear-gradient(122deg, #111216 15%, #35363b 32%, #111216 35%, #25262a 51%, #0d0e10 54%, #292a2e 70%, #0d0e10 74%);
+}
+.hero-glass { display: block; width: 100%; height: 100%; }
+.hero-glass[hidden] { display: none; }
 .hero::after {
   content: ''; position: absolute; inset: 0; z-index: -1;
-  /* The vertical fade is listed first so it paints on top: with the red glow last
-     the hero ended on a tinted edge against a neutral section, which read as a hard
-     line across the page. Bottom is now exactly the page colour. */
-  background:
-    linear-gradient(180deg, rgba(14,15,17,.55), rgba(14,15,17,.78) 46%, rgba(14,15,17,.95) 84%, var(--page)),
-    radial-gradient(120% 90% at 12% 100%, rgba(225,6,0,.22), transparent 62%);
+  /* Keep the animated folds visible while protecting text contrast and the page edge. */
+  background: linear-gradient(180deg, rgba(14,15,17,.45), rgba(14,15,17,.55) 48%, rgba(14,15,17,.84) 84%, var(--page));
 }
 .hero-inner {
   display: grid;

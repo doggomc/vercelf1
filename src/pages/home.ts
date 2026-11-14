@@ -7,6 +7,7 @@ import {
 } from '../services/weekend';
 
 initShell();
+void import('../features/glass-fold').then(m => m.initGlassFold(document.getElementById('heroGlass') as HTMLCanvasElement | null)).catch(() => {});
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
 const text = (id: string, value: string) => {
