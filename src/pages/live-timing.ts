@@ -476,7 +476,7 @@ function renderSessionTabs(activeKey: number | 'live'): void {
   const tabs = $('ltSessionTabs');
   if (!bar || !tabs) return;
   const hasLiveWs = Boolean(f1Client.state?.SessionInfo && (pinnedSessionKey === 'live' || snapshotFromF1State(f1Client.state)?.isLive));
-  if (weekendSessions.length <= 1 && !hasLiveWs) {
+  if (!weekendSessions.length && !hasLiveWs) {
     bar.hidden = true;
     return;
   }
@@ -578,18 +578,18 @@ f1Client.start();
 /* Bootstrap latest session + weekend session list from OpenF1 immediately so
    off-session visits and networks blocking livetiming.formula1.com get instant data. */
 let livePollTimer: number | undefined;
+let sessionBootstrapRetries = 0;
 
 async function bootstrapOpenF1(): Promise<void> {
   try {
-    const latestArr = await fetchOpenF1<OpenF1Session[]>('sessions', { session_key: 'latest' });
-    const latest = latestArr[latestArr.length - 1];
-    if (!latest) throw new Error('No latest session');
-
-    const meetingSessions = await fetchOpenF1<OpenF1Session[]>('sessions', { meeting_key: latest.meeting_key });
-    const now = Date.now();
-    weekendSessions = meetingSessions.filter((s) => Date.parse(s.date_start) <= now + 10 * 60_000);
-
+    const { fetchTimingSessions } = await import('../features/timing-sessions');
+    const sessions = await fetchTimingSessions(params => fetchOpenF1<OpenF1Session[]>('sessions', params));
+    if (!sessions.length) throw 0;
+    weekendSessions = sessions;
+    const latest = sessions[sessions.length - 1];
     if (pinnedSessionKey === 'live') { renderSessionTabs('live'); return; }
+    // A retry must not undo a selection made while the requests were in flight.
+    if (typeof pinnedSessionKey === 'number') { renderSessionTabs(pinnedSessionKey); return; }
     pinnedSessionKey = latest.session_key;
     renderSessionTabs(latest.session_key);
 
@@ -611,6 +611,10 @@ async function bootstrapOpenF1(): Promise<void> {
       }
     }
   } catch {
+    if (sessionBootstrapRetries < 3) {
+      sessionBootstrapRetries++;
+      window.setTimeout(bootstrapOpenF1, 30_000);
+    }
     if (!activeSnap) {
       setStatusIndicator('Live timing unavailable. Retrying…', 'error');
       if (towerEl) {

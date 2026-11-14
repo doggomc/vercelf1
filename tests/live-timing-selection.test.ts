@@ -44,6 +44,13 @@ describe('live timing initial tab selection', () => {
     expect(buttons[1].selected).toBe('true');
     expect(context.activeSnap).toBeNull();
   });
+  it('shows a single available session instead of hiding the selector', () => {
+    const { context, buttons, bar } = setup();
+    context.weekendSessions = [{ session_key: 1, session_name: 'Practice' }];
+    context.renderTabs(1);
+    expect(bar.hidden).toBe(false);
+    expect(buttons).toHaveLength(1);
+  });
   it('selects live when appropriate and keeps it selected after the live session ends', () => {
     const { context, handlers, buttons } = setup();
     context.pinnedSessionKey = null; context.f1Client.state.live = true;
