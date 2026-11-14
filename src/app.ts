@@ -812,6 +812,13 @@ function normalizeCurrentSource() {
 const eventSelect = $("eventSelect");
 const sessionSelect = $("sessionSelect");
 const linksEl = $("links");
+let sourceJellyModule: Promise<typeof import('./features/source-jelly')> | undefined;
+function bounceSelectedSource(restoreFocus = false): void {
+  const selected = linksEl?.querySelector<HTMLButtonElement>('button.chip.active') || null;
+  if (!selected) return;
+  if (restoreFocus) selected.focus({ preventScroll: true });
+  void (sourceJellyModule ??= import('./features/source-jelly')).then(module => module.animateSourceJelly(selected)).catch(() => {});
+}
 const playerEl = $("player");
 /* The frame belongs inside the stage: appended to the card it rendered at the browser's default
    300x150 in the corner (the "very small window"). All mounting goes through this one element. */
@@ -1487,6 +1494,7 @@ async function playFourK(targetIndex?: number) {
   const token = ++playerLoadToken;
   currentSource = index;
   renderButtons();
+  bounceSelectedSource();
   updateHeader();
   hideNoStream();
   loaderEl?.classList.remove('hidden');
@@ -1695,10 +1703,11 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
       b.appendChild(strippedTag);
     }
 
-    b.onclick = async () => {
+    b.onclick = async (click) => {
       if (!isPasted(s) && s.special && weeloSourceUrls(s).length === 0) {
         currentSource = i;
         renderButtons();
+        bounceSelectedSource(click.detail === 0);
         updateHeader();
         if (!isStreamAvailable(currentSession)) {
           return showNoStream({ blocked: false });
@@ -1712,6 +1721,7 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
       if (s.gated && !isPasted(s) && !isCustom(i)) return chooseFourK(i);
       currentSource = i;
       renderButtons();
+      bounceSelectedSource(click.detail === 0);
       updateHeader();
       /* load() mints the token and opens the player in the same tick. Prefetching first would spend
          the credential before the iframe asked for it, and these tokens die in seconds. */

@@ -25,8 +25,9 @@ if ('ResizeObserver' in window) new ResizeObserver(fitReplayRail).observe(player
 fitReplayRail();
 let weekends: Weekend[]=[]; let event: Event | undefined; let session: Session | undefined; let sourceIndex=0;
 let helpTimer=0;
+let sourceJellyModule: Promise<typeof import('../features/source-jelly')> | undefined;
 const params=new URLSearchParams(location.search);
-function display() {
+function display(animateGroup?: 'session' | 'feed', restoreFocus = false) {
   if (document.getElementById('partialOutageStage')) return;
   if(!event||!session)return;
   const sources=session.replay.sources.filter(s=>safeSource(s.url)); if(sourceIndex>=sources.length)sourceIndex=0;
@@ -42,10 +43,17 @@ function display() {
   const controls=$('replayControls');controls.replaceChildren();
   const makeGroup=(title:string)=>{const div=document.createElement('div');const h=document.createElement('h2');h.textContent=title;const buttons=document.createElement('div');buttons.className='replay-buttons';div.append(h,buttons);controls.append(div);return buttons;};
   const w=weekends.find(w=>w.events.some(e=>e.id===event!.id));
-  for(const e of w?.events||[]){const buttons=makeGroup(`${seriesNames[e.series]} sessions`);for(const s of e.sessions){const b=document.createElement('button');b.type='button';b.textContent=s.name;b.setAttribute('aria-pressed',String(e.id===event!.id&&s.key===session!.key));b.onclick=()=>{event=e;session=s;sourceIndex=0;history.replaceState(null,'',`?${new URLSearchParams({e:e.id,s:s.key})}`);display();};buttons.append(b);}}
-  const feeds=makeGroup('Broadcast feed');sources.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=/f1\s*tv/i.test(s.label)?'F1 TV':/international feed/i.test(s.label)?'International Feed':s.label?.trim() || `Feed ${i+1}`;b.setAttribute('aria-pressed',String(i===sourceIndex));b.onclick=()=>{sourceIndex=i;display();};feeds.append(b);});
+  for(const e of w?.events||[]){const buttons=makeGroup(`${seriesNames[e.series]} sessions`);for(const s of e.sessions){const b=document.createElement('button');b.type='button';b.textContent=s.name;b.setAttribute('aria-pressed',String(e.id===event!.id&&s.key===session!.key));b.onclick=(click)=>{event=e;session=s;sourceIndex=0;history.replaceState(null,'',`?${new URLSearchParams({e:e.id,s:s.key})}`);display('session',click.detail===0);};buttons.append(b);}}
+  const feeds=makeGroup('Broadcast feed');sources.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=/f1\s*tv/i.test(s.label)?'F1 TV':/international feed/i.test(s.label)?'International Feed':s.label?.trim() || `Feed ${i+1}`;b.setAttribute('aria-pressed',String(i===sourceIndex));b.onclick=(click)=>{sourceIndex=i;display('feed',click.detail===0);};feeds.append(b);});
+  if (animateGroup) {
+    const selected = animateGroup === 'feed' ? feeds.querySelector<HTMLButtonElement>('button[aria-pressed="true"]') : controls.querySelector<HTMLButtonElement>('.replay-buttons button[aria-pressed="true"]');
+    if (selected) {
+      if (restoreFocus) selected.focus({ preventScroll: true });
+      void (sourceJellyModule ??= import('../features/source-jelly')).then(module => module.animateSourceJelly(selected)).catch(() => {});
+    }
+  }
 }
-$('reloadFeedBtn').addEventListener('click',display);
+$('reloadFeedBtn').addEventListener('click',()=>display());
 $('nsRetryBtn').addEventListener('click',()=>location.reload());
 const feedController=new AbortController();
 const feedTimeout=window.setTimeout(()=>feedController.abort(),12000);
