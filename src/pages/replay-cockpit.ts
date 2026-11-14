@@ -4,6 +4,7 @@ import { initPageGate } from '../features/page-gate';
 import '../viewer-counter';
 import { setCounterContext } from '../features/counter-context';
 import { mountCockpitViewerCount } from '../features/cockpit-viewers';
+import { replayRailWidth } from '../features/replay-rail-layout';
 import { fetchWeekends, safeSource, seriesNames, weekendTitle, type Weekend, type Event, type Session } from '../lib/replays-feed';
 initShell({ nav:false, transitions:false });
 mountCockpitViewerCount();
@@ -13,16 +14,23 @@ const $ = (id:string) => document.getElementById(id)!;
 // right; on tighter screens the controls remain in the document below it.
 const rail = document.querySelector<HTMLElement>('.replay-rail')!;
 const player = $('player');
+const railContainer = $('watch');
+// Both the theater and player have entrance transforms. Measuring while they
+// are scaled down underestimates the player's final width and can overlap it.
+let railReady = false;
 function fitReplayRail() {
-  const available = window.innerWidth - player.getBoundingClientRect().right - 28;
-  const beside = window.innerWidth > 1100 && available >= 145;
+  if (!railReady) return;
+  const width = replayRailWidth(player.getBoundingClientRect().right, railContainer.getBoundingClientRect().right, window.innerWidth);
+  const beside = width > 0;
   rail.classList.toggle('is-beside', beside);
-  if (beside) rail.style.setProperty('--rail-width', `${Math.min(320, available)}px`);
+  if (beside) rail.style.setProperty('--rail-width', `${width}px`);
   else rail.style.removeProperty('--rail-width');
 }
 window.addEventListener('resize', fitReplayRail);
+player.addEventListener('transitionend', fitReplayRail);
 if ('ResizeObserver' in window) new ResizeObserver(fitReplayRail).observe(player);
-fitReplayRail();
+// Leave the rail below the player until the 400ms entrance has settled.
+window.setTimeout(() => { railReady = true; fitReplayRail(); }, 500);
 let weekends: Weekend[]=[]; let event: Event | undefined; let session: Session | undefined; let sourceIndex=0;
 let helpTimer=0;
 let sessionControlsSignature = '';

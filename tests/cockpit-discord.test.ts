@@ -38,6 +38,9 @@ describe('replay cockpit session rail', () => {
     expect(html).not.toMatch(/replay-page \.wplayer\s*\{/);
     const script = readFileSync(new URL('../src/pages/replay-cockpit.ts', import.meta.url), 'utf8');
     expect(script).toContain('player.getBoundingClientRect().right');
+    expect(script).toContain('railContainer.getBoundingClientRect().right');
+    expect(script).toContain('if (!railReady) return');
+    expect(script).toContain('railReady = true; fitReplayRail()');
     expect(script).toContain("rail.classList.toggle('is-beside', beside)");
     expect(html).toContain('overflow-y: auto');
   });
