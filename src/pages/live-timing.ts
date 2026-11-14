@@ -116,6 +116,9 @@ function getOrCreateRow(row: TimingRow, isRace: boolean): RowDom {
   return rec;
 }
 
+let timingMotion: (el: Element | null, enabled?: boolean) => void = () => {};
+void import('../features/timing-change-motion').then(m => { timingMotion = m.timingChangeMotion; }).catch(() => {});
+let weatherSignature = '';
 let activeSnap: TimingSnapshot | null = null;
 let activeSessionId = '';
 let rcSig = '';
@@ -128,6 +131,7 @@ function setStatusIndicator(text: string, mode: 'live' | 'idle' | 'connecting' |
 }
 
 function paintSnapshot(snap: TimingSnapshot): void {
+  const hadSnapshot = Boolean(activeSnap);
   const sessionId = `${snap.source}:${snap.sessionKey ?? snap.sessionName}`;
   const sameSession = sessionId === activeSessionId;
   const animateSwitch = Boolean(activeSessionId) && !sameSession && !matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -142,16 +146,23 @@ function paintSnapshot(snap: TimingSnapshot): void {
   activeSessionId = sessionId;
   activeSnap = snap;
   setStatusIndicator(snap.statusText, snap.isLive ? 'live' : 'idle');
-  set('ltTitle', `${snap.meetingName}: ${snap.sessionName}`);
+  const title = `${snap.meetingName}: ${snap.sessionName}`;
+  if ($('ltTitle')?.textContent !== title) timingMotion($('ltTitle'), hadSnapshot);
+  set('ltTitle', title);
 
   const trackEl = $('ltTrack');
   if (trackEl) trackEl.className = `lt-track ${snap.track.cls}`;
+  if ($('ltTrackText')?.textContent !== snap.track.label) timingMotion(trackEl, hadSnapshot);
   set('ltTrackText', snap.track.label);
+  if (!sameSession) timingMotion($('ltClock'), hadSnapshot);
   set('ltClockLabel', snap.clock.label);
   set('ltClock', snap.clock.value);
 
   const weatherEl = $('ltWeather');
-  if (weatherEl) {
+  const nextWeatherSignature = JSON.stringify(snap.weather);
+  if (weatherEl && weatherSignature !== nextWeatherSignature) {
+    weatherSignature = nextWeatherSignature;
+    timingMotion(weatherEl, hadSnapshot);
     if (snap.weather) {
       const w = snap.weather;
       weatherEl.innerHTML = `<span class="lt-w-item">${SVG_THERM}Air <b>${esc(w.air)}°</b></span>`
@@ -196,6 +207,7 @@ function paintSnapshot(snap: TimingSnapshot): void {
         );
         rowSwitchAnimations.set(dom.el, animation);
       }
+      const existingRow = dom.lastPos !== null;
       const numericPos = Number(row.pos);
       if (sameSession && Number.isFinite(numericPos) && dom.lastPos !== null && dom.lastPos !== numericPos) {
         dom.el.classList.remove('flash-up', 'flash-down');
@@ -210,19 +222,20 @@ function paintSnapshot(snap: TimingSnapshot): void {
 
       row.cells.forEach((cell, cIdx) => {
         const span = dom.cells[cIdx];
-        if (span.textContent !== cell.text) span.textContent = cell.text;
+        if (span.textContent !== cell.text) { span.textContent = cell.text; timingMotion(span, hadSnapshot && existingRow); }
         span.classList.toggle('t-fastest', cell.tone === 'fastest');
         span.classList.toggle('t-pb', cell.tone === 'pb');
       });
 
       const tyreKey = row.tyre ? `${row.tyre.code}:${row.tyre.age}` : '';
       if (dom.tyreKey !== tyreKey) {
+        timingMotion(dom.tyre, hadSnapshot && Boolean(dom.tyreKey));
         dom.tyreKey = tyreKey;
         dom.tyre.innerHTML = row.tyre
           ? `<span class="lt-tyre-wrap"><span class="lt-tyre lt-tyre-${esc(row.tyre.code)}">${esc(row.tyre.code)}</span><span class="lt-tyre-age">${esc(row.tyre.age)}</span></span>`
           : '';
       }
-      if (dom.tail.textContent !== row.tail) dom.tail.textContent = row.tail;
+      if (dom.tail.textContent !== row.tail) { dom.tail.textContent = row.tail; timingMotion(dom.tail, hadSnapshot && existingRow); }
     });
 
     for (const [num, dom] of rowDomMap) {
@@ -237,6 +250,7 @@ function paintSnapshot(snap: TimingSnapshot): void {
     rcSig = nextRcSig;
     const rcList = $('ltRcList');
     if (rcList) {
+      timingMotion(rcList, hadSnapshot);
       rcList.innerHTML = snap.raceControl.length > 0
         ? snap.raceControl.map((m) =>
             `<li class="lt-rc-item">
@@ -257,6 +271,7 @@ function paintSnapshot(snap: TimingSnapshot): void {
     radioSig = nextRadioSig;
     const radioList = $('ltRadioList');
     if (radioList) {
+      timingMotion(radioList, hadSnapshot);
       radioList.innerHTML = snap.radio.length > 0
         ? snap.radio.map((c) => {
             const avatar = c.headshotUrl

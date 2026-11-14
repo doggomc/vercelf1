@@ -48,8 +48,8 @@ for (const page of ['drivers.html', 'teams.html']) {
 }
 /* Live timing speaks F1's SignalR Core WebSocket protocol and OpenF1's REST feed
    for off-session / blocked-network fallback, plus tower, race control & radio UI. */
-// Session tabs add a small lazy-load hook and keyboard navigation.
-const LIVE_TIMING_BUDGET = 16 * 1024 + 1152;
+// Session tabs, resilient session loading and changed-value motion add small lazy hooks.
+const LIVE_TIMING_BUDGET = 16 * 1024 + 1280;
 const liveTimingSize = pageGzip('live-timing.html');
 console.log(`live-timing gzip: ${liveTimingSize} B of ${LIVE_TIMING_BUDGET}`);
 assert(liveTimingSize < LIVE_TIMING_BUDGET, `live-timing.html ships ${liveTimingSize} B gzip — over the ${LIVE_TIMING_BUDGET} B budget`);
