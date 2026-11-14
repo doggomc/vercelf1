@@ -13,6 +13,11 @@ describe('Discord link in private cockpit controls', () => {
     expect(actions).toContain('aria-label="Join FreeF1 on Discord"');
     expect(actions).toContain('<span>Discord</span>');
   });
+  it('centres the Other Streams back arrow independently of the text baseline', () => {
+    const html = readFileSync(new URL('../private-cockpit.html', import.meta.url), 'utf8');
+    expect(html).toMatch(/id="backStreamsBtn"[^>]*><svg[^>]*aria-hidden="true"[^>]*>[\s\S]*?<\/svg><span>Other streams<\/span><\/a>/);
+    expect(html).toContain('#backStreamsBtn svg { display: block; flex: none; }');
+  });
   it('keeps replay controls scrollable without bringing back the Open player button', () => {
     const html = readFileSync(new URL('../replay-cockpit.html', import.meta.url), 'utf8');
     expect(html).toContain('overflow-y: auto');
