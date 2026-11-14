@@ -15,7 +15,7 @@ function setup() {
       buttons.length = 0;
       for (const match of html.matchAll(/<button class="tab ([^"]*)"[^>]*aria-selected="([^"]*)" data-session-key="([^"]*)"/g)) {
         const button: any = { dataset: { sessionKey: match[3] }, selected: match[2], active: match[1].includes('active') };
-        button.classList = { toggle: (_: string, active: boolean) => { button.active = active; } };
+        button.classList = { toggle: (_: string, active: boolean) => { button.active = active; }, contains: () => button.active };
         button.setAttribute = (_: string, value: string) => { button.selected = value; };
         buttons.push(button);
       }
@@ -25,7 +25,7 @@ function setup() {
   const bar = { hidden: true };
   const handlers: Record<string, () => void> = {};
   const f1Client = { state: { SessionInfo: {}, live: false }, addEventListener: (name: string, fn: () => void) => { handlers[name] = fn; } };
-  const context: any = { f1Client, weekendSessions: [{ session_key: 1, session_name: 'Practice' }, { session_key: 2, session_name: 'Race' }], pinnedSessionKey: 2, activeSnap: null,
+  const context: any = { sessionJelly: { sync: () => {} }, f1Client, weekendSessions: [{ session_key: 1, session_name: 'Practice' }, { session_key: 2, session_name: 'Race' }], pinnedSessionKey: 2, activeSnap: null,
     $: (id: string) => id === 'ltSessionsBar' ? bar : tabs,
     snapshotFromF1State: (state: any) => ({ isLive: state.live }), esc: (s: string) => s,
     paintSnapshot: (snap: unknown) => { context.activeSnap = snap; }, window: { setTimeout: (fn: () => void) => fn() },

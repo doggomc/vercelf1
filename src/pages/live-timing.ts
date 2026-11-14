@@ -465,6 +465,11 @@ async function loadOpenF1Bundle(session: OpenF1Session, bypassCache = false): Pr
   return bundle;
 }
 
+let sessionJelly: { sync: (instant?: boolean) => void } = { sync: () => {} };
+void import('../features/session-jelly').then(({ createSessionJelly }) => {
+  sessionJelly = createSessionJelly($('ltSessionTabs'));
+  sessionJelly.sync(true);
+}).catch(() => { /* the session selector remains usable if the motion chunk fails */ });
 let sessionTabsSignature = '';
 function renderSessionTabs(activeKey: number | 'live'): void {
   const bar = $('ltSessionsBar');
@@ -482,17 +487,21 @@ function renderSessionTabs(activeKey: number | 'live'): void {
       const active = button.dataset.sessionKey === String(activeKey);
       button.classList.toggle('active', active);
       button.setAttribute('aria-selected', String(active));
+      button.tabIndex = active ? 0 : -1;
     });
+    sessionJelly.sync();
     return;
   }
   sessionTabsSignature = signature;
   const liveBtn = hasLiveWs
-    ? `<button class="tab ${activeKey === 'live' ? 'active' : ''}" type="button" role="tab" aria-selected="${activeKey === 'live'}" data-session-key="live">Live feed</button>`
+    ? `<button class="tab ${activeKey === 'live' ? 'active' : ''}" type="button" role="tab" aria-selected="${activeKey === 'live'}" data-session-key="live"><span class="jr-skin">Live feed</span></button>`
     : '';
   tabs.innerHTML = liveBtn + weekendSessions.map((s) => {
     const isSel = activeKey === s.session_key;
-    return `<button class="tab ${isSel ? 'active' : ''}" type="button" role="tab" aria-selected="${isSel}" data-session-key="${s.session_key}">${esc(s.session_name)}</button>`;
+    return `<button class="tab ${isSel ? 'active' : ''}" type="button" role="tab" aria-selected="${isSel}" data-session-key="${s.session_key}"><span class="jr-skin">${esc(s.session_name)}</span></button>`;
   }).join('');
+  tabs.querySelectorAll<HTMLButtonElement>('[data-session-key]').forEach(button => { button.tabIndex = button.classList.contains('active') ? 0 : -1; });
+  sessionJelly.sync(true);
 }
 
 $('ltSessionTabs')?.addEventListener('click', (ev) => {
@@ -520,6 +529,20 @@ $('ltSessionTabs')?.addEventListener('click', (ev) => {
   }).catch(() => {
     if (pinnedSessionKey === key) setStatusIndicator(`Could not load ${target.session_name}`, 'error');
   });
+});
+
+// Roving focus follows the tablist keyboard pattern and activates the chosen session.
+$('ltSessionTabs')?.addEventListener('keydown', (event) => {
+  const key = event.key;
+  if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(key)) return;
+  const tabs = Array.from($('ltSessionTabs')?.querySelectorAll<HTMLButtonElement>('[data-session-key]:not(:disabled)') || []);
+  if (!tabs.length) return;
+  const current = tabs.indexOf(event.target as HTMLButtonElement);
+  if (current < 0) return;
+  const rtl = getComputedStyle($('ltSessionTabs')!).direction === 'rtl';
+  const forward = key === 'ArrowDown' || (key === 'ArrowRight' && !rtl) || (key === 'ArrowLeft' && rtl);
+  const next = key === 'Home' ? 0 : key === 'End' ? tabs.length - 1 : (current + (forward ? 1 : -1) + tabs.length) % tabs.length;
+  event.preventDefault(); tabs[next].focus(); tabs[next].click(); sessionJelly.sync(true);
 });
 
 /* Wire official F1 SignalR Core push stream */

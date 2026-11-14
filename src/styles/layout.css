@@ -1882,3 +1882,15 @@ a.tp-mini-who:hover .tp-mini-name { text-decoration: underline; text-underline-o
 .session-relative { flex: none; color: #85b8ff; font-size: 12px; line-height: 16px; font-weight: 650; white-space: nowrap; }
 .session-row.live .session-relative { color: #ff9d97; }
 @media (max-width: 380px) { .hero-week { padding: 16px; } .session-row { gap: 8px; padding-right: 6px; } }
+
+/* Live Timing's session selector: JellyRadio-style chips, without affecting
+   the tabs used by standings and the rest of the site. */
+.lt-sessions-bar { overflow-x: auto; scrollbar-width: thin; overscroll-behavior-inline: contain; }
+#ltSessionTabs.tabs { --jr-pad-x: 18px; display: flex; width: max-content; min-width: 100%; overflow: visible; align-items: center; gap: 8px; padding: 8px var(--jr-pad-x); box-sizing: border-box; }
+#ltSessionTabs .tab { position: relative; display: inline-flex; flex: 0 0 auto; height: 36px; min-height: 36px; padding: 0; border: 0; border-radius: 18px; background: transparent; color: inherit; transform-origin: center; touch-action: manipulation; cursor: pointer; }
+#ltSessionTabs .jr-skin { position: relative; display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 16px; border-radius: 18px; background: #27272a; color: #f5f5f5; font: 500 13px/1 'Inter', system-ui, sans-serif; white-space: nowrap; transition: background-color .2s ease, color .2s ease, transform .16s ease; }
+#ltSessionTabs .tab.active .jr-skin { background: #f5f5f5; color: #18181b; }
+#ltSessionTabs .tab:not(.active):hover .jr-skin { background: #3c3c40; }
+#ltSessionTabs .tab:active .jr-skin { transform: scale(.97); }
+#ltSessionTabs .tab:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) { #ltSessionTabs .jr-skin { transition: none; } #ltSessionTabs .tab:active .jr-skin { transform: none; } }
