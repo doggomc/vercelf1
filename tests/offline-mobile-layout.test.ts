@@ -9,6 +9,7 @@ describe('mobile offline messages', () => {
   it('allows scrolling rather than clipping overflow while retaining the 16:9 player', () => {
     expect(css).toContain('.wplayer-stage { position: relative; aspect-ratio: 16 / 9;');
     expect(css).toMatch(/@media \(max-width: 600px\)\s*\{\s*\.wplayer-stage \.nostream\s*\{[^}]*overflow-y: auto/s);
+    expect(css).toMatch(/\.wplayer-stage \.nostream\s*\{[^}]*overscroll-behavior-y: auto;[^}]*touch-action: pan-y/s);
     expect(css).toContain('.wplayer-stage .nostream > * { flex-shrink: 0; max-width: 100%; }');
     expect(css).toContain('overflow-wrap: anywhere');
   });

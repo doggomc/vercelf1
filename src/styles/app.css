@@ -6897,7 +6897,8 @@ body[data-page="cockpit"]:not(.theater) #watch .wsources { animation: cockpitRis
     gap: 6px;
     padding: 10px 12px;
     overflow-y: auto;
-    overscroll-behavior: contain;
+    overscroll-behavior-y: auto;
+    touch-action: pan-y;
     scrollbar-width: thin;
   }
   .wplayer-stage .nostream::before,
