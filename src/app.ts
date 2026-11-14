@@ -1836,6 +1836,11 @@ function stopNS() {
     nsTimer = null;
   }
   nsRunning = false;
+  // A blocked/offline status may replace a cycling message mid-fade.
+  // Restore visibility so the new title and explanation cannot stay transparent.
+  [noStreamTitleEl, noStreamTextEl].forEach((element) => {
+    if (element) { element.style.opacity = '1'; element.style.transform = 'none'; }
+  });
 }
 
 function startNS() {
@@ -2417,7 +2422,13 @@ function paintAutoSourceConfig(startManual = false) {
     multiViewerControl?.sync?.();
     const frame = stageBox?.querySelector('iframe');
     if (relaysDisabled && (relayPlaybackStopped || (frame && isStreamRelayUrl(frame.getAttribute('src'))))) { relayPlaybackStopped = false; load(); }
-    if (startManual && !autoStreamsActive && !stageBox?.querySelector('iframe, video')) load();
+    if ((startManual && !autoStreamsActive || playerLoadToken === 0) && !stageBox?.querySelector('iframe, video') && !noStreamEl?.classList.contains('visible')) load();
+  }).catch(() => {
+    // A blocked or stale lazy chunk must not leave the startup spinner forever.
+    // Do not disturb an already playing stream or a newer configuration.
+    if (revision === autoApplyRevision && !stageBox?.querySelector('iframe, video') && !noStreamEl?.classList.contains('visible')) {
+      showNoStream({ title: 'Sources unavailable', text: 'The source controls could not load. Refresh the page to try again.' });
+    }
   });
 }
 function scheduleAutoCheck() {
@@ -2462,10 +2473,12 @@ async function refreshAutoStreams() {
     }
     // When the weekend closes, retain any already-open player; stop discovery without interrupting it.
     paintAutoSourceConfig();
+    if (!autoEntries.length && !streamOverride.active && !stageBox?.querySelector('iframe, video') && noStreamEl?.classList.contains('visible')) load();
   } catch {
     if (epoch !== autoEpoch || !autoStreamsActive) return;
     if (!autoEntries.length) autoWindowState = 'unavailable';
     renderButtons({ quiet: true });
+    if (!autoEntries.length && !streamOverride.active && !stageBox?.querySelector('iframe, video') && noStreamEl?.classList.contains('visible')) load();
   }
   if (epoch === autoEpoch) scheduleAutoCheck();
 }
