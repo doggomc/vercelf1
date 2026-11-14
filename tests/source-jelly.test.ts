@@ -30,5 +30,7 @@ describe('source jelly controls', () => {
     const css = read('src/styles/source-jelly.css');
     expect(css).toContain('#links > button.chip.active');
     expect(css).toContain('.replay-buttons button[aria-pressed="true"]');
+    expect(css).toContain('.src-pill-tag.is-4k { background: #facc15; color: #392800; }');
+    expect(css).toContain('.src-pill-tag.is-stripped { background: #b6ead6; color: #07513a; }');
   });
 });

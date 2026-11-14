@@ -12,3 +12,6 @@ body[data-page="cockpit"] #watch #links .special-row button.chip.active {
 #watch .wsource-list button.chip.active:not(.chip-special):not(.has-tag)::before { background: #e10600; box-shadow: none; }
 #watch .replay-buttons { gap: 14px; padding: 5px 9px; }
 #watch .replay-buttons button[aria-pressed="true"] { background: #f5f5f5; color: #18181b; box-shadow: none; scale: 1.08; }
+/* Keep badges legible against the light selected source. */
+#watch .wsource-list button.chip.active .src-pill-tag.is-4k { background: #facc15; color: #392800; }
+#watch .wsource-list button.chip.active .src-pill-tag.is-stripped { background: #b6ead6; color: #07513a; }
