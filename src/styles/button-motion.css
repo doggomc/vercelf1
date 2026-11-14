@@ -1,29 +1,29 @@
 /* Shared button feedback. Individual transform properties compose with the
    site's existing transform animations instead of replacing them. */
-:where(button, input[type="button"], input[type="submit"], input[type="reset"], a.btn, a.chip, a[role="button"]):not(#ltSessionTabs .tab) {
+:where(button, input[type="button"], input[type="submit"], input[type="reset"], a.btn, a.chip, a.lt-btn, a[role="button"]):not(#ltSessionTabs .tab) {
   transition-property: translate, scale, transform, background-color, border-color, box-shadow, color, opacity, filter !important;
   transition-duration: .2s !important;
   transition-timing-function: cubic-bezier(.22, 1, .36, 1) !important;
   transition-delay: 0s !important;
 }
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  :where(button, input[type="button"], input[type="submit"], input[type="reset"], a.btn, a.chip, a[role="button"]):not(:disabled):not([aria-disabled="true"]):not(#ltSessionTabs .tab):hover {
+  :where(button, input[type="button"], input[type="submit"], input[type="reset"], a.btn, a.chip, a.lt-btn, a[role="button"]):not(:disabled):not([aria-disabled="true"]):not(#ltSessionTabs .tab):hover {
     translate: 0 -1px;
   }
 }
 @media (prefers-reduced-motion: no-preference) {
-  :where(button, input[type="button"], input[type="submit"], input[type="reset"], a.btn, a.chip, a[role="button"]):not(:disabled):not([aria-disabled="true"]):not(#ltSessionTabs .tab):active {
+  :where(button, input[type="button"], input[type="submit"], input[type="reset"], a.btn, a.chip, a.lt-btn, a[role="button"]):not(:disabled):not([aria-disabled="true"]):not(#ltSessionTabs .tab):active {
     translate: 0 0;
     scale: .985;
     transition-duration: .09s !important;
   }
 }
-:where(button, input[type="button"], input[type="submit"], input[type="reset"], a.btn, a.chip, a[role="button"]):not(:disabled):not([aria-disabled="true"]):focus-visible {
+:where(button, input[type="button"], input[type="submit"], input[type="reset"], a.btn, a.chip, a.lt-btn, a[role="button"]):not(:disabled):not([aria-disabled="true"]):focus-visible {
   outline: 2px solid #fff;
   outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) {
-  :where(button, input[type="button"], input[type="submit"], input[type="reset"], a.btn, a.chip, a[role="button"]):not(#ltSessionTabs .tab) {
+  :where(button, input[type="button"], input[type="submit"], input[type="reset"], a.btn, a.chip, a.lt-btn, a[role="button"]):not(#ltSessionTabs .tab) {
     transition: none !important;
     translate: none !important;
     scale: none !important;

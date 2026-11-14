@@ -13,5 +13,10 @@ describe('shared button feedback', () => {
     expect(css).toContain(':focus-visible');
     expect(css).toContain(':not(#ltSessionTabs .tab)');
     expect(css).toContain('scale: .985');
+    expect(css.match(/a\.lt-btn/g)).toHaveLength(5);
+    const liveTiming = read('live-timing.html');
+    expect(liveTiming).toMatch(/class="lt-btn lt-btn-primary"[^>]*href="\/cockpit"/);
+    expect(liveTiming).toMatch(/class="lt-btn lt-btn-glass"[^>]*href="\/standings"/);
+    expect(liveTiming).toMatch(/class="lt-btn lt-btn-glass lt-btn-icon"/);
   });
 });
