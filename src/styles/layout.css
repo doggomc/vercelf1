@@ -1896,19 +1896,20 @@ a.tp-mini-who:hover .tp-mini-name { text-decoration: underline; text-underline-o
 #ltSessionTabs .tab:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 @media (prefers-reduced-motion: reduce) { #ltSessionTabs .jr-skin { transition: none; } #ltSessionTabs .tab:active .jr-skin { transform: none; } }
 
-/* Preserve the home cards; add a gentle lift and accent glow only on hover. */
-.home-explore .team-card {
-  transition: transform .24s cubic-bezier(.22,1,.36,1), box-shadow .24s ease, background-color .18s var(--ease);
+/* Preserve navigation cards; gently lift and glow on hover. */
+.explore-cards .team-card {
+  transition: transform .55s cubic-bezier(.22,1,.36,1), box-shadow .55s ease, background-color .55s var(--ease);
 }
-.home-explore .team-card::before { transition: filter .24s ease; }
+.explore-cards .team-card::before { transition: filter .55s ease; }
+.explore-cards .team-card .t-ico { transition: color .55s ease, background-color .55s ease, border-color .55s ease; }
 @media (hover: hover) {
-  .home-explore .team-card:hover {
+  .explore-cards .team-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 30px color-mix(in srgb, var(--tc) 24%, transparent), var(--shadow-raised);
   }
-  .home-explore .team-card:hover::before { filter: brightness(1.35); }
+  .explore-cards .team-card:hover::before { filter: brightness(1.35); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .home-explore .team-card, .home-explore .team-card::before { transition: none; }
-  .home-explore .team-card:hover { transform: none; }
+  .explore-cards .team-card, .explore-cards .team-card::before, .explore-cards .team-card .t-ico { transition: none; }
+  .explore-cards .team-card:hover { transform: none; }
 }
