@@ -774,9 +774,10 @@ let multiViewerControl: any = null;
 let autoStreamsActive = false;
 let relaysDisabled = false;
 let sourceConfigKnown = false;
+let disabledSourceIds = new Set<string>();
 let autoWindowState: 'unknown' | 'active' | 'closed' | 'unavailable' = 'unknown';
 let autoWindowStart: number | null = null;
-const sourceEnabled = (s) => Boolean(s) && !(relaysDisabled && ((s.stripped && s.id !== 'sky-uk') || s.links?.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url)))) && (autoStreamsActive ? Boolean(s.managedAuto) : !s.managedAuto && !s.hidden);
+const sourceEnabled = (s) => sourceConfigKnown && Boolean(s) && !disabledSourceIds.has(s.id) && !(relaysDisabled && ((s.stripped && s.id !== 'sky-uk') || s.links?.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url)))) && (autoStreamsActive ? Boolean(s.managedAuto) : !s.managedAuto && !s.hidden);
 
 /* ═══ Session key ═══
    Every source URL is derived from the live event + session, and the key is stamped onto feeds
@@ -1646,6 +1647,13 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
   const visible = sources.map((_s, i) => i).filter((i) => sourceEnabled(sources[i]) && inTab(sources[i]));
   const countEl = $('sourcesCount');
   if (countEl) countEl.textContent = `${visible.length} ${visible.length === 1 ? 'feed' : 'feeds'}`;
+  if (!sourceConfigKnown) {
+    const status = document.createElement('p');
+    status.className = 'auto-stream-status';
+    status.setAttribute('role', 'status');
+    status.textContent = 'Checking available sources…';
+    linksEl.appendChild(status);
+  }
   if (autoStreamsActive && autoWindowState !== 'active') {
     const status = document.createElement('p');
     status.className = 'auto-stream-status';
@@ -2466,6 +2474,7 @@ function applySourceConfig(payload) {
   const firstConfig = !sourceConfigKnown;
   sourceConfigKnown = true;
   autoConfig = payload;
+  disabledSourceIds = new Set<string>(payload?.disabled || []);
   const wasRelayDisabled = relaysDisabled;
   relaysDisabled = payload?.relaysDisabled === true;
   if (!wasRelayDisabled && relaysDisabled) {
@@ -2475,6 +2484,12 @@ function applySourceConfig(payload) {
   }
   autoStreamsActive = payload?.autoStreams === true;
   if (wasActive !== autoStreamsActive) { autoEpoch++; autoNextCheckAt = 0; }
+  // Hide newly disabled sources immediately, before the lazy catalogue module resolves.
+  // Preserve the old selection until the catalogue applies, so it can stop/reload
+  // a player whose source was disabled rather than silently leaving it playing.
+  const previousSelection = currentSource;
+  renderButtons({ quiet: true });
+  currentSource = previousSelection;
   if (!autoStreamsActive) {
     if (autoRefreshTimer) clearTimeout(autoRefreshTimer);
     autoEntries = []; autoWindowState = 'unknown'; autoWindowStart = null;
@@ -3442,6 +3457,7 @@ window.setInterval(() => {
 window.setTimeout(() => {
   if (sourceConfigKnown || autoStreamsActive) return;
   sourceConfigKnown = true;
+  renderButtons({ quiet: true });
   void loadCatalogues().then(() => { renderButtons({ quiet: true }); updateCurrentStreamButton(); });
   if (!document.hidden) void loadProviderHealth();
   if (!stageBox?.querySelector('iframe, video')) load();

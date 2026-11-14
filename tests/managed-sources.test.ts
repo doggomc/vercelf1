@@ -45,3 +45,14 @@ describe('managed cockpit sources', () => {
     expect(parseSiteConfig({sources:{disabled:[],autoStreams:true}})?.sources?.autoStreams).toBe(true);
   });
 });
+
+it('honours disabled and removed WikiSport feeds while keeping enabled and custom sources', () => {
+  const config = parseSiteConfig({sources:{disabled:['wikisport','wikisport-2'], removed:['wikisport-3','wikisport-4','wikisport-5'],custom:[{id:'custom-extra',label:'Extra',url:'https://example.com/player',tab:'en'}]}})!.sources!;
+  const sources: StreamSource[] = ['wikisport','wikisport-2','wikisport-3','wikisport-4','wikisport-5','sky-uk'].map(id=>({id,label:id,links:[{url:'https://example.com'}]}));
+  let index=0;
+  const host = {sources,current:()=>index,setCurrent:(i:number)=>{index=i},usable:(s:StreamSource|undefined)=>!!s&&!s.hidden,normalize:()=>{index=sources.findIndex(s=>!s.hidden)},render:()=>{},reload:()=>{}};
+  applySourceConfig(config,host);
+  expect(sources.filter(s=>!s.hidden).map(s=>s.id)).toEqual(['sky-uk','custom-extra']);
+  applySourceConfig({...config,disabled:['wikisport-2','wikisport-3','wikisport-4','wikisport-5']},host);
+  expect(sources.find(s=>s.id==='wikisport')?.hidden).toBe(false);
+});
