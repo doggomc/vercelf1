@@ -6888,3 +6888,22 @@ body[data-page="cockpit"]:not(.theater) #watch .wsources { animation: cockpitRis
 .wsource-list .source-tier-heading:first-child { margin: 0; padding: 0; border: 0; }
 .wsource-list .auto-provider-tag { background: #ffffff17; color: #d6d8e0; font-size: 9px; letter-spacing: .04em; }
 .wsource-list .auto-stream-status { flex: 1 0 100%; grid-column: 1 / -1; margin: 0 0 6px; color: var(--rr-fg-3); font-size: 12px; line-height: 1.5; }
+
+/* The 16:9 stage is short on phones. Keep longer offline messages and every
+   action reachable instead of clipping them behind the player's edges. */
+@media (max-width: 600px) {
+  .wplayer-stage .nostream {
+    justify-content: flex-start;
+    gap: 6px;
+    padding: 10px 12px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  .wplayer-stage .nostream::before,
+  .wplayer-stage .nostream::after { content: ''; flex: 1 0 0; }
+  .wplayer-stage .nostream > * { flex-shrink: 0; max-width: 100%; }
+  .wplayer-stage .nostream h3 { font-size: 1rem; line-height: 1.15; overflow-wrap: anywhere; }
+  .wplayer-stage .nostream p { font-size: .8rem; line-height: 1.4; overflow-wrap: anywhere; }
+  .wplayer-stage .ns-actions { width: 100%; gap: 6px; margin-top: 2px; }
+}
