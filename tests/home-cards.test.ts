@@ -7,6 +7,12 @@ describe('home exploration cards', () => {
   it('includes all navigation cards including Replays and Other Streams', () => {
     for (const path of ['cockpit','schedule','standings','live-timing','drivers','teams','replays','other-streams']) expect(home).toContain(`class="team-card" href="/${path}"`);
   });
+  it('uses distinct home-only colors for the added cards', () => {
+    expect(home).toContain('href="/replays" style="--tc:#A855F7"');
+    expect(home).toContain('href="/other-streams" style="--tc:#F472B6"');
+    expect(other).toContain('href="/replays" style="--tc:#E10600"');
+    expect(other).toContain('href="/other-streams" style="--tc:#00D2BE"');
+  });
   it('applies slower motion to home and Other cards and accommodates reduced motion', () => {
     expect(home).toContain('explore-cards'); expect(other).toContain('explore-cards'); expect(css).toContain('.explore-cards .team-card'); expect(css).toContain('transform .55s');
     expect(css).toMatch(/prefers-reduced-motion: reduce[^}]+\.explore-cards/s);
