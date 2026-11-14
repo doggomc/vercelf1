@@ -1,3 +1,4 @@
+import { syncSourceSelection } from './features/source-selection';
 import { setCounterContext } from './features/counter-context';
 import { applyFailover } from './features/failover';
 import { isStreamRelayUrl } from './lib/stream-relays';
@@ -1493,7 +1494,7 @@ async function playFourK(targetIndex?: number) {
   const selected = sources[index];
   const token = ++playerLoadToken;
   currentSource = index;
-  renderButtons();
+  syncSourceSelection(linksEl, currentSource);
   bounceSelectedSource();
   updateHeader();
   hideNoStream();
@@ -1658,6 +1659,7 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
   const chipFor = (s: StreamSource, i: number) => {
     const b = document.createElement("button");
     b.type = "button";
+    b.dataset.sourceIndex = String(i);
     const active = i === currentSource;
     const pill = describeSourcePill(s);
     b.className = "chip src-pill" + (active ? " active" : "") + (s.stripped ? " chip-stripped" : "");
@@ -1704,9 +1706,10 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     }
 
     b.onclick = async (click) => {
+      if (i === currentSource) return;
       if (!isPasted(s) && s.special && weeloSourceUrls(s).length === 0) {
         currentSource = i;
-        renderButtons();
+        syncSourceSelection(linksEl, currentSource);
         bounceSelectedSource(click.detail === 0);
         updateHeader();
         if (!isStreamAvailable(currentSession)) {
@@ -1720,7 +1723,7 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
       /* The 4K chip asks once whether they want session alerts before playing. */
       if (s.gated && !isPasted(s) && !isCustom(i)) return chooseFourK(i);
       currentSource = i;
-      renderButtons();
+      syncSourceSelection(linksEl, currentSource);
       bounceSelectedSource(click.detail === 0);
       updateHeader();
       /* load() mints the token and opens the player in the same tick. Prefetching first would spend
@@ -1893,7 +1896,7 @@ function switchToNextSource() {
   const currIdx = enabled.indexOf(currentSource);
   const nextIdx = (currIdx + 1) % enabled.length;
   currentSource = enabled[nextIdx];
-  renderButtons();
+  syncSourceSelection(linksEl, currentSource);
   updateHeader();
   load();
 }
@@ -2083,7 +2086,7 @@ function attemptSource(token, order, idx, startedAt, linkIdx = 0, triedDynamic =
     settled = true;
     if (currentSource !== sourceIndex) {
       currentSource = sourceIndex;
-      renderButtons();
+      syncSourceSelection(linksEl, currentSource);
       updateHeader();
     }
     rememberGoodLink(sources[sourceIndex].id, targetUrl);

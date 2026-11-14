@@ -25,6 +25,9 @@ if ('ResizeObserver' in window) new ResizeObserver(fitReplayRail).observe(player
 fitReplayRail();
 let weekends: Weekend[]=[]; let event: Event | undefined; let session: Session | undefined; let sourceIndex=0;
 let helpTimer=0;
+let sessionControlsSignature = '';
+let feedControlsSignature = '';
+let feedButtons: HTMLDivElement | null = null;
 let sourceJellyModule: Promise<typeof import('../features/source-jelly')> | undefined;
 const params=new URLSearchParams(location.search);
 function display(animateGroup?: 'session' | 'feed', restoreFocus = false) {
@@ -40,11 +43,49 @@ function display(animateGroup?: 'session' | 'feed', restoreFocus = false) {
   window.clearTimeout(helpTimer); $('replayHelp').hidden=true;
   $('stageBox').querySelector('iframe')?.remove();
   if(url){const frame=document.createElement('iframe'); const playerUrl=new URL(url); playerUrl.searchParams.set('autoplay','1'); frame.src=playerUrl.href; frame.loading='eager';frame.title=`${event.country} Grand Prix ${session.name}`;frame.allow='autoplay; fullscreen; picture-in-picture; encrypted-media';frame.allowFullscreen=true;frame.referrerPolicy='origin';frame.className='is-ready';$('stageBox').append(frame); helpTimer=window.setTimeout(()=>{if(frame.isConnected&&!document.getElementById('partialOutageStage')) $('replayHelp').hidden=false;},12000);}
-  const controls=$('replayControls');controls.replaceChildren();
-  const makeGroup=(title:string)=>{const div=document.createElement('div');const h=document.createElement('h2');h.textContent=title;const buttons=document.createElement('div');buttons.className='replay-buttons';div.append(h,buttons);controls.append(div);return buttons;};
-  const w=weekends.find(w=>w.events.some(e=>e.id===event!.id));
-  for(const e of w?.events||[]){const buttons=makeGroup(`${seriesNames[e.series]} sessions`);for(const s of e.sessions){const b=document.createElement('button');b.type='button';b.textContent=s.name;b.setAttribute('aria-pressed',String(e.id===event!.id&&s.key===session!.key));b.onclick=(click)=>{event=e;session=s;sourceIndex=0;history.replaceState(null,'',`?${new URLSearchParams({e:e.id,s:s.key})}`);display('session',click.detail===0);};buttons.append(b);}}
-  const feeds=makeGroup('Broadcast feed');sources.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=/f1\s*tv/i.test(s.label)?'F1 TV':/international feed/i.test(s.label)?'International Feed':s.label?.trim() || `Feed ${i+1}`;b.setAttribute('aria-pressed',String(i===sourceIndex));b.onclick=(click)=>{sourceIndex=i;display('feed',click.detail===0);};feeds.append(b);});
+  const controls = $('replayControls');
+  const makeGroup = (title: string) => {
+    const div = document.createElement('div'); const h = document.createElement('h2'); h.textContent = title;
+    const buttons = document.createElement('div'); buttons.className = 'replay-buttons';
+    div.append(h, buttons); controls.append(div); return buttons;
+  };
+  const signature = JSON.stringify((weekend?.events || []).map(e => [e.id, e.series, e.sessions.map(s => [s.key, s.name])]));
+  if (signature !== sessionControlsSignature || !feedButtons) {
+    sessionControlsSignature = signature; feedControlsSignature = ''; feedButtons = null; controls.replaceChildren();
+    for (const e of weekend?.events || []) {
+      const buttons = makeGroup(`${seriesNames[e.series]} sessions`);
+      for (const s of e.sessions) {
+        const b = document.createElement('button'); b.type = 'button'; b.textContent = s.name;
+        b.dataset.replayEvent = e.id; b.dataset.replaySession = s.key;
+        b.onclick = (click) => {
+          if (event?.id === e.id && session?.key === s.key) return;
+          event = e; session = s; sourceIndex = 0;
+          history.replaceState(null, '', `?${new URLSearchParams({ e: e.id, s: s.key })}`);
+          display('session', click.detail === 0);
+        };
+        buttons.append(b);
+      }
+    }
+    feedButtons = makeGroup('Broadcast feed');
+  }
+  controls.querySelectorAll<HTMLButtonElement>('button[data-replay-session]').forEach(b => {
+    b.setAttribute('aria-pressed', String(b.dataset.replayEvent === event!.id && b.dataset.replaySession === session!.key));
+  });
+  const feeds = feedButtons!;
+  const feedSignature = JSON.stringify(sources.map(s => [s.label, s.url]));
+  if (feedSignature !== feedControlsSignature) {
+    feedControlsSignature = feedSignature; feeds.replaceChildren();
+    sources.forEach((s, i) => {
+      const b = document.createElement('button'); b.type = 'button';
+      b.textContent = /f1\s*tv/i.test(s.label) ? 'F1 TV' : /international feed/i.test(s.label) ? 'International Feed' : s.label?.trim() || `Feed ${i + 1}`;
+      b.dataset.replayFeed = String(i);
+      b.onclick = (click) => { if (sourceIndex === i) return; sourceIndex = i; display('feed', click.detail === 0); };
+      feeds.append(b);
+    });
+  }
+  feeds.querySelectorAll<HTMLButtonElement>('button[data-replay-feed]').forEach(b => {
+    b.setAttribute('aria-pressed', String(b.dataset.replayFeed === String(sourceIndex)));
+  });
   if (animateGroup) {
     const selected = animateGroup === 'feed' ? feeds.querySelector<HTMLButtonElement>('button[aria-pressed="true"]') : controls.querySelector<HTMLButtonElement>('.replay-buttons button[aria-pressed="true"]');
     if (selected) {

@@ -25,8 +25,8 @@ describe('source jelly controls', () => {
   it('connects the animation to both cockpit source selectors', () => {
     const read = (p:string) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
     expect(read('src/app.ts')).toContain('bounceSelectedSource(click.detail === 0)');
-    expect(read('src/pages/replay-cockpit.ts')).toContain("display('session',click.detail===0)");
-    expect(read('src/pages/replay-cockpit.ts')).toContain("display('feed',click.detail===0)");
+    expect(read('src/pages/replay-cockpit.ts')).toMatch(/display\('session',\s*click\.detail\s*===\s*0\)/);
+    expect(read('src/pages/replay-cockpit.ts')).toMatch(/display\('feed',\s*click\.detail\s*===\s*0\)/);
     const css = read('src/styles/source-jelly.css');
     expect(css).toContain('#links > button.chip.active');
     expect(css).toContain('.replay-buttons button[aria-pressed="true"]');
