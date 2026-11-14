@@ -1,4 +1,5 @@
 import '../interaction-guard';
+import { bindIslandHover } from './island-hover';
 import { findLiveSession, findNextSession, sessionShortName } from '../services/weekend';
 
 /** Schedule status, not a claim that a stream is live or available. */
@@ -36,7 +37,9 @@ export function initSessionIsland(): void {
     el('.si-bar > span').style.width = `${live ? 100 : Math.max(2, Math.min(100, (1 - total / 86400) * 100))}%`;
     link.setAttribute('aria-label', `${info.event.name}, ${info.session.name}, ${live ? 'scheduled now' : dateFormat.format(info.session.ts)}. View schedule`);
   };
-  const close = () => link.classList.remove('is-expanded');
+  let cancelLeave = () => {};
+  const close = () => { cancelLeave(); link.classList.remove('is-expanded'); };
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches) cancelLeave = bindIslandHover(link, close);
   link.addEventListener('click', (e) => {
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || !matchMedia('(hover: none)').matches || e.detail === 0) return;
     if (!link.classList.contains('is-expanded')) { e.preventDefault(); link.classList.add('is-expanded'); }
