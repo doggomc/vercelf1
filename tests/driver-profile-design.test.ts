@@ -9,5 +9,6 @@ describe('driver profile design', () => {
     expect(html.indexOf('id="dpTeammateCard"')).toBeLessThan(html.indexOf('<aside class="dp-side"'));
     expect(html).toContain('id="dpTeamCard"');
     expect(html).toContain('id="dpStandings"');
+    for (const header of ['Pos', 'Driver', 'Pts']) expect(html).toContain(`scope="col">${header}</th>`);
   });
 });

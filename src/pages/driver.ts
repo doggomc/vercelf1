@@ -127,10 +127,11 @@ async function paint(): Promise<void> {
     const active = row.Driver.driverId === driver.driverId;
     const rowTeam = row.Constructors?.[0]?.name ?? '';
     const rowColor = TEAM_HEX[rowTeam] ?? TEAM_HEX[teamLabel(rowTeam)] ?? '#7e8188';
-    return `<a class="dp-standing-row${active ? ' is-current' : ''}" href="/drivers/${esc(driverSlug(row.Driver))}/"${active ? ' aria-current="page"' : ''}>
-      <span class="dp-standing-pos">${esc(row.position)}</span><span class="dp-standing-bar" style="background:${esc(rowColor)}"></span><img class="dp-standing-photo" src="${esc(portrait(row.Driver.driverId, 320))}" alt="" width="32" height="32" loading="lazy" decoding="async">
-      <span class="dp-standing-name"><b>${esc(row.Driver.familyName)}</b><small>${esc(teamLabel(rowTeam))}</small></span><strong>${esc(row.points)}</strong>
-    </a>`;
+    return `<tr class="dp-standing-row${active ? ' is-current' : ''}">
+      <td class="dp-standing-pos">${esc(row.position)}</td><td><a class="dp-standing-driver" href="/drivers/${esc(driverSlug(row.Driver))}/"${active ? ' aria-current="page"' : ''}>
+      <span class="dp-standing-bar" style="background:${esc(rowColor)}"></span><img class="dp-standing-photo" src="${esc(portrait(row.Driver.driverId, 320))}" alt="" width="32" height="32" loading="lazy" decoding="async">
+      <span class="dp-standing-name"><b>${esc(row.Driver.familyName)}</b><small>${esc(teamLabel(rowTeam))}</small></span></a></td><td class="dp-standing-points">${esc(row.points)}</td>
+    </tr>`;
   }).join(''));
 
 

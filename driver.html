@@ -128,8 +128,10 @@
       </a>
       <section class="card dp-side-card dp-standings-card" aria-labelledby="dpStandingsTitle">
         <h2 class="dp-side-title" id="dpStandingsTitle">Standings</h2>
-        <div id="dpStandings"><p class="dp-muted">Loading…</p></div>
-        <a class="dp-standings-more" href="/standings">Full standings <span aria-hidden="true">↗</span></a>
+        <div class="dp-standings-wrap"><table class="dp-standings-table">
+          <thead><tr><th scope="col">Pos</th><th scope="col">Driver</th><th scope="col">Pts</th></tr></thead>
+          <tbody id="dpStandings"><tr><td colspan="3">Loading…</td></tr></tbody>
+        </table></div>
       </section>
 
 
