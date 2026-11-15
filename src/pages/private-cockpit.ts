@@ -46,7 +46,7 @@ function makeStreamIframe(url: string, streamTitle: string): HTMLIFrameElement {
   frame.allow = IFRAME_ALLOW;
   frame.setAttribute('allow', IFRAME_ALLOW);
   frame.allowFullscreen = true;
-  if (isStrippedEmbed(url) || url.startsWith('https://bintv-sources.pages.dev/')) {
+  if (isStrippedEmbed(url)) {
     frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation');
     frame.referrerPolicy = 'origin';
   } else {
