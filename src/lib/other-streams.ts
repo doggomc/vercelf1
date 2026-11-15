@@ -1,6 +1,6 @@
 import { BACKEND_API } from '../config';
 
-export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams' | 'zlive' | 'aura' | 'damitv';
+export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams' | 'zlive' | 'aura';
 
 export interface OtherStreamItem {
   key: string;
@@ -28,8 +28,6 @@ export interface OtherStreamsResult {
 
 const DEFAULT_BACKEND = BACKEND_API;
 const EMBDLOL_STRUCT_URL = 'https://api.embdlol.st/struct';
-const DAMITV_STREAMS_URL = 'https://90minutes.pro/papi/api/streams';
-const DAMITV_CACHE_KEY = 'freef1-damitv-channels-v1';
 const AURA_SCHEDULE_URL = 'https://aurasports.cfd/api/schedule';
 const ZLIVE_MANIFEST_URL = 'https://zlive.st/embed/manifest.json';
 const TIMSTREAMS_EVENTS_URL = 'https://tim-streams.com/api/live-upcoming';
@@ -67,7 +65,6 @@ const PROVIDER_COLORS: Record<OtherStreamProvider, string> = {
   timstreams: '#8B7CF6',
   zlive: '#B48CFF',
   aura: '#C1FF55',
-  damitv: '#5BA9F5',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -707,35 +704,6 @@ export function parseAuraEvents(payload: unknown): OtherStreamItem[] {
   return items;
 }
 
-/** DamiTV's public feed includes 24/7 channels alongside events. Its player
- * embed is built from an allowlisted origin and a validated ID, never raw URLs. */
-export function buildDamiTvUrls(rawId: string): { embedUrl: string; fallbackUrl: string } | null {
-  const id = String(rawId || '').trim();
-  if (!/^247-[a-z0-9_-]{1,140}$/i.test(id) || isFormula1Text(id)) return null;
-  const url = `https://damitv.st/embed/?id=${encodeURIComponent(id)}`;
-  return { embedUrl: url, fallbackUrl: url };
-}
-
-export function parseDamiTvChannels(payload: unknown): OtherStreamItem[] {
-  const groups = (payload as { success?: unknown; streams?: unknown } | null);
-  if (groups?.success !== true || !Array.isArray(groups.streams)) return [];
-  const sports = /^(?:american football|australian football|football|soccer|basketball|ice hockey|hockey|rugby(?: league| union)?|cricket|motorsports?|tennis|golf|baseball|combat sports?|boxing|mma|wrestling|cycling|darts)$/i;
-  const items: OtherStreamItem[] = [], seen = new Set<string>();
-  for (const group of groups.streams) {
-    if (!group || typeof group !== 'object' || String(group.category).toLowerCase() !== '24/7-streams' || !Array.isArray(group.streams)) continue;
-    for (const channel of group.streams) {
-      if (!channel || typeof channel !== 'object') continue;
-      const id = String(channel.id || '').trim(), title = String(channel.name || '').trim().slice(0, 140);
-      const category = String(channel.league || '').trim().slice(0, 80);
-      if (!title || !sports.test(category) || channel.always_live !== 1 || channel.status !== 'live' || seen.has(id) || isFormula1Text(`${title} ${id} ${category}`)) continue;
-      const urls = buildDamiTvUrls(id); if (!urls) continue;
-      seen.add(id);
-      items.push({ key: `damitv:${id}`, provider: 'damitv', id, title, category, subtitle: `${category} · DamiTV`, tag: 'DamiTV', viewers: Math.max(0, Number(channel.viewers) || 0), alwaysLive: true, ...urls, color: pickStreamColor('damitv', category) });
-    }
-  }
-  return items;
-}
-
 const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
   embdlol: '1',
   ppv: '2',
@@ -744,7 +712,6 @@ const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
   timstreams: '5',
   zlive: '6',
   aura: '7',
-  damitv: '8',
 };
 
 const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
@@ -755,7 +722,6 @@ const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
   '5': 'timstreams',
   '6': 'zlive',
   '7': 'aura',
-  '8': 'damitv',
   embdlol: 'embdlol',
   ppv: 'ppv',
   weelo: 'weelo',
@@ -763,7 +729,6 @@ const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
   timstreams: 'timstreams',
   zlive: 'zlive',
   aura: 'aura',
-  damitv: 'damitv',
 };
 
 function slugifyStreamLabel(value: string): string {
@@ -826,11 +791,6 @@ export function parsePrivateCockpitParams(
     fallbackUrl = urls.fallbackUrl;
   } else if (provider === 'weelo') {
     const urls = buildWeeloUrls(rawId, backend);
-    if (!urls) return null;
-    embedUrl = urls.embedUrl;
-    fallbackUrl = urls.fallbackUrl;
-  } else if (provider === 'damitv') {
-    const urls = buildDamiTvUrls(rawId);
     if (!urls) return null;
     embedUrl = urls.embedUrl;
     fallbackUrl = urls.fallbackUrl;
@@ -922,22 +882,6 @@ async function fetchStreamfree(fetchImpl: typeof fetch, useCache: boolean): Prom
   return data;
 }
 
-async function fetchDamiTv(fetchImpl: typeof fetch, useCache: boolean): Promise<unknown> {
-  if (useCache) {
-    try {
-      const cached = JSON.parse(localStorage.getItem(DAMITV_CACHE_KEY) || 'null');
-      if (cached && Date.now() - cached.at >= 0 && Date.now() - cached.at < 60_000 && Array.isArray(cached.data?.streams)) return cached.data;
-    } catch { /* Storage may be unavailable. */ }
-  }
-  const data = await fetchJsonWithTimeout(DAMITV_STREAMS_URL, {}, 8500, fetchImpl);
-  const parsed = data as { success?: unknown; streams?: unknown } | null;
-  if (parsed?.success !== true || !Array.isArray(parsed.streams)) throw new Error('Invalid DamiTV response');
-  // Only cache the channel subset, not the full sports-event catalogue.
-  const filtered = { success: true, streams: parsed.streams.filter((group: { category?: unknown }) => String(group?.category || '').toLowerCase() === '24/7-streams') };
-  if (useCache) { try { localStorage.setItem(DAMITV_CACHE_KEY, JSON.stringify({ at: Date.now(), data: filtered })); } catch { /* Optional. */ } }
-  return filtered;
-}
-
 export async function fetchAllOtherStreams(options: {
   backend?: string;
   fetchImpl?: typeof fetch;
@@ -957,7 +901,7 @@ export async function fetchAllOtherStreams(options: {
     throw lastError || new Error('Weelo unavailable');
   };
 
-  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes, zliveRes, auraRes, damitvRes] = await Promise.allSettled([
+  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes, zliveRes, auraRes] = await Promise.allSettled([
     fetchJsonWithTimeout(EMBDLOL_STRUCT_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(PPV_STREAMS_URL, {}, 8500, fetchImpl),
     fetchWeeloPlayers(),
@@ -967,7 +911,6 @@ export async function fetchAllOtherStreams(options: {
     fetchJsonWithTimeout(TIMSTREAMS_EVENTS_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(ZLIVE_MANIFEST_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(AURA_SCHEDULE_URL, {}, 8500, fetchImpl),
-    fetchDamiTv(fetchImpl, !options.fetchImpl),
   ]);
 
   const embItems = embRes.status === 'fulfilled' ? parseEmbdlolStruct(embRes.value, backend) : [];
@@ -986,8 +929,7 @@ export async function fetchAllOtherStreams(options: {
   const timstreamsItems = timstreamsRes.status === 'fulfilled' ? parseTimstreamsEvents(timstreamsRes.value) : [];
   const zliveItems = zliveRes.status === 'fulfilled' ? parseZliveSports(zliveRes.value) : [];
   const auraItems = auraRes.status === 'fulfilled' ? parseAuraEvents(auraRes.value) : [];
-  const damitvItems = damitvRes.status === 'fulfilled' ? parseDamiTvChannels(damitvRes.value) : [];
-  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems, ...timstreamsItems, ...zliveItems, ...auraItems, ...damitvItems];
+  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems, ...timstreamsItems, ...zliveItems, ...auraItems];
 
   return {
     items,
@@ -1000,7 +942,6 @@ export async function fetchAllOtherStreams(options: {
       timstreams: timstreamsItems.length,
       zlive: zliveItems.length,
       aura: auraItems.length,
-      damitv: damitvItems.length,
     },
     providerOk: {
       embdlol: embRes.status === 'fulfilled',
@@ -1010,7 +951,6 @@ export async function fetchAllOtherStreams(options: {
       timstreams: timstreamsRes.status === 'fulfilled',
       zlive: zliveRes.status === 'fulfilled',
       aura: auraRes.status === 'fulfilled',
-      damitv: damitvRes.status === 'fulfilled',
     },
   };
 }

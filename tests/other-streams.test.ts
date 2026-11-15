@@ -5,8 +5,6 @@ import {
   buildTimstreamsUrls,
   buildZliveUrls,
   buildAuraUrls,
-  buildDamiTvUrls,
-  parseDamiTvChannels,
   parseAuraEvents,
   parseZliveSports,
   extractTimstreamsPlayer,
@@ -23,31 +21,6 @@ import {
 } from '../src/lib/other-streams';
 
 describe('Other streams non-F1 filtering & private cockpit resolution', () => {
-  it('includes only sports 24/7 DamiTV channels using direct player embeds', () => {
-    const items = parseDamiTvChannels({success:true, streams:[{category:'24/7-streams',streams:[
-      {id:'247-nfl-network',name:'NFL Network',league:'American Football',always_live:1,status:'live',embed:'https://evil.example'},
-      {id:'247-cartoon',name:'Cartoon Channel',league:'Cartoons',always_live:1,status:'live'},
-      {id:'247-sky-f1',name:'Sky Sports F1',league:'Motorsport',always_live:1,status:'live'},
-      {id:'247-offline',name:'Off Air',league:'Tennis',always_live:1,status:'offline'},
-      {id:'247-../bad',name:'Bad path',league:'Tennis',always_live:1,status:'live'},
-    ]},{category:'football',streams:[{id:'247-not-tv',name:'Match',league:'Football',always_live:1,status:'live'}]}]});
-    expect(items.map(item=>item.title)).toEqual(['NFL Network']);
-    expect(items[0].embedUrl).toBe('https://damitv.st/embed/?id=247-nfl-network');
-    expect(parsePrivateCockpitParams(new URL(buildPrivateCockpitHref(items[0]), 'https://freef1-live.vercel.app').search)?.embedUrl).toBe(items[0].embedUrl);
-    expect(buildDamiTvUrls('247-../bad')).toBeNull();
-    expect(parsePrivateCockpitParams('?s=8&id=https%3A%2F%2Fevil.example')).toBeNull();
-  });
-
-  it('fetches DamiTV independently from the public mirror', async () => {
-    const mockFetch: typeof fetch = async input => {
-      if (String(input).includes('90minutes.pro/papi/api/streams')) return new Response(JSON.stringify({success:true,streams:[{category:'24/7-streams',streams:[{id:'247-nfl',name:'NFL',league:'American Football',always_live:1,status:'live'}]}]}), {status:200});
-      throw new Error('offline');
-    };
-    const result = await fetchAllOtherStreams({fetchImpl:mockFetch});
-    expect(result.providerOk.damitv).toBe(true);
-    expect(result.counts.damitv).toBe(1);
-  });
-
   it('adds live and scheduled Aura Sports events via the player-only embed', () => {
     const items = parseAuraEvents([{ category_name: 'nfl', schedule: [
       { id: 'espn-123', title: 'Team A at Team B', league_name: 'NFL', status: 'live', date: 1794751200000, iframeUrl: 'https://evil.test/anything' },

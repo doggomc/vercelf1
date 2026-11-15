@@ -7,7 +7,6 @@ describe('stream categories', () => {
     for (const value of ['NFL', 'American Football']) expect(streamCategory(value, 'Teams')).toBe('American Football');
     for (const value of ['NBA', 'NCAAM', 'Basketball']) expect(streamCategory(value, 'Teams')).toBe('Basketball');
     expect(streamCategory('NHL', 'Teams')).toBe('Hockey');
-    expect(streamCategory('Australian Football', 'Fox Footy')).toBe('Australian Football');
     expect(streamCategory('Formula 2', 'Feature race')).toBe('Motorsport');
     expect(streamCategory('Fighting', 'UFC')).toBe('Combat Sports');
   });
