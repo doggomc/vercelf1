@@ -1,4 +1,5 @@
 import { initShell } from '../ui/shell';
+import { haasSeasonRole } from '../data/driver-lineup';
 /* Every page except the cockpit carries the open-page counter in its header. */
 import '../viewer-counter';
 import { CIRCUIT_COUNTRY, bornFacts, displayName, shortRaceName, splitName, teamLabel } from '../data/driver-facts';
@@ -98,6 +99,7 @@ async function paint(): Promise<void> {
   const driver = standingsRow.Driver;
   const teamApiName = standingsRow.Constructors?.[0]?.name ?? '';
   const team = teamLabel(teamApiName);
+  const haasRole = SITE_SEASON === 2026 && standingsRow.Constructors?.[0]?.constructorId === 'haas' ? haasSeasonRole(driver.driverId) : null;
   const color = TEAM_HEX[teamApiName] ?? TEAM_HEX[team] ?? '#7e8188';
   const fullName = displayName(driver.givenName, driver.familyName);
   const { first, last } = splitName(driver.givenName, driver.familyName);
@@ -206,7 +208,10 @@ async function paint(): Promise<void> {
   const scored = season.rows.filter((row) => Number(row.points) > 0).length;
   const points = Number(standingsRow.points);
   const prose = [
-    `${fullName} drives for ${team} in the ${SITE_SEASON} Formula 1 season, ${ordinal(Number(standingsRow.position))} in the championship on ${points} ${points === 1 ? 'point' : 'points'}.`,
+    haasRole === 'former' ? `${fullName} raced for Haas earlier in the ${SITE_SEASON} Formula 1 season and will not return to the team this season; ${ordinal(Number(standingsRow.position))} in the championship on ${points} ${points === 1 ? 'point' : 'points'}.`
+      : haasRole === 'mexico-stand-in' ? `${fullName} stood in for Haas at the 2026 Mexico City Grand Prix; ${ordinal(Number(standingsRow.position))} in the championship on ${points} ${points === 1 ? 'point' : 'points'}.`
+      : haasRole === 'brazil-entry' && driver.driverId === 'rafael_camara' ? `${fullName} was named to race for Haas at the 2026 São Paulo Grand Prix; ${ordinal(Number(standingsRow.position))} in the championship on ${points} ${points === 1 ? 'point' : 'points'}.`
+      : `${fullName} drives for ${team} in the ${SITE_SEASON} Formula 1 season, ${ordinal(Number(standingsRow.position))} in the championship on ${points} ${points === 1 ? 'point' : 'points'}.`,
     stats.starts > 0
       ? `In ${plural(stats.starts, 'start', 'starts')} ${last} has ${plural(stats.wins, 'win', 'wins')}, ${plural(stats.podiums, 'podium', 'podiums')} and ${plural(stats.poles, 'pole', 'poles')}, with a best finish of ${stats.bestFinishText}.`
       : `Results for this season have not been published yet.`,
@@ -220,7 +225,7 @@ async function paint(): Promise<void> {
   const mate = teammateOf(standings.rows, driver);
   if (mate) {
     const mateName = displayName(mate.Driver.givenName, mate.Driver.familyName);
-    setText('dpBattleTitle', `Teammate battle: ${last} vs ${mate.Driver.familyName}`);
+    setText('dpBattleTitle', `${haasRole === 'former' || haasRole === 'mexico-stand-in' ? 'Former teammate' : haasRole === 'brazil-entry' ? 'São Paulo teammates' : 'Teammate battle'}: ${last} vs ${mate.Driver.familyName}`);
     const mateSeason = await loadSeason(mate.Driver.driverId).catch(() => null);
     const battle = mateSeason ? teammateBattle(season, mateSeason) : { shared: 0, ahead: 0, behind: 0 };
     show('dpTeammate', `
@@ -240,7 +245,7 @@ async function paint(): Promise<void> {
       ${battle.shared ? `<p class="dp-battle-note">${esc(last)} ahead in ${battle.ahead} of ${battle.shared} shared finishes${battle.behind ? `, behind in ${battle.behind}` : ''}.</p>` : ''}
     `);
   } else {
-    show('dpTeammate', '<p class="dp-muted">No teammate on the grid.</p>');
+    show('dpTeammate', '<p class="dp-muted">Teammate data is unavailable.</p>');
   }
 
 }

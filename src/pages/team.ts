@@ -1,4 +1,5 @@
 import { initShell } from '../ui/shell';
+import { haasBrazilLineup } from '../data/driver-lineup';
 /* Every page except the cockpit carries the open-page counter in its header. */
 import '../viewer-counter';
 import { CIRCUIT_COUNTRY, displayName, shortRaceName, splitName } from '../data/driver-facts';
@@ -189,16 +190,19 @@ async function paint(): Promise<void> {
     </tr>`).join(''));
   }
 
-  const teamDrivers = (driverStandings ?? []).filter((row) => {
+  const eligibleDrivers = (driverStandings ?? []).filter((row) => {
     const c = row.Constructors?.[0];
     return c && (c.constructorId === profile.constructorId || teamSlug(c.name) === profile.slug);
-  }).slice(0, 2);
+  });
+  const isHaas2026 = SITE_SEASON === 2026 && profile.constructorId === 'haas';
+  const teamDrivers = isHaas2026 ? haasBrazilLineup(eligibleDrivers) : eligibleDrivers.slice(0, 2);
+  if (isHaas2026) setText('tpDriversTitle', 'São Paulo 2026 lineup');
 
   const driversGrid = $('tpDriversGrid');
   if (driversGrid) {
     driversGrid.removeAttribute('aria-busy');
     driversGrid.innerHTML = teamDrivers.length
-      ? teamDrivers.map((row) => driverCardHtml(row, profile.name, profile.color)).join('')
+      ? teamDrivers.map((row) => driverCardHtml(row, profile.name, profile.color)).join('') + (isHaas2026 && teamDrivers.length < 2 ? '<p class="dp-muted">A confirmed driver is not yet available in the standings.</p>' : '')
       : '<p class="dp-muted">Driver standings are unavailable right now.</p>';
   }
 
@@ -224,7 +228,9 @@ async function paint(): Promise<void> {
       : 'No rounds completed yet this season.');
 
     const driverNames = teamDrivers.map((r) => displayName(r.Driver.givenName, r.Driver.familyName));
-    const lineupLine = driverNames.length === 2
+    const lineupLine = isHaas2026 && driverNames.length === 2
+      ? `${driverNames[0]} and ${driverNames[1]} were named for the 2026 São Paulo Grand Prix; later rounds may differ.`
+      : driverNames.length === 2
       ? `${driverNames[0]} and ${driverNames[1]} race for the team in ${SITE_SEASON}.`
       : driverNames.length === 1 ? `${driverNames[0]} races for the team in ${SITE_SEASON}.` : '';
     const pts = Number(standingRow?.points ?? 0);

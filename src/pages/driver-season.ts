@@ -3,6 +3,7 @@
    on the grid never downloads it. */
 
 import { JOLPI, SITE_SEASON } from '../config';
+import { haasSeasonRole } from '../data/driver-lineup';
 import { fetchJson } from '../services/api';
 import { ordinal, type DriverRef, type StandingRow } from './driver-core';
 
@@ -107,6 +108,12 @@ export function teammateOf(rows: StandingRow[], driver: DriverRef): StandingRow 
   const mine = rows.find((row) => row.Driver.driverId === driver.driverId);
   const team = mine?.Constructors?.[0]?.name;
   if (!team) return null;
+  if (SITE_SEASON === 2026 && mine?.Constructors?.[0]?.constructorId === 'haas') {
+    const role = haasSeasonRole(driver.driverId);
+    const target = role === 'brazil-entry' && driver.driverId === 'bearman' ? 'rafael_camara'
+      : role === 'brazil-entry' || role === 'former' || role === 'mexico-stand-in' ? 'bearman' : null;
+    return target ? rows.find(row => row.Driver.driverId === target && row.Constructors?.[0]?.constructorId === 'haas') ?? null : null;
+  }
   return rows.find((row) => row.Driver.driverId !== driver.driverId && row.Constructors?.[0]?.name === team) ?? null;
 }
 
