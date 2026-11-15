@@ -534,7 +534,7 @@ h1,
 
 .select-trigger:hover:not(:disabled) {
   border-color: rgba(255, 255, 255, 0.22);
-  background: #17181c;
+  background: var(--card);
 }
 
 .select-trigger:disabled {
@@ -582,7 +582,7 @@ h1,
   padding: 6px;
   border: 1px solid var(--line-2);
   border-radius: 12px;
-  background: #18191d;
+  background: var(--card);
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.6);
   animation: helpSelectMenuIn 160ms var(--ease);
 }

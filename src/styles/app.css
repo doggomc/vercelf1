@@ -14,9 +14,9 @@
 /* ═══════════════ DESIGN TOKENS ═══════════════ */
 
 :root {
-  --ink: #0A0A0B;
+  --ink: #08090a;
   /* carbon black */
-  --ink-2: #0F1012;
+  --ink-2: #0c0d0f;
   --surface: rgba(255,255,255,0.035);
   --surface-2: rgba(255,255,255,0.06);
   --line: rgba(255,255,255,0.09);
@@ -4749,7 +4749,7 @@ body.view-swapping {
 /* ═══════════════ HEADER ═══════════════ */
 
 nav.nav {
-  --page: #0e0f11;
+  --page: #090a0c;
   --line: rgba(255,255,255,.08);
   --line-2: rgba(255,255,255,.14);
   --fg: #cecfd2;

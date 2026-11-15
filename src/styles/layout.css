@@ -16,10 +16,10 @@
 [hidden] { display: none !important; }
 
 :root {
-  --page: #0e0f11;
-  --card: #18191d;
-  --card-2: #212227;
-  --card-3: #2b2c31;
+  --page: #090a0c;
+  --card: #121317;
+  --card-2: #1b1c20;
+  --card-3: #25262b;
   --line: rgba(255,255,255,.08);
   --line-2: rgba(255,255,255,.14);
   --fg: #cecfd2;
@@ -965,7 +965,7 @@ body.is-leaving main { animation: pageOut .12s cubic-bezier(.4, 0, .2, 1) both; 
   position: relative; aspect-ratio: 4 / 5; overflow: hidden;
   background:
     radial-gradient(90% 80% at 50% 100%, color-mix(in srgb, var(--team) 34%, transparent), transparent 70%),
-    linear-gradient(180deg, #14151c, #0f1015);
+    linear-gradient(180deg, #111217, #0b0c0f);
 }
 /* The cut-outs are roughly 1:2.9 and the well is 4:5, so the portrait is sized by
    width, anchored just below the top edge, and the well crops it at the shins —
@@ -1854,7 +1854,7 @@ a.tp-mini-who:hover .tp-mini-name { text-decoration: underline; text-underline-o
 .lt-faq-a { padding: 0 0 16px; font-size: 14px; line-height: 1.6; color: var(--fg-2); max-width: 68ch; }
 
 /* Next-session timing card: compact status, local time, four timing tiles, full-width action. */
-.hero-card { padding: 20px; border-radius: 16px; background: #18191d; }
+.hero-card { padding: 20px; border-radius: 16px; background: var(--card); }
 .hero-card .hero-card-head { padding: 0; min-height: 24px; border: 0; }
 .hero-card .next-label { display: inline-flex; align-items: center; height: 20px; padding: 0 6px; border-radius: 6px; background: #1c2b42; color: #85b8ff; font-size: 11px; line-height: 16px; font-weight: 700; text-transform: uppercase; }
 .hero-card .next-round { color: #96999e; font-size: 12px; line-height: 16px; }
@@ -2025,7 +2025,7 @@ body[data-page="driver"] .dp-first { font-size: clamp(1.7rem, 3vw, 2.25rem); }
 body[data-page="driver"] .dp-last { font-size: clamp(2.9rem, 6vw, 4.5rem); font-weight: 700; letter-spacing: -.035em; }
 body[data-page="driver"] .dp-number { font-size: clamp(3rem, 5vw, 3.75rem); margin-top: 18px; }
 body[data-page="driver"] .dp-stats { max-width: none; gap: 10px; margin-top: 30px; }
-body[data-page="driver"] .dp-stat { min-height: 122px; padding: 20px; border-radius: 20px; background: #16171b; border: 0; box-shadow: none; }
+body[data-page="driver"] .dp-stat { min-height: 122px; padding: 20px; border-radius: 20px; background: var(--card); border: 0; box-shadow: none; }
 body[data-page="driver"] .dp-stat-label { font-size: 12px; }
 body[data-page="driver"] .dp-stat-label > span { transform: none; }
 body[data-page="driver"] .dp-stat-value { margin-top: 9px; font-size: 28px; }
@@ -2033,10 +2033,10 @@ body[data-page="driver"] .dp-stat-note { margin-top: 7px; font-size: 12px; }
 body[data-page="driver"] .dp-portrait { height: 570px; max-width: 400px; }
 body[data-page="driver"] .dp-body { padding-top: 24px; }
 body[data-page="driver"] .dp-main { gap: 30px; }
-body[data-page="driver"] .dp-panel, body[data-page="driver"] .dp-side-card, body[data-page="driver"] .dp-table-card { background: #16171b; border: 0; border-radius: 20px; box-shadow: none; }
+body[data-page="driver"] .dp-panel, body[data-page="driver"] .dp-side-card, body[data-page="driver"] .dp-table-card { background: var(--card); border: 0; border-radius: 20px; box-shadow: none; }
 body[data-page="driver"] .dp-panel { padding: 28px; }
 body[data-page="driver"] .dp-panel-title { font-size: 20px; }
-body[data-page="driver"] .dp-facts > div { background: #222327; border: 0; border-radius: 8px; }
+body[data-page="driver"] .dp-facts > div { background: var(--card-2); border: 0; border-radius: 8px; }
 body[data-page="driver"] .dp-prose { font-size: 15px; }
 body[data-page="driver"] .dp-section .section-title { font-size: 28px; }
 body[data-page="driver"] .dp-section-note { display: none; }

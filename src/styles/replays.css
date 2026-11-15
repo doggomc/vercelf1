@@ -10,7 +10,7 @@
   margin-bottom: 50px;
   border: 1px solid rgba(255,255,255,.1);
   border-radius: 20px;
-  background: #17171a;
+  background: var(--card);
   color: #fff;
   text-decoration: none;
   transition: transform .2s, border-color .2s;
@@ -20,7 +20,7 @@
   position: absolute;
   z-index: -1;
   inset: 0;
-  background: linear-gradient(90deg, #19191d 0%, rgba(25,25,29,.96) 32%, rgba(25,25,29,.48) 70%, rgba(25,25,29,.25) 100%), linear-gradient(0deg, rgba(10,10,12,.65), rgba(100,0,0,.18));
+  background: linear-gradient(90deg, #121317 0%, rgba(18,19,23,.96) 32%, rgba(18,19,23,.48) 70%, rgba(18,19,23,.25) 100%), linear-gradient(0deg, rgba(10,10,12,.65), rgba(100,0,0,.18));
   pointer-events: none;
 }
 .rp-feature:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.24); }
