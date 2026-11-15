@@ -4,6 +4,7 @@ export function streamCategory(category: string, title: string): string {
   const group = category.toLowerCase().replace(/[_-]+/g, ' ').trim();
   const text = `${group} ${title.toLowerCase()}`;
   const rules: Array<[RegExp, string]> = [
+    [/\b(?:australian football|afl|fox footy)\b/, 'Australian Football'],
     [/\b(?:american football|nfl|ncaaf|ncaa football|college football|redzone)\b/, 'American Football'],
     [/\b(?:basketball|nba|wnba|ncaam|ncaaw|ncaab|ncaa basketball)\b/, 'Basketball'],
     [/\b(?:ice hockey|hockey|nhl)\b/, 'Hockey'],
