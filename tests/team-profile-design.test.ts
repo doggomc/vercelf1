@@ -9,4 +9,12 @@ describe('team profile dossier', () => {
     expect(css).toMatch(/body\[data-page="team"\] \.dp-table \.t-num\s*\{\s*text-align:\s*right/);
     expect(css).toMatch(/body\[data-page="team"\] \.dp-gp\s*\{[^}]*justify-content:\s*flex-start/s);
   });
+  it('adds accessible icons to the team stats, facts and headings', () => {
+    const html = readFileSync('team.html', 'utf8');
+    expect((html.match(/class="dp-label-icon"/g) ?? []).length).toBe(14);
+    expect(html).toContain('class="dp-fact-label"');
+    expect(html).toContain('class="section-title dp-heading-icon"');
+    const css = readFileSync('src/styles/layout.css', 'utf8');
+    expect(css).toContain('body[data-page="team"] .dp-stat-label .dp-label-icon { color: var(--team); }');
+  });
 });

@@ -2231,3 +2231,11 @@ body[data-page="team"] .tp-mini-who { gap: 12px; }
 .gp-status { margin-left: 0; }
 .gp-flag { width: 46px; height: 30px; flex-shrink: 0; object-fit: fill; outline: 1px solid #ffffff30; }
 .gp-result-driver .gp-result-ribbon { display: block; width: 3px; height: 29px; flex: none; border-radius: 3px; background: var(--team); }
+/* Team-profile icons follow the driver-profile alignment and team accent. */
+body[data-page="team"] .dp-label-icon { display: block; width: 16px; height: 16px; flex: 0 0 16px; color: var(--fg-3); }
+body[data-page="team"] .dp-stat-label, body[data-page="team"] .dp-fact-label, body[data-page="team"] .dp-heading-icon { display: flex; align-items: center; gap: 8px; line-height: 1.3; }
+body[data-page="team"] .dp-stat-label > span, body[data-page="team"] .dp-fact-label > span, body[data-page="team"] .dp-heading-icon > span { transform: translateY(1px); min-width: 0; }
+body[data-page="team"] .dp-stat-label .dp-label-icon { color: var(--team); }
+body[data-page="team"] .dp-heading-icon .dp-label-icon { width: 19px; height: 19px; flex-basis: 19px; }
+body[data-page="team"] .dp-fact-label .dp-label-icon { width: 14px; height: 14px; flex-basis: 14px; }
+@media (max-width: 400px) { body[data-page="team"] .dp-stat-label, body[data-page="team"] .dp-fact-label { gap: 6px; } }
