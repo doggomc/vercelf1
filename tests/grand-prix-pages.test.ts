@@ -27,7 +27,7 @@ describe('Grand Prix pages', () => {
     expect(template).toContain('gp-winner-label"><svg');
     expect(source).toContain('assets/flags/vector/');
     expect(source).toContain('gpStatus');
-    for (const event of schedule) expect(readFileSync(`assets/flags/vector/${roundFlagCode(event.round)}.svg`, 'utf8')).toContain('<svg');
+    for (const event of schedule) expect(readFileSync(`assets/flags/vector/${roundFlagCode(event.round)}.svg`, 'utf8')).toContain('<svg preserveAspectRatio="none"');
   });
   it('shows team ribbons in result rows and keeps the title free of result status', () => {
     const source = readFileSync('src/pages/grand-prix.ts', 'utf8');
