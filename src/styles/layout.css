@@ -2054,3 +2054,17 @@ body[data-page="driver"] .dp-battle-note { display: none; }
   body[data-page="driver"] .dp-portrait { height: 380px; }
   body[data-page="driver"] .dp-panel { padding: 20px; }
 }
+
+/* Results table follows the reference: sentence-case headings, a left-aligned
+   race column with fixed flag positions, and right-aligned numeric results. */
+body[data-page="driver"] .dp-table-card { padding: 4px; }
+body[data-page="driver"] .dp-table { font-size: 14px; }
+body[data-page="driver"] .dp-table th { padding: 8px 12px; text-align: left; font-size: 12px; font-weight: 650; text-transform: none; letter-spacing: 0; color: #96999e; border-bottom: 2px solid rgba(227,228,242,.12); }
+body[data-page="driver"] .dp-table td { padding: 8px 12px; height: 48px; text-align: left; border-bottom: 1px solid rgba(227,228,242,.07); }
+body[data-page="driver"] .dp-table tbody tr:last-child td { border-bottom: 0; }
+body[data-page="driver"] .dp-table .t-num { text-align: right; }
+body[data-page="driver"] .dp-rnd { width: auto; }
+body[data-page="driver"] .dp-gp { display: flex; width: 100%; justify-content: flex-start; gap: 8px; text-align: left; font-size: 14px; }
+body[data-page="driver"] .dp-gp > span { text-align: left; }
+body[data-page="driver"] .dp-gp .flag { width: 20px; height: 14px; }
+@media (max-width: 639px) { body[data-page="driver"] .dp-sprint-col { display: none; } }
