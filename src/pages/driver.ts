@@ -45,7 +45,7 @@ function resultsRows(rows: SeasonRow[], sprints: Map<string, SeasonRow>): string
         </span>
       </td>
       <td class="t-num dp-dim">${esc(row.grid === '0' ? 'PL' : row.grid)}</td>
-      <td class="t-num dp-finish${won ? ' is-win' : ''}">${esc(finish)}</td>
+      <td class="t-num dp-finish${won ? ' is-win' : ''}">${won ? '<svg class="dp-win-trophy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4ZM7 6H4v2a4 4 0 0 0 4 4m9-6h3v2a4 4 0 0 1-4 4"/></svg>' : ''}${esc(finish)}</td>
       <td class="t-num dp-dim dp-sprint-col">${sprint ? esc(finishLabel(sprint)) : '–'}</td>
       <td class="t-num dp-points">${esc(row.points)}</td>
     </tr>`;

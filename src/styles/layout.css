@@ -1191,7 +1191,7 @@ a.who:hover b { text-decoration: underline; text-underline-offset: 2px; }
 .dp-gp .flag { border-radius: 3px; outline: 1px solid rgba(255,255,255,.14); width: 20px; height: 15px; object-fit: cover; flex: none; }
 .dp-dim { color: var(--fg-3); }
 .dp-finish { color: var(--white); font-weight: 600; }
-.dp-finish.is-win { color: var(--accent); }
+.dp-finish.is-win { color: var(--white); }
 .dp-points { color: var(--white); font-weight: 700; }
 @media (max-width: 560px) {
   .dp-table th, .dp-table td { padding: 10px 8px; }
@@ -2096,3 +2096,6 @@ body[data-page="driver"] .dp-stat-label .dp-label-icon { color: var(--team); }
 body[data-page="driver"] .dp-heading-icon .dp-label-icon { width: 19px; height: 19px; flex-basis: 19px; }
 body[data-page="driver"] .dp-fact-label .dp-label-icon { width: 14px; height: 14px; flex-basis: 14px; }
 @media (max-width: 400px) { body[data-page="driver"] .dp-stat-label, body[data-page="driver"] .dp-fact-label { gap: 6px; } }
+
+/* A race win keeps the same numeric colour as other finishes. */
+.dp-win-trophy { display: inline-block; width: 15px; height: 15px; margin-right: 6px; color: #f5c84c; vertical-align: -3px; }
