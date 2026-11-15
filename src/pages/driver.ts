@@ -6,7 +6,6 @@ import { NATIONALITY_FLAG } from '../data/driver-flags';
 import { flagHtml } from '../data/flags';
 import { portrait } from '../data/driver-portraits';
 import { TEAM_ALIAS, TEAM_CAR, TEAM_HEX, teams } from '../data/teams';
-import { schedule } from '../data/schedule';
 import { SITE_SEASON } from '../config';
 import { driverSlug, esc, loadStandings, ordinal, teamSlug, type StandingRow } from './driver-core';
 import { loadSeason, seasonStats, teammateBattle, teammateOf, type SeasonRow } from './driver-season';
@@ -50,38 +49,6 @@ function resultsRows(rows: SeasonRow[], sprints: Map<string, SeasonRow>): string
       <td class="t-num dp-points">${esc(row.points)}</td>
     </tr>`;
   }).join('');
-}
-
-/** The five most recent rounds as a strip of chips, newest last. */
-function formStrip(rows: SeasonRow[]): string {
-  const recent = rows.slice(-5);
-  if (recent.length === 0) return '<p class="dp-muted">No rounds yet.</p>';
-  const chips = recent.map((row) => {
-    const position = Number(row.position);
-    const tone = position === 1 ? 'win' : position >= 2 && position <= 3 ? 'podium' : position > 0 && position <= 10 ? 'points' : 'out';
-    return `<span class="dp-form-chip is-${tone}" title="Round ${esc(row.round)} · ${esc(row.raceName)}"><b class="num">${esc(finishLabel(row))}</b><small>R${esc(row.round)}</small></span>`;
-  }).join('');
-  const scored = recent.reduce((sum, row) => sum + (Number(row.points) || 0), 0);
-  return `<div class="dp-form-strip">${chips}</div>
-    <p class="dp-form-note">${scored} ${scored === 1 ? 'point' : 'points'} from the last ${recent.length === 1 ? 'round' : `${recent.length} rounds`}</p>`;
-}
-
-/** The next Grand Prix on the embedded calendar, and how far away it is. */
-function nextRoundCard(): string {
-  const now = Date.now();
-  const next = schedule.find((event) => {
-    const last = event.sessions[event.sessions.length - 1];
-    return last && last.ts > now;
-  });
-  if (!next) return '<p class="dp-muted">The season is complete.</p>';
-  const first = next.sessions[0];
-  const date = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: next.tz }).format(new Date(first.ts));
-  const days = Math.max(0, Math.ceil((first.ts - now) / 86400000));
-  return `<a class="dp-next-card" href="/schedule">
-      <span class="dp-next-round">Round ${esc(next.round)}</span>
-      <b>${esc(next.name)}</b>
-      <span class="dp-next-meta">${esc(date)} · ${days <= 1 ? 'this week' : `in ${days} days`}</span>
-    </a>`;
 }
 
 /* ── The profile ─────────────────────────────────────────────────────────── */
@@ -161,7 +128,7 @@ async function paint(): Promise<void> {
     const rowTeam = row.Constructors?.[0]?.name ?? '';
     const rowColor = TEAM_HEX[rowTeam] ?? TEAM_HEX[teamLabel(rowTeam)] ?? '#7e8188';
     return `<a class="dp-standing-row${active ? ' is-current' : ''}" href="/drivers/${esc(driverSlug(row.Driver))}/"${active ? ' aria-current="page"' : ''}>
-      <span class="dp-standing-pos">${esc(row.position)}</span><span class="dp-standing-bar" style="background:${esc(rowColor)}"></span>
+      <span class="dp-standing-pos">${esc(row.position)}</span><span class="dp-standing-bar" style="background:${esc(rowColor)}"></span><img class="dp-standing-photo" src="${esc(portrait(row.Driver.driverId, 320))}" alt="" width="32" height="32" loading="lazy" decoding="async">
       <span class="dp-standing-name"><b>${esc(row.Driver.familyName)}</b><small>${esc(teamLabel(rowTeam))}</small></span><strong>${esc(row.points)}</strong>
     </a>`;
   }).join(''));
@@ -248,18 +215,19 @@ async function paint(): Promise<void> {
   const mate = teammateOf(standings.rows, driver);
   if (mate) {
     const mateName = displayName(mate.Driver.givenName, mate.Driver.familyName);
+    setText('dpBattleTitle', `Teammate battle: ${last} vs ${mate.Driver.familyName}`);
     const mateSeason = await loadSeason(mate.Driver.driverId).catch(() => null);
     const battle = mateSeason ? teammateBattle(season, mateSeason) : { shared: 0, ahead: 0, behind: 0 };
     show('dpTeammate', `
       <div class="dp-battle">
         <div class="dp-battle-side">
-          <span class="dp-battle-name">${esc(last)}</span>
+          <span class="dp-battle-name">${esc(fullName)}</span>
           <b class="num">${esc(standingsRow.points)}</b>
           <small>points · P${esc(standingsRow.position)}</small>
         </div>
         <span class="dp-vs">vs</span>
         <a class="dp-battle-side" href="/drivers/${esc(driverSlug(mate.Driver))}/">
-          <span class="dp-battle-name">${esc(mate.Driver.familyName)}</span>
+          <span class="dp-battle-name">${esc(mateName)}</span>
           <b class="num">${esc(mate.points)}</b>
           <small>points · P${esc(mate.position)}</small>
         </a>
@@ -270,8 +238,6 @@ async function paint(): Promise<void> {
     show('dpTeammate', '<p class="dp-muted">No teammate on the grid.</p>');
   }
 
-  show('dpForm', formStrip(season.rows));
-  show('dpNext', nextRoundCard());
 }
 
 /**

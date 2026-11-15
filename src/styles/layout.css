@@ -2015,3 +2015,42 @@ a.tp-mini-who:hover .tp-mini-name { text-decoration: underline; text-underline-o
 .dp-main .dp-battle-side { background: rgba(255,255,255,.045); border-radius: 10px; text-align: center; padding: 14px 10px; }
 .dp-main .dp-battle-side:hover:is(a) { background: rgba(255,255,255,.08); }
 @media (min-width: 1080px) { .dp-side { position: static; } }
+
+/* Driver dossier: restrained, spacious cards and the reference's hierarchy. */
+body[data-page="driver"] .dp-hero { border: 0; background: var(--page); }
+body[data-page="driver"] .dp-glow { background: radial-gradient(52% 75% at 82% 51%, color-mix(in srgb, var(--team) 23%, transparent), transparent 72%); }
+body[data-page="driver"] .dp-hero-grid { padding-top: 48px; }
+body[data-page="driver"] .dp-tags { margin-top: 22px; }
+body[data-page="driver"] .dp-first { font-size: clamp(1.7rem, 3vw, 2.25rem); }
+body[data-page="driver"] .dp-last { font-size: clamp(2.9rem, 6vw, 4.5rem); font-weight: 700; letter-spacing: -.035em; }
+body[data-page="driver"] .dp-number { font-size: clamp(3rem, 5vw, 3.75rem); margin-top: 18px; }
+body[data-page="driver"] .dp-stats { max-width: none; gap: 10px; margin-top: 30px; }
+body[data-page="driver"] .dp-stat { min-height: 122px; padding: 20px; border-radius: 20px; background: #16171b; border: 0; box-shadow: none; }
+body[data-page="driver"] .dp-stat-label { font-size: 12px; }
+body[data-page="driver"] .dp-stat-label > span { transform: none; }
+body[data-page="driver"] .dp-stat-value { margin-top: 9px; font-size: 28px; }
+body[data-page="driver"] .dp-stat-note { margin-top: 7px; font-size: 12px; }
+body[data-page="driver"] .dp-portrait { height: 570px; max-width: 400px; }
+body[data-page="driver"] .dp-body { padding-top: 24px; }
+body[data-page="driver"] .dp-main { gap: 30px; }
+body[data-page="driver"] .dp-panel, body[data-page="driver"] .dp-side-card, body[data-page="driver"] .dp-table-card { background: #16171b; border: 0; border-radius: 20px; box-shadow: none; }
+body[data-page="driver"] .dp-panel { padding: 28px; }
+body[data-page="driver"] .dp-panel-title { font-size: 20px; }
+body[data-page="driver"] .dp-facts > div { background: #222327; border: 0; border-radius: 8px; }
+body[data-page="driver"] .dp-prose { font-size: 15px; }
+body[data-page="driver"] .dp-section .section-title { font-size: 28px; }
+body[data-page="driver"] .dp-section-note { display: none; }
+body[data-page="driver"] .dp-side-title { font-size: 14px; font-weight: 700; letter-spacing: 0; color: var(--white); text-transform: none; }
+body[data-page="driver"] .dp-standing-row { grid-template-columns: 30px 3px 32px minmax(0,1fr) auto; gap: 10px; }
+body[data-page="driver"] .dp-standing-photo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; object-position: top; background: #303136; }
+body[data-page="driver"] .dp-standing-row.is-current { background: transparent; }
+body[data-page="driver"] .dp-team-card { border-radius: 20px; }
+body[data-page="driver"] .dp-battle-side { border-radius: 5px; }
+body[data-page="driver"] .dp-battle-note { display: none; }
+/* Explicit centred alignment and flag gutters remain as requested. */
+@media (max-width: 639px) {
+  body[data-page="driver"] .dp-hero-grid { padding-top: 28px; }
+  body[data-page="driver"] .dp-stat { min-height: 108px; padding: 16px; }
+  body[data-page="driver"] .dp-portrait { height: 380px; }
+  body[data-page="driver"] .dp-panel { padding: 20px; }
+}
