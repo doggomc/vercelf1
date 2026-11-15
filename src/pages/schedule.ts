@@ -234,27 +234,46 @@ function render(): void {
       </article>
     </li>`;
   }).join('');
+  // Duplicate the actual current/next round, keeping the original in season order.
+  const featured = $('featuredRound');
+  const currentRound = liveRound ?? nextRound;
+  if (featured) {
+    featured.replaceChildren();
+    const original = currentRound == null ? null : list.querySelector<HTMLElement>(`#round-${currentRound}`);
+    if (original) {
+      const copy = original.cloneNode(true) as HTMLElement;
+      copy.id = `featured-round-${currentRound}`;
+      const drawer = copy.querySelector<HTMLElement>('.sc-drawer');
+      const toggle = copy.querySelector<HTMLButtonElement>('[data-round-toggle]');
+      if (drawer && toggle) { drawer.id = `sc-featured-drawer-${currentRound}`; toggle.setAttribute('aria-controls', drawer.id); }
+      featured.append(copy);
+    }
+    featured.hidden = !original;
+  }
 }
 
-$('roundList')?.addEventListener('click', (event) => {
+function toggleRound(event: MouseEvent): void {
   const target = event.target as HTMLElement | null;
   if (!target || target.closest('a')) return;
   const btn = target.closest<HTMLButtonElement>('[data-round-toggle]');
   if (!btn) return;
   const round = Number(btn.dataset.roundToggle);
   if (!Number.isFinite(round)) return;
-  const drawer = $(`sc-drawer-${round}`);
-  const card = btn.closest('.sc-card');
   const nextOpen = !openRounds.has(round);
   if (nextOpen) openRounds.add(round); else openRounds.delete(round);
-  btn.setAttribute('aria-expanded', String(nextOpen));
-  btn.textContent = nextOpen ? 'Hide session times' : 'Show session times';
-  if (drawer) {
-    drawer.toggleAttribute('inert', !nextOpen);
-    drawer.setAttribute('aria-hidden', String(!nextOpen));
-  }
-  card?.classList.toggle('is-open', nextOpen);
-});
+  document.querySelectorAll<HTMLButtonElement>(`[data-round-toggle="${round}"]`).forEach(toggle => {
+    toggle.setAttribute('aria-expanded', String(nextOpen));
+    toggle.textContent = nextOpen ? 'Hide session times' : 'Show session times';
+    const drawer = $(toggle.getAttribute('aria-controls') ?? '');
+    if (drawer) {
+      drawer.toggleAttribute('inert', !nextOpen);
+      drawer.setAttribute('aria-hidden', String(!nextOpen));
+    }
+    toggle.closest('.sc-card')?.classList.toggle('is-open', nextOpen);
+  });
+}
+$('roundList')?.addEventListener('click', toggleRound);
+$('featuredRound')?.addEventListener('click', toggleRound);
 
 const hashMatch = location.hash.match(/^#round-(\d+)$/);
 if (hashMatch) {

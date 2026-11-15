@@ -40,9 +40,9 @@ describe('Grand Prix pages', () => {
     expect(template).not.toContain('gp-circuit-guide');
     expect(template).toContain('gp-round-nav');
   });
-  it('places the next session below the calendar actions and above the season calendar', () => {
+  it('places the featured round above the full season calendar', () => {
     const html = readFileSync('schedule.html', 'utf8');
-    expect(html.indexOf('id="scCalBtn"')).toBeLessThan(html.indexOf('id="scNextCard"'));
-    expect(html.indexOf('id="scNextCard"')).toBeLessThan(html.indexOf('id="roundList"'));
+    expect(html.indexOf('id="scCalBtn"')).toBeLessThan(html.indexOf('id="featuredRound"')); 
+    expect(html.indexOf('id="featuredRound"')).toBeLessThan(html.indexOf('id="roundList"'));
   });
 });

@@ -591,7 +591,7 @@ main { flex: 1 0 auto; }
 }
 .sc-cal-pop a:hover { background: rgba(255,255,255,.07); color: var(--white); }
 
-.sc-next-wrap { width: 100%; margin-top: 22px; }
+.sc-next-wrap { width: 100%; }
 @media (min-width: 1024px) { .sc-next-wrap { max-width: 340px; flex: none; } }
 .sc-next-card { padding: 20px; }
 .sc-next-label { margin: 0; font-size: 12px; font-weight: 600; color: var(--fg-3); }
@@ -618,6 +618,8 @@ main { flex: 1 0 auto; }
 .sc-lozenge-sprint { background: #533f04; color: #fbd779; }
 
 .sc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.sc-featured:not([hidden]) { margin-bottom: 24px; }
+.sc-featured[hidden] { display: none; }
 .sc-item { min-width: 0; }
 .sc-card {
   overflow: hidden;

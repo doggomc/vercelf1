@@ -57,7 +57,8 @@ assert(liveTimingSize < LIVE_TIMING_BUDGET, `live-timing.html ships ${liveTiming
    helpers), fetches live race winners, ticks a live countdown, and opens per-round
    session drawers + calendar feed links (~7 KiB page work + ~2.5 KiB calendar). */
 // Round cards now link to dedicated GP pages while retaining the quick timetable.
-const SCHEDULE_BUDGET = 10 * 1024 + 896;
+// The featured current/next round reuses the calendar card and synchronizes its timetable.
+const SCHEDULE_BUDGET = 11 * 1024 + 128;
 const scheduleSize = pageGzip('schedule.html');
 console.log(`schedule gzip: ${scheduleSize} B of ${SCHEDULE_BUDGET}`);
 assert(scheduleSize < SCHEDULE_BUDGET, `schedule.html ships ${scheduleSize} B gzip — over the ${SCHEDULE_BUDGET} B budget`);
