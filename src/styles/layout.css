@@ -2099,3 +2099,42 @@ body[data-page="driver"] .dp-fact-label .dp-label-icon { width: 14px; height: 14
 
 /* A race win keeps the same numeric colour as other finishes. */
 .dp-win-trophy { display: inline-block; width: 15px; height: 15px; margin-right: 6px; color: #f5c84c; vertical-align: -3px; }
+
+/* Team profiles use the same restrained race-dossier treatment as drivers. */
+body[data-page="team"] .tp-hero { border: 0; background: var(--page); }
+body[data-page="team"] .tp-hero-inner { padding-top: 48px; }
+body[data-page="team"] .tp-stats { gap: 10px; }
+body[data-page="team"] .tp-stats .dp-stat { min-height: 96px; padding: 20px; border: 0; border-radius: 20px; box-shadow: none; background: var(--card); }
+body[data-page="team"] .tp-stats .dp-stat-label { font-size: 12px; }
+body[data-page="team"] .tp-stats .dp-stat-value { margin-top: 9px; font-size: 28px; }
+body[data-page="team"] .dp-body { padding-top: 24px; }
+body[data-page="team"] .dp-main { gap: 30px; }
+body[data-page="team"] .dp-panel, body[data-page="team"] .dp-table-card, body[data-page="team"] .tp-mini-card { border: 0; border-radius: 20px; box-shadow: none; background: var(--card); }
+body[data-page="team"] .dp-panel { padding: 28px; }
+body[data-page="team"] .dp-facts > div { background: var(--card-2); border: 0; border-radius: 8px; }
+body[data-page="team"] .dp-prose { font-size: 15px; }
+body[data-page="team"] .dp-section .section-title { font-size: 28px; }
+body[data-page="team"] .dp-table-card { padding: 4px; }
+body[data-page="team"] .dp-table { font-size: 14px; }
+body[data-page="team"] .dp-table th { padding: 8px 12px; text-align: left; font-size: 12px; font-weight: 650; text-transform: none; letter-spacing: 0; color: #96999e; border-bottom: 2px solid rgba(227,228,242,.12); }
+body[data-page="team"] .dp-table td { padding: 8px 12px; height: 48px; text-align: left; border-bottom: 1px solid rgba(227,228,242,.07); }
+body[data-page="team"] .dp-table tbody tr:last-child td { border-bottom: 0; }
+body[data-page="team"] .dp-table .t-num { text-align: right; }
+body[data-page="team"] .dp-rnd { width: auto; }
+body[data-page="team"] .dp-gp { display: flex; width: 100%; justify-content: flex-start; gap: 8px; text-align: left; font-size: 14px; }
+body[data-page="team"] .dp-gp > span { text-align: left; }
+body[data-page="team"] .dp-gp .flag { width: 20px; height: 14px; }
+body[data-page="team"] .tp-mini-card { padding: 16px 4px 4px; }
+body[data-page="team"] .tp-mini-card .dp-side-title { padding: 4px 12px 0; margin-bottom: 8px; }
+body[data-page="team"] .tp-mini-tbl { font-size: 14px; }
+body[data-page="team"] .tp-mini-tbl th { padding: 8px 12px; font-size: 12px; border-bottom: 2px solid rgba(227,228,242,.12); }
+body[data-page="team"] .tp-mini-tbl td { padding: 8px 12px; height: 53px; border-bottom: 1px solid rgba(227,228,242,.07); }
+body[data-page="team"] .tp-mini-tbl tr:last-child td { border-bottom: 0; }
+body[data-page="team"] .tp-mini-tbl tr.is-current td { background: transparent; }
+body[data-page="team"] .tp-mini-who { gap: 12px; }
+@media (min-width: 1080px) { body[data-page="team"] .dp-side { position: static; } }
+@media (max-width: 639px) {
+  body[data-page="team"] .tp-hero-inner { padding-top: 28px; }
+  body[data-page="team"] .tp-stats .dp-stat { min-height: 90px; padding: 16px; }
+  body[data-page="team"] .dp-panel { padding: 20px; }
+}

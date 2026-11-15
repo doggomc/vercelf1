@@ -7,7 +7,6 @@ import { flagHtml } from '../data/flags';
 import { portrait } from '../data/driver-portraits';
 import { TEAM_CAR, TEAM_HEX, TEAM_LOGO } from '../data/teams';
 import { TEAM_PROFILES, findTeamByConstructorId, findTeamBySlug } from '../data/team-facts';
-import { schedule } from '../data/schedule';
 import { JOLPI, SITE_SEASON } from '../config';
 import { driverSlug, esc, loadStandings, ordinal, teamName, teamSlug, type StandingRow } from './driver-core';
 import { loadTeamSeason, teamRoundRows, teamSeasonStats, type TeamRoundRow } from './team-season';
@@ -105,29 +104,12 @@ function miniStandingsHtml(rows: ConstructorStandingRow[], currentSlug: string):
   }).join('');
 }
 
-function nextRoundCard(): string {
-  const now = Date.now();
-  const next = schedule.find((event) => {
-    const last = event.sessions[event.sessions.length - 1];
-    return last && last.ts > now;
-  });
-  if (!next) return '<p class="dp-muted">The season is complete.</p>';
-  const first = next.sessions[0];
-  const date = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: next.tz }).format(new Date(first.ts));
-  const days = Math.max(0, Math.ceil((first.ts - now) / 86400000));
-  return `<a class="dp-next-card" href="/schedule">
-    <span class="dp-next-round">Round ${esc(next.round)}</span>
-    <b>${esc(next.name)}</b>
-    <span class="dp-next-meta">${esc(date)} · ${days <= 1 ? 'this week' : `in ${days} days`}</span>
-  </a>`;
-}
 
 async function paint(): Promise<void> {
   const slug = slugFromLocation();
   if (!slug) { location.replace('/teams'); return; }
 
   const profile = findTeamBySlug(slug);
-  show('tpNext', nextRoundCard());
 
   if (!profile) {
     setText('tpCrumb', 'Constructor not found');
