@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildPrivateCockpitHref,
+  compareStreamProviders,
   buildStreamfreeUrls,
   buildTimstreamsUrls,
   buildZliveUrls,
@@ -25,6 +26,12 @@ import {
 } from '../src/lib/other-streams';
 
 describe('Other streams non-F1 filtering & private cockpit resolution', () => {
+  it('orders PPV, EMB and StreamFree first, with the remaining providers alphabetically', () => {
+    const labels = {ppv:'PPV', embdlol:'EMB', strmfree:'StreamFree', aura:'Aura Sports', bintv:'BinTV', ntv:'NTV Raptor', timstreams:'TimStreams', weelo:'Weelo', zlive:'ZLive'};
+    const providers: Array<keyof typeof labels> = ['zlive','embdlol','aura','strmfree','ppv','bintv'];
+    expect(providers.sort((a,b)=>compareStreamProviders(a,b,labels))).toEqual(['ppv','embdlol','strmfree','aura','bintv','zlive']);
+  });
+
   it('adds NTV Raptor sports with direct player embeds and correct status', () => {
     const now = Date.parse('2026-11-15T14:00:00Z');
     const items = parseNtvRaptor({success:true,all:[

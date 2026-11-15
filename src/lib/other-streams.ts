@@ -2,6 +2,13 @@ import { BACKEND_API } from '../config';
 
 export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams' | 'zlive' | 'aura' | 'bintv' | 'ntv';
 
+/** Priority for directory headings and provider selector; remaining providers
+ * retain alphabetical order by their display name. */
+export function compareStreamProviders(a: OtherStreamProvider, b: OtherStreamProvider, labels: Record<OtherStreamProvider, string>): number {
+  const priority: Partial<Record<OtherStreamProvider, number>> = { ppv: 0, embdlol: 1, strmfree: 2 };
+  return (priority[a] ?? 3) - (priority[b] ?? 3) || labels[a].localeCompare(labels[b]);
+}
+
 export interface OtherStreamItem {
   key: string;
   provider: OtherStreamProvider;

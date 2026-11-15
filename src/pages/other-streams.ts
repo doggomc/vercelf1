@@ -3,6 +3,7 @@ import '../viewer-counter';
 import { streamCategory } from '../lib/stream-categories';
 import {
   buildPrivateCockpitHref,
+  compareStreamProviders,
   fetchAllOtherStreams,
   type OtherStreamItem,
 } from '../lib/other-streams';
@@ -233,7 +234,7 @@ function renderList(): void {
     return haystack.includes(needle);
   });
 
-  filtered.sort((a, b) => PROVIDER_LABELS[a.provider].localeCompare(PROVIDER_LABELS[b.provider]) || a.title.localeCompare(b.title));
+  filtered.sort((a, b) => compareStreamProviders(a.provider, b.provider, PROVIDER_LABELS) || a.title.localeCompare(b.title));
   const nodes: Node[] = [];
   let previousProvider = '';
   filtered.forEach((item, idx) => {
@@ -299,7 +300,7 @@ async function loadStreams(initial = false): Promise<void> {
     const result = await fetchAllOtherStreams({ backend: backendMeta });
     allItems = result.items.map(item => ({ ...item, category: streamCategory(item.category, item.title) }));
     if (providerFilter) {
-      const providers = [...new Set(allItems.map(item => item.provider))].sort((a, b) => PROVIDER_LABELS[a].localeCompare(PROVIDER_LABELS[b]));
+      const providers = [...new Set(allItems.map(item => item.provider))].sort((a, b) => compareStreamProviders(a, b, PROVIDER_LABELS));
       if (activeProvider !== 'all' && !providers.includes(activeProvider as OtherStreamItem['provider'])) activeProvider = 'all';
       providerFilter.replaceChildren(new Option('All providers', 'all'), ...providers.map(provider => new Option(PROVIDER_LABELS[provider], provider)));
       providerFilter.value = activeProvider;
