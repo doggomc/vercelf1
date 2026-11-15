@@ -6,6 +6,8 @@ import {
   buildZliveUrls,
   buildAuraUrls,
   buildBintvUrls,
+  buildNtvUrls,
+  parseNtvRaptor,
   parseBintvStreams,
   parseAuraEvents,
   parseZliveSports,
@@ -23,6 +25,37 @@ import {
 } from '../src/lib/other-streams';
 
 describe('Other streams non-F1 filtering & private cockpit resolution', () => {
+  it('adds NTV Raptor sports with direct player embeds and correct status', () => {
+    const now = Date.parse('2026-11-15T14:00:00Z');
+    const items = parseNtvRaptor({success:true,all:[
+      {id:'ppv-1',title:'NFL Network',category:'American Football',tournament:'24/7 channel',live:true,date:0,sources:[{source:'main',url:'https://taifood-blog.asia/embed/nfl-network'},{source:'sd',url:'https://taifood-blog.asia/embed/nfl-network_540p'}]},
+      {id:'ppv-2',title:'Team A vs Team B',category:'Football',date:now+3600000,live:false,sources:[{source:'main',url:'https://taifood-blog.asia/embed/soccer/match'}]},
+      {id:'ppv-3',title:'Cartoon Channel',category:'24/7 Streams',tournament:'24/7 channel',live:true,sources:[{url:'https://taifood-blog.asia/embed/cartoon'}]},
+      {id:'ppv-4',title:'Formula 1 Grand Prix',category:'Motorsport',live:true,sources:[{url:'https://taifood-blog.asia/embed/f1'}]},
+      {id:'ppv-5',title:'Bad',category:'Football',live:true,sources:[{url:'https://evil.example/embed/test'}]},
+    ]},now);
+    expect(items.map(i=>i.title)).toEqual(['NFL Network','Team A vs Team B']);
+    expect(items[0].alwaysLive).toBe(true);
+    expect(items[1].status).toBe('scheduled');
+    const resolved = parsePrivateCockpitParams(new URL(buildPrivateCockpitHref(items[1]), 'https://freef1-live.vercel.app').search);
+    expect(resolved?.embedUrl).toBe('https://taifood-blog.asia/embed/soccer/match');
+    expect(resolved?.status).toBe('scheduled');
+    expect(buildNtvUrls('../bad')).toBeNull();
+  });
+
+  it('fetches NTV independently and avoids duplicate PPV player URLs', async () => {
+    const mockFetch: typeof fetch = async input => {
+      if (String(input).includes('ntv.cx')) return new Response(JSON.stringify({success:true,all:[{id:'ppv-1',title:'NFL Network',category:'American Football',tournament:'24/7 channel',live:true,sources:[{source:'main',url:'https://taifood-blog.asia/embed/nfl-network'}]}]}),{status:200});
+      if (String(input).includes('api.ppv.st')) return new Response(JSON.stringify({timestamp:1794753000,streams:[{category:'American Football',streams:[{name:'NFL Network',always_live:1,uri_name:'nfl-network',iframe:'https://taifood-blog.asia/embed/nfl-network'}]}]}),{status:200});
+      throw new Error('offline');
+    };
+    const result = await fetchAllOtherStreams({fetchImpl:mockFetch});
+    expect(result.providerOk.ntv).toBe(true);
+    expect(result.counts.ppv).toBe(1);
+    expect(result.counts.ntv).toBe(0);
+    expect(result.items.filter(i=>i.embedUrl==='https://taifood-blog.asia/embed/nfl-network')).toHaveLength(1);
+  });
+
   it('adds BinTV sports events and sports channels with validated player-only URLs', () => {
     const encode = (url: string) => btoa(url).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
     const id = encode('https://ehgembxe.cfd/bintv/test-123');

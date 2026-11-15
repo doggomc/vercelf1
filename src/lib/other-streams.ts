@@ -1,6 +1,6 @@
 import { BACKEND_API } from '../config';
 
-export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams' | 'zlive' | 'aura' | 'bintv';
+export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams' | 'zlive' | 'aura' | 'bintv' | 'ntv';
 
 export interface OtherStreamItem {
   key: string;
@@ -28,6 +28,8 @@ export interface OtherStreamsResult {
 
 const DEFAULT_BACKEND = BACKEND_API;
 const EMBDLOL_STRUCT_URL = 'https://api.embdlol.st/struct';
+const NTV_RAPTOR_URL = 'https://ntv.cx/api/get-matches?server=raptor&type=both';
+const NTV_CACHE_KEY = 'freef1-ntv-raptor-v1';
 const BINTV_EVENTS_URL = 'https://api.yosintv.fun/api/public/bintvjson';
 const BINTV_CACHE_KEY = 'freef1-bintv-v1';
 const AURA_SCHEDULE_URL = 'https://aurasports.cfd/api/schedule';
@@ -68,6 +70,7 @@ const PROVIDER_COLORS: Record<OtherStreamProvider, string> = {
   zlive: '#B48CFF',
   aura: '#C1FF55',
   bintv: '#58B6E8',
+  ntv: '#E3BC45',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -762,6 +765,47 @@ export function parseBintvStreams(payload: unknown): OtherStreamItem[] {
   return out;
 }
 
+/** Raptor currently publishes direct PPV player URLs. Keep to this host and
+ * let the provider's player handle playback, with no video relay or site chat. */
+export function buildNtvUrls(rawId: string): { embedUrl: string; fallbackUrl: string } | null {
+  const slug = normalizePpvPath(rawId);
+  if (!slug || isFormula1Text(slug)) return null;
+  const url = `https://taifood-blog.asia/embed/${slug}`;
+  return { embedUrl: url, fallbackUrl: url };
+}
+
+export function parseNtvRaptor(payload: unknown, now = Date.now()): OtherStreamItem[] {
+  const data = payload as { success?: unknown; all?: unknown } | null;
+  if (data?.success !== true || !Array.isArray(data.all)) return [];
+  const out: OtherStreamItem[] = [], seen = new Set<string>();
+  const sportsChannel = /\b(?:sports?|rally|racing|football|footy|cricket|nfl|nba|nhl|mlb|tennis|golf|rugby|motorsport|ufc|wwe|espn|dazn)\b/i;
+  for (const raw of data.all) {
+    if (!raw || typeof raw !== 'object') continue;
+    const event = raw as Record<string, unknown>;
+    const name = String(event.title || '').trim().slice(0, 140), category = String(event.category || '').trim().slice(0, 80);
+    const eventId = String(event.id || '');
+    const alwaysLive = /24\/7/i.test(String(event.tournament || ''));
+    const live = event.live === true || String(event.status || '').toLowerCase() === 'live';
+    const startAt = Number(event.date);
+    if (!name || !category || isFormula1Text(`${name} ${category} ${eventId}`) || (category === '24/7 Streams' && !sportsChannel.test(name))) continue;
+    if (!live && (!Number.isFinite(startAt) || startAt <= now || startAt > 4e12)) continue;
+    const sources = Array.isArray(event.sources) ? event.sources : [];
+    for (const source of sources) {
+      if (!source || typeof source !== 'object') continue;
+      const entry = source as Record<string, unknown>;
+      let url: URL; try { url = new URL(String(entry.url || '')); } catch { continue; }
+      if (url.protocol !== 'https:' || url.hostname !== 'taifood-blog.asia' || url.port || url.username || url.password || url.search || url.hash || !url.pathname.startsWith('/embed/')) continue;
+      const slug = url.pathname.slice('/embed/'.length);
+      if (isLowResStream(slug) || isFormula1Text(`${slug} ${entry.source || ''}`)) continue;
+      const urls = buildNtvUrls(slug); if (!urls || seen.has(urls.embedUrl)) continue;
+      seen.add(urls.embedUrl);
+      const label = String(entry.source || '').trim().slice(0, 60);
+      out.push({ key: `ntv:${slug}`, provider: 'ntv', id: slug, title: name, category, subtitle: [category, String(event.tournament || '').slice(0, 80), 'NTV Raptor'].filter(Boolean).join(' · '), tag: label ? `NTV Raptor · ${label}` : 'NTV Raptor', viewers: 0, alwaysLive, startAt: startAt > 1e12 && startAt < 4e12 ? startAt : undefined, status: live ? 'live' : 'scheduled', ...urls, color: pickStreamColor('ntv', category) });
+    }
+  }
+  return out;
+}
+
 const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
   embdlol: '1',
   ppv: '2',
@@ -771,6 +815,7 @@ const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
   zlive: '6',
   aura: '7',
   bintv: '8',
+  ntv: '9',
 };
 
 const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
@@ -782,6 +827,7 @@ const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
   '6': 'zlive',
   '7': 'aura',
   '8': 'bintv',
+  '9': 'ntv',
   embdlol: 'embdlol',
   ppv: 'ppv',
   weelo: 'weelo',
@@ -790,6 +836,7 @@ const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
   zlive: 'zlive',
   aura: 'aura',
   bintv: 'bintv',
+  ntv: 'ntv',
 };
 
 function slugifyStreamLabel(value: string): string {
@@ -810,8 +857,8 @@ export function buildPrivateCockpitHref(item: OtherStreamItem): string {
   params.set('cat', item.category);
   if (item.subtitle) params.set('sub', item.subtitle);
   if (item.alwaysLive) params.set('al', '1');
-  if ((item.provider === 'timstreams' || item.provider === 'aura' || item.provider === 'bintv') && item.startAt) params.set('start', String(item.startAt));
-  if ((item.provider === 'aura' || item.provider === 'bintv') && item.status === 'scheduled') params.set('scheduled', '1');
+  if ((item.provider === 'timstreams' || item.provider === 'aura' || item.provider === 'bintv' || item.provider === 'ntv') && item.startAt) params.set('start', String(item.startAt));
+  if ((item.provider === 'aura' || item.provider === 'bintv' || item.provider === 'ntv') && item.status === 'scheduled') params.set('scheduled', '1');
   return `/private-cockpit?${params.toString()}`;
 }
 
@@ -852,6 +899,11 @@ export function parsePrivateCockpitParams(
     fallbackUrl = urls.fallbackUrl;
   } else if (provider === 'weelo') {
     const urls = buildWeeloUrls(rawId, backend);
+    if (!urls) return null;
+    embedUrl = urls.embedUrl;
+    fallbackUrl = urls.fallbackUrl;
+  } else if (provider === 'ntv') {
+    const urls = buildNtvUrls(rawId);
     if (!urls) return null;
     embedUrl = urls.embedUrl;
     fallbackUrl = urls.fallbackUrl;
@@ -904,8 +956,8 @@ export function parsePrivateCockpitParams(
     category,
     subtitle,
     alwaysLive,
-    startAt: (provider === 'timstreams' || provider === 'aura' || provider === 'bintv') && /^\d{13}$/.test(params.get('start') || '') ? Number(params.get('start')) : undefined,
-    status: provider === 'timstreams' || ((provider === 'aura' || provider === 'bintv') && params.get('scheduled') === '1') ? 'scheduled' : undefined,
+    startAt: (provider === 'timstreams' || provider === 'aura' || provider === 'bintv' || provider === 'ntv') && /^\d{13}$/.test(params.get('start') || '') ? Number(params.get('start')) : undefined,
+    status: provider === 'timstreams' || ((provider === 'aura' || provider === 'bintv' || provider === 'ntv') && params.get('scheduled') === '1') ? 'scheduled' : undefined,
     stagePath: `freef1://live/other/${slugifyStreamLabel(title)}`,
     embedUrl,
     fallbackUrl,
@@ -961,6 +1013,19 @@ async function fetchBintv(fetchImpl: typeof fetch, useCache: boolean): Promise<u
   return data;
 }
 
+async function fetchNtv(fetchImpl: typeof fetch, useCache: boolean): Promise<unknown> {
+  if (useCache) {
+    try {
+      const cached = JSON.parse(localStorage.getItem(NTV_CACHE_KEY) || 'null');
+      if (cached && Date.now() - cached.at >= 0 && Date.now() - cached.at < 60_000 && Array.isArray(cached.data?.all)) return cached.data;
+    } catch { /* Storage is optional. */ }
+  }
+  const data = await fetchJsonWithTimeout(NTV_RAPTOR_URL, {}, 8500, fetchImpl);
+  if (!Array.isArray((data as { all?: unknown } | null)?.all)) throw new Error('Invalid NTV response');
+  if (useCache) { try { localStorage.setItem(NTV_CACHE_KEY, JSON.stringify({at: Date.now(), data})); } catch { /* Optional. */ } }
+  return data;
+}
+
 export async function fetchAllOtherStreams(options: {
   backend?: string;
   fetchImpl?: typeof fetch;
@@ -980,7 +1045,7 @@ export async function fetchAllOtherStreams(options: {
     throw lastError || new Error('Weelo unavailable');
   };
 
-  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes, zliveRes, auraRes, bintvRes] = await Promise.allSettled([
+  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes, zliveRes, auraRes, bintvRes, ntvRes] = await Promise.allSettled([
     fetchJsonWithTimeout(EMBDLOL_STRUCT_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(PPV_STREAMS_URL, {}, 8500, fetchImpl),
     fetchWeeloPlayers(),
@@ -991,6 +1056,7 @@ export async function fetchAllOtherStreams(options: {
     fetchJsonWithTimeout(ZLIVE_MANIFEST_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(AURA_SCHEDULE_URL, {}, 8500, fetchImpl),
     fetchBintv(fetchImpl, !options.fetchImpl),
+    fetchNtv(fetchImpl, !options.fetchImpl),
   ]);
 
   const embItems = embRes.status === 'fulfilled' ? parseEmbdlolStruct(embRes.value, backend) : [];
@@ -1010,7 +1076,9 @@ export async function fetchAllOtherStreams(options: {
   const zliveItems = zliveRes.status === 'fulfilled' ? parseZliveSports(zliveRes.value) : [];
   const auraItems = auraRes.status === 'fulfilled' ? parseAuraEvents(auraRes.value) : [];
   const bintvItems = bintvRes.status === 'fulfilled' ? parseBintvStreams(bintvRes.value) : [];
-  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems, ...timstreamsItems, ...zliveItems, ...auraItems, ...bintvItems];
+  const ppvUrls = new Set(ppvItems.map(item => item.embedUrl));
+  const ntvItems = ntvRes.status === 'fulfilled' ? parseNtvRaptor(ntvRes.value).filter(item => !ppvUrls.has(item.embedUrl)) : [];
+  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems, ...timstreamsItems, ...zliveItems, ...auraItems, ...bintvItems, ...ntvItems];
 
   return {
     items,
@@ -1024,6 +1092,7 @@ export async function fetchAllOtherStreams(options: {
       zlive: zliveItems.length,
       aura: auraItems.length,
       bintv: bintvItems.length,
+      ntv: ntvItems.length,
     },
     providerOk: {
       embdlol: embRes.status === 'fulfilled',
@@ -1034,6 +1103,7 @@ export async function fetchAllOtherStreams(options: {
       zlive: zliveRes.status === 'fulfilled',
       aura: auraRes.status === 'fulfilled',
       bintv: bintvRes.status === 'fulfilled',
+      ntv: ntvRes.status === 'fulfilled',
     },
   };
 }
