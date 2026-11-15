@@ -987,11 +987,15 @@ body.is-leaving main { animation: pageOut .12s cubic-bezier(.4, 0, .2, 1) both; 
 .driver-fade {
   position: absolute; inset-inline: 0; bottom: 0; z-index: 2; height: 96px; pointer-events: none;
   background: linear-gradient(to top, var(--card) 8%, color-mix(in srgb, var(--card) 55%, transparent) 55%, transparent);
-  transition: background-image .2s var(--ease);
 }
-.driver-card:hover .driver-fade {
+/* Gradients switch discretely, so crossfade a second layer instead of swapping
+   background-image mid-hover. This keeps the portrait-to-body seam stable. */
+.driver-fade::after {
+  content: ''; position: absolute; inset: 0;
   background: linear-gradient(to top, var(--card-2) 8%, color-mix(in srgb, var(--card-2) 55%, transparent) 55%, transparent);
+  opacity: 0; transition: opacity .2s var(--ease);
 }
+.driver-card:hover .driver-fade::after { opacity: 1; }
 
 .driver-body { position: relative; z-index: 3; margin-top: -40px; padding: 0 16px 16px; }
 .driver-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg-3); }
