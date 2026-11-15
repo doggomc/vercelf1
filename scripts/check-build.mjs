@@ -33,7 +33,8 @@ assert(initialJs < BUDGET, `Startup JS exceeds ${BUDGET} B gzip budget: ${initia
    markup has been pasted into a page that should be composing from data. */
 /* One-time notice bootstrap adds a small shared guard; its UI stays lazy. */
 // Account for the small, lazy session-context hook on the existing counter.
-const SHELL_BUDGET = 6 * 1024 + 768;
+// Shared navigation maps detail pages to their parent tabs.
+const SHELL_BUDGET = 6 * 1024 + 896;
 const pageGzip = (page) => {
   const entry = manifest[page];
   assert(entry, `missing entry ${page}`);
@@ -49,7 +50,7 @@ for (const page of ['drivers.html', 'teams.html']) {
 /* Live timing speaks F1's SignalR Core WebSocket protocol and OpenF1's REST feed
    for off-session / blocked-network fallback, plus tower, race control & radio UI. */
 // Session tabs, resilient session loading and changed-value motion add small lazy hooks.
-const LIVE_TIMING_BUDGET = 16 * 1024 + 1280;
+const LIVE_TIMING_BUDGET = 16 * 1024 + 1408;
 const liveTimingSize = pageGzip('live-timing.html');
 console.log(`live-timing gzip: ${liveTimingSize} B of ${LIVE_TIMING_BUDGET}`);
 assert(liveTimingSize < LIVE_TIMING_BUDGET, `live-timing.html ships ${liveTimingSize} B gzip — over the ${LIVE_TIMING_BUDGET} B budget`);

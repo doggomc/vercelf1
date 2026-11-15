@@ -24,8 +24,13 @@ function prefetch(e: Event): void {
   document.head.appendChild(link);
 }
 
+/** Map standalone detail routes to their parent navigation section. */
+export function navigationPath(pathname: string): string {
+  return pathKey(pathname).replace(/^\/grand-prix(?:\/.*)?$/, '/schedule').replace(/^\/(?:replays|other-streams)(?:\/.*)?$/, '/other');
+}
+
 function markCurrentLink(root: ParentNode): void {
-  const here = pathKey(location.pathname);
+  const here = navigationPath(location.pathname);
   root.querySelectorAll<HTMLAnchorElement>('.nav-links a, .footer-nav a').forEach((a) => {
     if (a.origin !== location.origin) return;
     const t = pathKey(a.pathname);
