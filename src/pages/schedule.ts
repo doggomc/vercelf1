@@ -9,7 +9,7 @@ import {
   type RaceEvent,
 } from '../services/weekend';
 import {
-  displayRoundName, esc, formatScheduleClock, formatSessionLong, formatWeekendRange,
+  displayRoundName, esc, grandPrixHref, formatScheduleClock, formatSessionLong, formatWeekendRange,
   roundFlagCode, viewerTimeZoneLabel, winnerDriverHref, winnerTeamColor,
   winnerTeamHref, winnerTeamName,
 } from './schedule-format';
@@ -201,7 +201,7 @@ function render(): void {
 
     return `<li class="sc-item" id="round-${event.round}">
       <article class="${cardCls}" data-round="${event.round}">
-        <button type="button" class="sc-row" data-round-toggle="${event.round}" aria-expanded="${isOpen}" aria-controls="sc-drawer-${event.round}">
+        <a class="sc-row" href="${grandPrixHref(event)}" aria-label="View ${esc(title)} weekend page">
           <div class="sc-rnd">
             <span class="sc-rnd-label">ROUND</span>
             <span class="sc-rnd-num num">${event.round}</span>
@@ -225,8 +225,9 @@ function render(): void {
             <p class="sc-dates">${esc(dates)}</p>
             <div class="sc-status">${badge}</div>
           </div>
-          <span class="sc-chev" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span>
-        </button>
+          <span class="sc-chev" aria-hidden="true">↗</span>
+        </a>
+        <button type="button" class="sc-quick-toggle" data-round-toggle="${event.round}" aria-expanded="${isOpen}" aria-controls="sc-drawer-${event.round}">${isOpen ? 'Hide session times' : 'Show session times'}</button>
         <div class="sc-drawer" id="sc-drawer-${event.round}" ${isOpen ? '' : 'inert'} aria-hidden="${!isOpen}">
           ${renderDrawer(event, state, now, nextTs)}
         </div>
@@ -247,6 +248,7 @@ $('roundList')?.addEventListener('click', (event) => {
   const nextOpen = !openRounds.has(round);
   if (nextOpen) openRounds.add(round); else openRounds.delete(round);
   btn.setAttribute('aria-expanded', String(nextOpen));
+  btn.textContent = nextOpen ? 'Hide session times' : 'Show session times';
   if (drawer) {
     drawer.toggleAttribute('inert', !nextOpen);
     drawer.setAttribute('aria-hidden', String(!nextOpen));

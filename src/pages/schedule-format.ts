@@ -57,6 +57,9 @@ export function displayRoundName(event: { round: number; name: string; country: 
   return event.name;
 }
 
+export function grandPrixSlug(event: {round: number; name: string; country: string}): string { return slugify(displayRoundName(event)); }
+export function grandPrixHref(event: {round: number; name: string; country: string}): string { return `/grand-prix/2026/${grandPrixSlug(event)}/`; }
+
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
 export function formatScheduleClock(targetTs: number, now: number = Date.now()): string {

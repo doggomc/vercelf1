@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from 'vite';
 import { driverPages } from './scripts/driver-pages';
 import { teamPages } from './scripts/team-pages';
+import { grandPrixPages } from './scripts/grand-prix-pages';
 import { resolve, extname, join, relative, sep } from 'node:path';
 import { createReadStream } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -310,7 +311,7 @@ function dedupeRootAssets(): Plugin {
 
 export default defineConfig({
   publicDir: false,
-  plugins: [configuredBackend(), serveStaticFolders(), dedupeRootAssets(), driverPages(), teamPages()],
+  plugins: [configuredBackend(), serveStaticFolders(), dedupeRootAssets(), driverPages(), teamPages(), grandPrixPages()],
   server: {
     host: '0.0.0.0', port: 4173,
     allowedHosts: ['.e2b.app', 'localhost'],
@@ -346,6 +347,7 @@ export default defineConfig({
         index: resolve(ROOT, 'index.html'),
         cockpit: resolve(ROOT, 'cockpit.html'),
         schedule: resolve(ROOT, 'schedule.html'),
+        'grand-prix': resolve(ROOT, 'grand-prix.html'),
         standings: resolve(ROOT, 'standings.html'),
         drivers: resolve(ROOT, 'drivers.html'),
         /* The profile template. scripts/driver-pages.ts copies the built page to

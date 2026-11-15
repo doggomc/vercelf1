@@ -56,7 +56,8 @@ assert(liveTimingSize < LIVE_TIMING_BUDGET, `live-timing.html ships ${liveTiming
 /* Schedule embeds the 23-round five-session calendar (~2.5 KiB gzip with weekend
    helpers), fetches live race winners, ticks a live countdown, and opens per-round
    session drawers + calendar feed links (~7 KiB page work + ~2.5 KiB calendar). */
-const SCHEDULE_BUDGET = 10 * 1024 + 640;
+// Round cards now link to dedicated GP pages while retaining the quick timetable.
+const SCHEDULE_BUDGET = 10 * 1024 + 896;
 const scheduleSize = pageGzip('schedule.html');
 console.log(`schedule gzip: ${scheduleSize} B of ${SCHEDULE_BUDGET}`);
 assert(scheduleSize < SCHEDULE_BUDGET, `schedule.html ships ${scheduleSize} B gzip — over the ${SCHEDULE_BUDGET} B budget`);
@@ -71,6 +72,14 @@ for (const page of ['index.html', 'cockpit.html', 'help.html', '404.html']) {
   const html = readFileSync(`dist/${page}`, 'utf8');
   const styles = [...html.matchAll(/href="\/([^"]+\.css)"/g)].map(match => match[1]);
   assert(styles.some(file => readFileSync(`dist/${file}`, 'utf8').includes('.session-island-slot')), `${page} must include session island styles`);
+}
+assert(existsSync('dist/grand-prix.html'), 'Grand Prix template missing');
+assert(readFileSync('dist/grand-prix.html', 'utf8').includes('<div class="session-island-slot"></div>'), 'Grand Prix pages must reserve island space');
+const gpDirs = (await import('node:fs')).readdirSync('dist/grand-prix/2026');
+assert.equal(gpDirs.length, 23, 'all 23 Grand Prix pages must be generated');
+for (const slug of gpDirs) {
+  const html = readFileSync(`dist/grand-prix/2026/${slug}/index.html`, 'utf8');
+  assert(html.includes(`/grand-prix/2026/${slug}/`), `missing Grand Prix canonical: ${slug}`);
 }
 assert(existsSync('dist/assets/circuits/1.webp') && existsSync('dist/assets/circuits/23.webp'), 'circuit thumbnails missing in dist/assets/circuits/');
 /* Standings stopped being a thin shell when it took on the leaders, the pills and
