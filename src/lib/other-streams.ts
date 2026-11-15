@@ -1,6 +1,6 @@
 import { BACKEND_API } from '../config';
 
-export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree';
+export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams';
 
 export interface OtherStreamItem {
   key: string;
@@ -13,6 +13,7 @@ export interface OtherStreamItem {
   tag: string;
   viewers: number;
   alwaysLive: boolean;
+  startAt?: number;
   embedUrl: string;
   fallbackUrl: string;
   color: string;
@@ -26,6 +27,7 @@ export interface OtherStreamsResult {
 
 const DEFAULT_BACKEND = BACKEND_API;
 const EMBDLOL_STRUCT_URL = 'https://api.embdlol.st/struct';
+const TIMSTREAMS_EVENTS_URL = 'https://tim-streams.com/api/live-upcoming';
 const STREAMFREE_STREAMS_URL = 'https://strmfree.st/api/v1/streams';
 const STREAMFREE_CACHE_KEY = 'freef1-streamfree-v1';
 const STREAMFREE_CACHE_MS = 60_000;
@@ -57,6 +59,7 @@ const PROVIDER_COLORS: Record<OtherStreamProvider, string> = {
   ppv: '#00D2BE',
   weelo: '#38BDF8',
   strmfree: '#E75D38',
+  timstreams: '#8B7CF6',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -566,11 +569,68 @@ export function parseWeeloEvents(
   return out;
 }
 
+/** TimStreams publishes naive event times in America/New_York. Convert to UTC
+ * using the date's actual zone offset, not the viewer's local time zone. */
+export function parseTimstreamsTime(raw: unknown): number | null {
+  const text = String(raw || '');
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(text);
+  if (!match) return null;
+  const [, y, m, d, h, min, sec] = match;
+  const desired = Date.UTC(+y, +m - 1, +d, +h, +min, +(sec || 0));
+  if (!Number.isFinite(desired)) return null;
+  const fmt = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  let result = desired;
+  for (let i = 0; i < 2; i++) {
+    const parts = Object.fromEntries(fmt.formatToParts(result).filter(p => p.type !== 'literal').map(p => [p.type, Number(p.value)]));
+    const observed = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second);
+    result += desired - observed;
+  }
+  return result;
+}
+
+/** Embed the provider's own event page so it controls feed selection and updates. */
+export function buildTimstreamsUrls(rawId: string): { embedUrl: string; fallbackUrl: string } | null {
+  const id = String(rawId || '').trim();
+  if (!/^[a-z0-9][a-z0-9-]{0,159}$/i.test(id) || isFormula1Text(id)) return null;
+  const url = `https://tim-streams.com/watch/${encodeURIComponent(id)}`;
+  return { embedUrl: url, fallbackUrl: url };
+}
+
+export function parseTimstreamsEvents(payload: unknown): OtherStreamItem[] {
+  const data = payload as { events?: unknown; genres?: unknown } | null;
+  if (!Array.isArray(data?.events)) return [];
+  const categories = new Map<string, string>();
+  if (Array.isArray(data.genres)) for (const genre of data.genres) {
+    if (genre && typeof genre === 'object') {
+      const g = genre as Record<string, unknown>;
+      if (g.id != null && typeof g.name === 'string') categories.set(String(g.id), g.name.trim().slice(0, 80));
+    }
+  }
+  const out: OtherStreamItem[] = [], seen = new Set<string>();
+  for (const value of data.events) {
+    if (!value || typeof value !== 'object') continue;
+    const event = value as Record<string, unknown>;
+    const id = String(event.url || '').trim();
+    const title = String(event.name || '').trim().slice(0, 140);
+    const category = categories.get(String(event.genre)) || 'Other sports';
+    const startAt = parseTimstreamsTime(event.time);
+    const streams = Array.isArray(event.streams) ? event.streams as Array<Record<string, unknown>> : [];
+    if (!title || !startAt || event.vip === true || !streams.some(stream => stream && stream.vip !== true && typeof stream.url === 'string' && /^https:\/\//i.test(stream.url))) continue;
+    if (seen.has(id) || isFormula1Text(`${title} ${id} ${category}`)) continue;
+    const urls = buildTimstreamsUrls(id);
+    if (!urls) continue;
+    seen.add(id);
+    out.push({ key: `timstreams:${id}`, provider: 'timstreams', id, title, category, subtitle: `${category} · TimStreams`, tag: 'TimStreams', viewers: 0, alwaysLive: false, startAt, ...urls, color: pickStreamColor('timstreams', category) });
+  }
+  return out;
+}
+
 const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
   embdlol: '1',
   ppv: '2',
   weelo: '3',
   strmfree: '4',
+  timstreams: '5',
 };
 
 const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
@@ -578,10 +638,12 @@ const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
   '2': 'ppv',
   '3': 'weelo',
   '4': 'strmfree',
+  '5': 'timstreams',
   embdlol: 'embdlol',
   ppv: 'ppv',
   weelo: 'weelo',
   strmfree: 'strmfree',
+  timstreams: 'timstreams',
 };
 
 function slugifyStreamLabel(value: string): string {
@@ -602,6 +664,7 @@ export function buildPrivateCockpitHref(item: OtherStreamItem): string {
   params.set('cat', item.category);
   if (item.subtitle) params.set('sub', item.subtitle);
   if (item.alwaysLive) params.set('al', '1');
+  if (item.provider === 'timstreams' && item.startAt) params.set('start', String(item.startAt));
   return `/private-cockpit?${params.toString()}`;
 }
 
@@ -612,6 +675,7 @@ export interface ResolvedPrivateStream {
   category: string;
   subtitle: string;
   alwaysLive: boolean;
+  startAt?: number;
   stagePath: string;
   embedUrl: string;
   fallbackUrl: string;
@@ -640,6 +704,11 @@ export function parsePrivateCockpitParams(
     fallbackUrl = urls.fallbackUrl;
   } else if (provider === 'weelo') {
     const urls = buildWeeloUrls(rawId, backend);
+    if (!urls) return null;
+    embedUrl = urls.embedUrl;
+    fallbackUrl = urls.fallbackUrl;
+  } else if (provider === 'timstreams') {
+    const urls = buildTimstreamsUrls(rawId);
     if (!urls) return null;
     embedUrl = urls.embedUrl;
     fallbackUrl = urls.fallbackUrl;
@@ -672,6 +741,7 @@ export function parsePrivateCockpitParams(
     category,
     subtitle,
     alwaysLive,
+    startAt: provider === 'timstreams' && /^\d{13}$/.test(params.get('start') || '') ? Number(params.get('start')) : undefined,
     stagePath: `freef1://live/other/${slugifyStreamLabel(title)}`,
     embedUrl,
     fallbackUrl,
@@ -733,13 +803,14 @@ export async function fetchAllOtherStreams(options: {
     throw lastError || new Error('Weelo unavailable');
   };
 
-  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes] = await Promise.allSettled([
+  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes] = await Promise.allSettled([
     fetchJsonWithTimeout(EMBDLOL_STRUCT_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(PPV_STREAMS_URL, {}, 8500, fetchImpl),
     fetchWeeloPlayers(),
     fetchJsonWithTimeout(RACINGLAP_STATUS_URL, { referrerPolicy: 'no-referrer' }, 6500, fetchImpl),
     fetchJsonWithTimeout(WEELO_FEED_URL, { referrerPolicy: 'no-referrer' }, 6500, fetchImpl),
     fetchStreamfree(fetchImpl, !options.fetchImpl),
+    fetchJsonWithTimeout(TIMSTREAMS_EVENTS_URL, {}, 8500, fetchImpl),
   ]);
 
   const embItems = embRes.status === 'fulfilled' ? parseEmbdlolStruct(embRes.value, backend) : [];
@@ -755,7 +826,8 @@ export async function fetchAllOtherStreams(options: {
     : [];
 
   const streamfreeItems = streamfreeRes.status === 'fulfilled' ? parseStreamfreeStreams(streamfreeRes.value) : [];
-  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems];
+  const timstreamsItems = timstreamsRes.status === 'fulfilled' ? parseTimstreamsEvents(timstreamsRes.value) : [];
+  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems, ...timstreamsItems];
 
   return {
     items,
@@ -765,12 +837,14 @@ export async function fetchAllOtherStreams(options: {
       ppv: ppvItems.length,
       weelo: weeloItems.length,
       strmfree: streamfreeItems.length,
+      timstreams: timstreamsItems.length,
     },
     providerOk: {
       embdlol: embRes.status === 'fulfilled',
       ppv: ppvRes.status === 'fulfilled',
       weelo: weeloOk,
       strmfree: streamfreeRes.status === 'fulfilled',
+      timstreams: timstreamsRes.status === 'fulfilled',
     },
   };
 }

@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   buildPrivateCockpitHref,
   buildStreamfreeUrls,
+  buildTimstreamsUrls,
+  parseTimstreamsEvents,
+  parseTimstreamsTime,
   parseStreamfreeStreams,
   fetchAllOtherStreams,
   isEmbdlolF1Channel,
@@ -13,6 +16,37 @@ import {
 } from '../src/lib/other-streams';
 
 describe('Other streams non-F1 filtering & private cockpit resolution', () => {
+  it('adds free TimStreams events and opens only validated provider event pages', () => {
+    const parsed = parseTimstreamsEvents({ genres: [{ id: 1, name: 'Soccer' }, { id: 2, name: 'Motorsport' }], events: [
+      { url: 'home-v-away', name: 'Home vs Away', genre: 1, time: '2026-11-15T09:00', streams: [{ url: 'https://example.com/player', vip: false }] },
+      { url: 'f2-race', name: 'Formula 2 race', genre: 2, time: '2026-11-15T10:00', streams: [{ url: 'https://example.com/player' }] },
+      { url: 'formula-1-race', name: 'Formula 1 race', genre: 2, time: '2026-11-15T10:00', streams: [{ url: 'https://example.com/player' }] },
+      { url: 'premium', name: 'Premium', genre: 1, time: '2026-11-15T10:00', vip: true, streams: [{ url: 'https://example.com/player' }] },
+      { url: 'secret', name: 'Premium only', genre: 1, time: '2026-11-15T10:00', streams: [{ url: 'https://example.com/player', vip: true }] },
+      { url: '../admin', name: 'Invalid', genre: 1, time: '2026-11-15T10:00', streams: [{ url: 'https://example.com/player' }] },
+    ] });
+    expect(parsed.map(item => item.id)).toEqual(['home-v-away', 'f2-race']);
+    expect(parsed[0].startAt).toBe(Date.parse('2026-11-15T14:00:00Z'));
+    expect(parseTimstreamsTime('2026-07-01T09:00')).toBe(Date.parse('2026-07-01T13:00:00Z'));
+    expect(buildTimstreamsUrls('../admin')).toBeNull();
+    expect(buildTimstreamsUrls('https://evil.test')).toBeNull();
+    const result = parsePrivateCockpitParams(new URL(buildPrivateCockpitHref(parsed[0]), 'https://freef1-live.vercel.app').search);
+    expect(result?.embedUrl).toBe('https://tim-streams.com/watch/home-v-away');
+    expect(result?.startAt).toBe(parsed[0].startAt);
+    expect(parsePrivateCockpitParams('?s=5&id=https%3A%2F%2Fevil.test')).toBeNull();
+  });
+
+  it('fetches TimStreams independently while preserving other providers on failure', async () => {
+    const mockFetch: typeof fetch = async input => {
+      if (String(input).includes('tim-streams.com')) return new Response(JSON.stringify({ genres: [{id: 1, name: 'Soccer'}], events: [{ url:'home-v-away', name:'Home vs Away', genre:1, time:'2026-11-15T09:00', streams:[{url:'https://example.com/player'}] }] }), { status: 200 });
+      throw new Error('offline');
+    };
+    const result = await fetchAllOtherStreams({fetchImpl: mockFetch});
+    expect(result.providerOk.timstreams).toBe(true);
+    expect(result.counts.timstreams).toBe(1);
+    expect(result.items[0].provider).toBe('timstreams');
+  });
+
   it('adds only live StreamFree variants as direct non-stripped embeds and round trips them to the cockpit', () => {
     const payload = { streams: [
       { name: 'Alavés vs England', category: 'soccer', league: 'Cup', stream_key: 'alavés-vs-england', sources: [

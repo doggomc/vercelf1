@@ -107,12 +107,14 @@ function createStreamCard(item: OtherStreamItem, index: number): HTMLAnchorEleme
   badges.className = 'os-card-badges';
 
   const liveBadge = document.createElement('span');
-  liveBadge.className = `os-badge ${item.alwaysLive ? 'os-badge-247' : 'os-badge-live'}`;
+  const scheduled = item.provider === 'timstreams';
+  const upcoming = scheduled && item.startAt != null && item.startAt > Date.now();
+  liveBadge.className = `os-badge ${scheduled ? 'os-badge-scheduled' : item.alwaysLive ? 'os-badge-247' : 'os-badge-live'}`;
   const dot = document.createElement('span');
   dot.className = 'os-live-dot';
   dot.setAttribute('aria-hidden', 'true');
   liveBadge.appendChild(dot);
-  liveBadge.appendChild(document.createTextNode(item.alwaysLive ? '24/7' : 'Live'));
+  liveBadge.appendChild(document.createTextNode(scheduled ? (upcoming ? 'Upcoming' : 'Scheduled') : item.alwaysLive ? '24/7' : 'Live'));
   badges.appendChild(liveBadge);
   idGroup.appendChild(badges);
 
@@ -156,7 +158,7 @@ function createStreamCard(item: OtherStreamItem, index: number): HTMLAnchorEleme
     foot.appendChild(viewers);
   } else {
     const ready = document.createElement('span');
-    ready.textContent = 'Theater HD';
+    ready.textContent = scheduled && item.startAt ? new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(item.startAt) : 'Theater HD';
     foot.appendChild(ready);
   }
 

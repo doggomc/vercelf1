@@ -421,6 +421,11 @@
   color: #ff9d97;
 }
 
+.os-badge-scheduled {
+  background: rgba(112, 144, 255, .14);
+  color: #a8beff;
+}
+
 .os-badge-247 {
   background: rgba(61, 220, 132, .13);
   color: #7ee2b8;
