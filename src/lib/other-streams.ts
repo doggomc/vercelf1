@@ -1,6 +1,6 @@
 import { BACKEND_API } from '../config';
 
-export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams' | 'zlive' | 'aura';
+export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams' | 'zlive' | 'aura' | 'bintv';
 
 export interface OtherStreamItem {
   key: string;
@@ -28,6 +28,8 @@ export interface OtherStreamsResult {
 
 const DEFAULT_BACKEND = BACKEND_API;
 const EMBDLOL_STRUCT_URL = 'https://api.embdlol.st/struct';
+const BINTV_EVENTS_URL = 'https://api.yosintv.fun/api/public/bintvjson';
+const BINTV_CACHE_KEY = 'freef1-bintv-v1';
 const AURA_SCHEDULE_URL = 'https://aurasports.cfd/api/schedule';
 const ZLIVE_MANIFEST_URL = 'https://zlive.st/embed/manifest.json';
 const TIMSTREAMS_EVENTS_URL = 'https://tim-streams.com/api/live-upcoming';
@@ -65,6 +67,7 @@ const PROVIDER_COLORS: Record<OtherStreamProvider, string> = {
   timstreams: '#8B7CF6',
   zlive: '#B48CFF',
   aura: '#C1FF55',
+  bintv: '#58B6E8',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -704,6 +707,61 @@ export function parseAuraEvents(payload: unknown): OtherStreamItem[] {
   return items;
 }
 
+/** BinTV wraps player URLs in a base64url parameter. Resolve only recognised
+ * player hosts and paths; never let a crafted cockpit link select an arbitrary URL. */
+export function buildBintvUrls(rawId: string): { embedUrl: string; fallbackUrl: string } | null {
+  const encoded = String(rawId || '').trim();
+  if (!/^[A-Za-z0-9_-]{1,800}$/.test(encoded)) return null;
+  try {
+    const raw = atob(encoded.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - encoded.length % 4) % 4));
+    const url = new URL(raw);
+    if (url.protocol !== 'https:' || url.username || url.password || url.port || url.search || url.hash) return null;
+    const allowed = (url.hostname === 'ehgembxe.cfd' && /^\/bintv\/[a-z0-9-]{1,160}$/i.test(url.pathname)) ||
+      (url.hostname === 'embdlol.st' && /^\/embed\/[a-z0-9_-]{4,80}$/i.test(url.pathname));
+    if (!allowed || isFormula1Text(url.pathname)) return null;
+    const embedUrl = `https://bintv-sources.pages.dev/?id=${encodeURIComponent(encoded)}`;
+    return { embedUrl, fallbackUrl: embedUrl };
+  } catch { return null; }
+}
+
+export function parseBintvStreams(payload: unknown): OtherStreamItem[] {
+  if (!payload || typeof payload !== 'object') return [];
+  const data = payload as Record<string, unknown>;
+  const out: OtherStreamItem[] = [], seen = new Set<string>();
+  // The 24/7 directory has no sport metadata. Only include channels whose names
+  // clearly identify them as sports, rather than guessing for general TV.
+  const sportsChannel = /\b(?:sports?|sport\d*|espn\w*|dazn|tsn\d*|bein|nfl|nba|nhl|mlb|ufc|wwe|golf|tennis|cricket|rugby|racing|motogp|motorsport|laliga|premier league|football|footy|cycling|rally|fight|racer|dirtvision|big ten|acc network|sec network|tnt sports|willow)\b/i;
+  for (const section of ['Live Events', 'Upcoming Events', '24/7 Channels']) {
+    const rows = data[section]; if (!Array.isArray(rows)) continue;
+    for (const raw of rows) {
+      if (!raw || typeof raw !== 'object') continue;
+      const e = raw as Record<string, unknown>;
+      const name = String(e.Name || '').trim().slice(0, 140), category = String(e.Category || '').trim().slice(0, 80);
+      const alwaysLive = section === '24/7 Channels';
+      if (!name || (alwaysLive && !sportsChannel.test(name)) || isFormula1Text(`${name} ${category} ${e.ID || ''}`)) continue;
+      const starts = String(e.Date || '').trim();
+      const date = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC$/.test(starts) ? Date.parse(starts.replace(' ', 'T').replace(' UTC', ':00Z')) : NaN;
+      const sources = Array.isArray(e.Streams) ? e.Streams : [];
+      for (const source of sources) {
+        if (!source || typeof source !== 'object') continue;
+        const stream = source as Record<string, unknown>;
+        const label = String(stream.Name || '').trim().slice(0, 80);
+        if (isFormula1Text(label)) continue;
+        let wrapper: URL; try { wrapper = new URL(String(stream.Iframe || '')); } catch { continue; }
+        if (wrapper.protocol !== 'https:' || wrapper.hostname !== 'bintv-sources.pages.dev' || wrapper.port || wrapper.username || wrapper.password || wrapper.pathname !== '/' || wrapper.hash || [...wrapper.searchParams.keys()].some(k => k !== 'id') || wrapper.searchParams.getAll('id').length !== 1) continue;
+        const id = wrapper.searchParams.get('id') || ''; const urls = buildBintvUrls(id);
+        const eventId = String(e.ID || '').trim();
+        const key = `${section}:${eventId}:${id}`; if (!urls || seen.has(key)) continue;
+        seen.add(key);
+        const display = sources.length > 1 && label ? `${name} · ${label}` : name;
+        const startAt = Number.isFinite(date) ? date : undefined;
+        out.push({ key: `bintv:${key}`, provider: 'bintv', id, title: display, category: category || 'Sports', subtitle: [category || 'Sports', label, 'BinTV'].filter(Boolean).join(' · '), tag: label ? `BinTV · ${label}` : 'BinTV', viewers: Math.max(0, Math.min(Number(e.Viewers) || 0, 100000000)), alwaysLive, startAt, status: section === 'Upcoming Events' ? 'scheduled' : 'live', ...urls, color: pickStreamColor('bintv', category) });
+      }
+    }
+  }
+  return out;
+}
+
 const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
   embdlol: '1',
   ppv: '2',
@@ -712,6 +770,7 @@ const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
   timstreams: '5',
   zlive: '6',
   aura: '7',
+  bintv: '8',
 };
 
 const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
@@ -722,6 +781,7 @@ const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
   '5': 'timstreams',
   '6': 'zlive',
   '7': 'aura',
+  '8': 'bintv',
   embdlol: 'embdlol',
   ppv: 'ppv',
   weelo: 'weelo',
@@ -729,6 +789,7 @@ const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
   timstreams: 'timstreams',
   zlive: 'zlive',
   aura: 'aura',
+  bintv: 'bintv',
 };
 
 function slugifyStreamLabel(value: string): string {
@@ -749,8 +810,8 @@ export function buildPrivateCockpitHref(item: OtherStreamItem): string {
   params.set('cat', item.category);
   if (item.subtitle) params.set('sub', item.subtitle);
   if (item.alwaysLive) params.set('al', '1');
-  if ((item.provider === 'timstreams' || item.provider === 'aura') && item.startAt) params.set('start', String(item.startAt));
-  if (item.provider === 'aura' && item.status === 'scheduled') params.set('scheduled', '1');
+  if ((item.provider === 'timstreams' || item.provider === 'aura' || item.provider === 'bintv') && item.startAt) params.set('start', String(item.startAt));
+  if ((item.provider === 'aura' || item.provider === 'bintv') && item.status === 'scheduled') params.set('scheduled', '1');
   return `/private-cockpit?${params.toString()}`;
 }
 
@@ -791,6 +852,11 @@ export function parsePrivateCockpitParams(
     fallbackUrl = urls.fallbackUrl;
   } else if (provider === 'weelo') {
     const urls = buildWeeloUrls(rawId, backend);
+    if (!urls) return null;
+    embedUrl = urls.embedUrl;
+    fallbackUrl = urls.fallbackUrl;
+  } else if (provider === 'bintv') {
+    const urls = buildBintvUrls(rawId);
     if (!urls) return null;
     embedUrl = urls.embedUrl;
     fallbackUrl = urls.fallbackUrl;
@@ -838,8 +904,8 @@ export function parsePrivateCockpitParams(
     category,
     subtitle,
     alwaysLive,
-    startAt: (provider === 'timstreams' || provider === 'aura') && /^\d{13}$/.test(params.get('start') || '') ? Number(params.get('start')) : undefined,
-    status: provider === 'timstreams' || (provider === 'aura' && params.get('scheduled') === '1') ? 'scheduled' : undefined,
+    startAt: (provider === 'timstreams' || provider === 'aura' || provider === 'bintv') && /^\d{13}$/.test(params.get('start') || '') ? Number(params.get('start')) : undefined,
+    status: provider === 'timstreams' || ((provider === 'aura' || provider === 'bintv') && params.get('scheduled') === '1') ? 'scheduled' : undefined,
     stagePath: `freef1://live/other/${slugifyStreamLabel(title)}`,
     embedUrl,
     fallbackUrl,
@@ -882,6 +948,19 @@ async function fetchStreamfree(fetchImpl: typeof fetch, useCache: boolean): Prom
   return data;
 }
 
+async function fetchBintv(fetchImpl: typeof fetch, useCache: boolean): Promise<unknown> {
+  if (useCache) {
+    try {
+      const cached = JSON.parse(localStorage.getItem(BINTV_CACHE_KEY) || 'null');
+      if (cached && Date.now() - cached.at >= 0 && Date.now() - cached.at < 60_000 && Array.isArray(cached.data?.['Live Events'])) return cached.data;
+    } catch { /* Storage is optional. */ }
+  }
+  const data = await fetchJsonWithTimeout(BINTV_EVENTS_URL, {}, 8500, fetchImpl);
+  if (!Array.isArray((data as Record<string, unknown> | null)?.['Live Events'])) throw new Error('Invalid BinTV response');
+  if (useCache) { try { localStorage.setItem(BINTV_CACHE_KEY, JSON.stringify({at: Date.now(), data})); } catch { /* Optional. */ } }
+  return data;
+}
+
 export async function fetchAllOtherStreams(options: {
   backend?: string;
   fetchImpl?: typeof fetch;
@@ -901,7 +980,7 @@ export async function fetchAllOtherStreams(options: {
     throw lastError || new Error('Weelo unavailable');
   };
 
-  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes, zliveRes, auraRes] = await Promise.allSettled([
+  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes, zliveRes, auraRes, bintvRes] = await Promise.allSettled([
     fetchJsonWithTimeout(EMBDLOL_STRUCT_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(PPV_STREAMS_URL, {}, 8500, fetchImpl),
     fetchWeeloPlayers(),
@@ -911,6 +990,7 @@ export async function fetchAllOtherStreams(options: {
     fetchJsonWithTimeout(TIMSTREAMS_EVENTS_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(ZLIVE_MANIFEST_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(AURA_SCHEDULE_URL, {}, 8500, fetchImpl),
+    fetchBintv(fetchImpl, !options.fetchImpl),
   ]);
 
   const embItems = embRes.status === 'fulfilled' ? parseEmbdlolStruct(embRes.value, backend) : [];
@@ -929,7 +1009,8 @@ export async function fetchAllOtherStreams(options: {
   const timstreamsItems = timstreamsRes.status === 'fulfilled' ? parseTimstreamsEvents(timstreamsRes.value) : [];
   const zliveItems = zliveRes.status === 'fulfilled' ? parseZliveSports(zliveRes.value) : [];
   const auraItems = auraRes.status === 'fulfilled' ? parseAuraEvents(auraRes.value) : [];
-  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems, ...timstreamsItems, ...zliveItems, ...auraItems];
+  const bintvItems = bintvRes.status === 'fulfilled' ? parseBintvStreams(bintvRes.value) : [];
+  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems, ...timstreamsItems, ...zliveItems, ...auraItems, ...bintvItems];
 
   return {
     items,
@@ -942,6 +1023,7 @@ export async function fetchAllOtherStreams(options: {
       timstreams: timstreamsItems.length,
       zlive: zliveItems.length,
       aura: auraItems.length,
+      bintv: bintvItems.length,
     },
     providerOk: {
       embdlol: embRes.status === 'fulfilled',
@@ -951,6 +1033,7 @@ export async function fetchAllOtherStreams(options: {
       timstreams: timstreamsRes.status === 'fulfilled',
       zlive: zliveRes.status === 'fulfilled',
       aura: auraRes.status === 'fulfilled',
+      bintv: bintvRes.status === 'fulfilled',
     },
   };
 }

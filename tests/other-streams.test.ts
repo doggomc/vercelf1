@@ -5,6 +5,8 @@ import {
   buildTimstreamsUrls,
   buildZliveUrls,
   buildAuraUrls,
+  buildBintvUrls,
+  parseBintvStreams,
   parseAuraEvents,
   parseZliveSports,
   extractTimstreamsPlayer,
@@ -21,6 +23,43 @@ import {
 } from '../src/lib/other-streams';
 
 describe('Other streams non-F1 filtering & private cockpit resolution', () => {
+  it('adds BinTV sports events and sports channels with validated player-only URLs', () => {
+    const encode = (url: string) => btoa(url).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+    const id = encode('https://ehgembxe.cfd/bintv/test-123');
+    const wrapper = `https://bintv-sources.pages.dev/?id=${id}`;
+    const events = parseBintvStreams({
+      'Live Events': [{ID:'ev1',Name:'Teams',Category:'Soccer',Status:'Live',Streams:[{Name:'HD',Iframe:wrapper}]}],
+      'Upcoming Events': [{ID:'ev2',Name:'Teams tomorrow',Category:'Basketball',Date:'2026-11-15 18:00 UTC',Streams:[{Name:'HD',Iframe:wrapper}]}],
+      '24/7 Channels': [
+        {ID:'ch1',Name:'ESPN',Streams:[{Name:'ESPN',Iframe:wrapper}]},
+        {ID:'ch2',Name:'Cartoon Network',Streams:[{Name:'Cartoon',Iframe:wrapper}]},
+        {ID:'ch3',Name:'Sky Sports F1',Streams:[{Name:'Sky Sports F1',Iframe:wrapper}]},
+        {ID:'ch4',Name:'Bad Sport',Streams:[{Name:'Bad',Iframe:`https://bintv-sources.pages.dev/?id=${encode('https://evil.example/abc')}`}]},
+      ],
+    });
+    expect(events.map(e => e.title)).toEqual(['Teams', 'Teams tomorrow', 'ESPN']);
+    expect(events[0].embedUrl).toBe(wrapper);
+    expect(events[1].startAt).toBe(Date.parse('2026-11-15T18:00:00Z'));
+    expect(events[2].alwaysLive).toBe(true);
+    const resolved = parsePrivateCockpitParams(new URL(buildPrivateCockpitHref(events[1]), 'https://freef1-live.vercel.app').search);
+    expect(resolved?.embedUrl).toBe(events[1].embedUrl);
+    expect(resolved?.status).toBe('scheduled');
+    expect(buildBintvUrls(encode('https://evil.example/abc'))).toBeNull();
+    expect(buildBintvUrls(encode('https://ehgembxe.cfd/bintv/test?x=1'))).toBeNull();
+    expect(buildBintvUrls(encode('https://ehgembxe.cfd.evil.example/bintv/test'))).toBeNull();
+  });
+
+  it('fetches BinTV independently from other providers', async () => {
+    const id = btoa('https://ehgembxe.cfd/bintv/test-123').replace(/=/g, '');
+    const mockFetch: typeof fetch = async input => {
+      if (String(input).includes('api.yosintv.fun')) return new Response(JSON.stringify({'Live Events':[{ID:'ev',Name:'Game',Category:'Soccer',Streams:[{Name:'HD',Iframe:`https://bintv-sources.pages.dev/?id=${id}`}]}]}), {status:200});
+      throw new Error('offline');
+    };
+    const result = await fetchAllOtherStreams({fetchImpl:mockFetch});
+    expect(result.providerOk.bintv).toBe(true);
+    expect(result.counts.bintv).toBe(1);
+  });
+
   it('adds live and scheduled Aura Sports events via the player-only embed', () => {
     const items = parseAuraEvents([{ category_name: 'nfl', schedule: [
       { id: 'espn-123', title: 'Team A at Team B', league_name: 'NFL', status: 'live', date: 1794751200000, iframeUrl: 'https://evil.test/anything' },
