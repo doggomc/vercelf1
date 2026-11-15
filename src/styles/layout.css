@@ -1990,3 +1990,28 @@ a.tp-mini-who:hover .tp-mini-name { text-decoration: underline; text-underline-o
 .dp-gp > span { grid-column: 2; text-align: center; }
 /* Inter's line box sits visually high beside the outline icons. */
 .dp-stat-label > span { transform: translateY(1.5px); }
+
+/* Profile layout follows the race dossier: team context and standings alongside
+   the season, with the head-to-head comparison beneath the results. */
+.dp-team-card { display: grid; min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: radial-gradient(100% 120% at 90% 0, color-mix(in srgb, var(--team) 23%, transparent), transparent 65%), #17181d; transition: border-color .2s var(--ease), transform .2s var(--ease); }
+.dp-team-card:hover { border-color: var(--line-2); transform: translateY(-2px); }
+.dp-team-kicker { color: var(--fg-3); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; font-weight: 700; }
+.dp-team-card strong { margin-top: 5px; font-size: 18px; color: var(--white); }
+.dp-team-card img { display: block; width: 100%; height: 90px; object-fit: contain; margin: 4px 0; }
+.dp-team-card img[hidden] { display: none; }
+.dp-team-more, .dp-standings-more { color: var(--fg-3); font-size: 12px; }
+.dp-team-more span, .dp-standings-more span { float: right; }
+.dp-standings-card { padding: 18px 12px 12px; }
+.dp-standings-card .dp-side-title { padding: 0 6px 10px; }
+.dp-standing-row { display: grid; grid-template-columns: 18px 3px minmax(0,1fr) auto; align-items: center; gap: 9px; min-width: 0; padding: 9px 6px; border-top: 1px solid rgba(255,255,255,.05); border-radius: 5px; }
+.dp-standing-row:hover, .dp-standing-row.is-current { background: rgba(255,255,255,.06); }
+.dp-standing-row strong, .dp-standing-name b { font-size: 12px; color: var(--white); }
+.dp-standing-pos, .dp-standing-name small { color: var(--fg-3); font-size: 11px; }
+.dp-standing-bar { width: 3px; height: 25px; border-radius: 2px; }
+.dp-standing-name { display: grid; min-width: 0; gap: 2px; }
+.dp-standing-name b, .dp-standing-name small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dp-standings-more { display: block; margin: 10px 6px 2px; }
+.dp-main #dpTeammateCard { padding: 22px; }
+.dp-main .dp-battle-side { background: rgba(255,255,255,.045); border-radius: 10px; text-align: center; padding: 14px 10px; }
+.dp-main .dp-battle-side:hover:is(a) { background: rgba(255,255,255,.08); }
+@media (min-width: 1080px) { .dp-side { position: static; } }

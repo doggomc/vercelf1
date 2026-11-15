@@ -5,7 +5,7 @@ import { CIRCUIT_COUNTRY, bornFacts, displayName, shortRaceName, splitName, team
 import { NATIONALITY_FLAG } from '../data/driver-flags';
 import { flagHtml } from '../data/flags';
 import { portrait } from '../data/driver-portraits';
-import { TEAM_HEX } from '../data/teams';
+import { TEAM_ALIAS, TEAM_CAR, TEAM_HEX, teams } from '../data/teams';
 import { schedule } from '../data/schedule';
 import { SITE_SEASON } from '../config';
 import { driverSlug, esc, loadStandings, ordinal, teamSlug, type StandingRow } from './driver-core';
@@ -145,6 +145,27 @@ async function paint(): Promise<void> {
 
   const hero = $('dpHero');
   if (hero) hero.style.setProperty('--team', color);
+  const teamCard = $('dpTeamCard') as HTMLAnchorElement | null;
+  if (teamCard) {
+    teamCard.href = `/teams/${teamSlug(team)}/`;
+    teamCard.style.setProperty('--team', color);
+    teamCard.setAttribute('aria-label', `View ${team} team profile`);
+  }
+  setText('dpTeamCardName', team);
+  const teamKey = (TEAM_ALIAS as Record<string, string>)[teamApiName.toLowerCase()] ?? teamSlug(team).replace(/-/g, '');
+  const teamData = teams.find((entry) => entry.id === teamKey);
+  const teamCar = $('dpTeamCar') as HTMLImageElement | null;
+  if (teamCar && teamData?.logo) { teamCar.src = TEAM_CAR(teamData.logo, 500); teamCar.hidden = false; teamCar.onerror = () => { teamCar.hidden = true; }; }
+  show('dpStandings', standings.rows.slice(0, 10).map((row) => {
+    const active = row.Driver.driverId === driver.driverId;
+    const rowTeam = row.Constructors?.[0]?.name ?? '';
+    const rowColor = TEAM_HEX[rowTeam] ?? TEAM_HEX[teamLabel(rowTeam)] ?? '#7e8188';
+    return `<a class="dp-standing-row${active ? ' is-current' : ''}" href="/drivers/${esc(driverSlug(row.Driver))}/"${active ? ' aria-current="page"' : ''}>
+      <span class="dp-standing-pos">${esc(row.position)}</span><span class="dp-standing-bar" style="background:${esc(rowColor)}"></span>
+      <span class="dp-standing-name"><b>${esc(row.Driver.familyName)}</b><small>${esc(teamLabel(rowTeam))}</small></span><strong>${esc(row.points)}</strong>
+    </a>`;
+  }).join(''));
+
 
   setText('dpCrumb', fullName);
   show('dpTags', [

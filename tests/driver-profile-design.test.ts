@@ -5,6 +5,9 @@ describe('driver profile design', () => {
     const html = readFileSync('driver.html', 'utf8');
     for (const id of ['dpName','dpPhoto','statChamp','statPoints','statWins','statPodiums','statPoles','statBest','dpFacts','dpResultsBody','dpTeammate','dpForm','dpNext']) expect(html).toContain(`id="${id}"`);
     expect(readFileSync('src/styles/layout.css', 'utf8')).toMatch(/\.dp-stat-label > span\s*\{\s*transform:\s*translateY\(1\.5px\)/);
+    expect(html.indexOf('id="dpTeammateCard"')).toBeLessThan(html.indexOf('<aside class="dp-side"'));
+    expect(html).toContain('id="dpTeamCard"');
+    expect(html).toContain('id="dpStandings"');
     expect((html.match(/class="dp-icon"/g) || []).length).toBeGreaterThanOrEqual(12);
     expect((html.match(/class="dp-icon"[^>]*aria-hidden="true"/g) || []).length).toBeGreaterThanOrEqual(12);
   });

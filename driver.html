@@ -118,13 +118,24 @@
           </div>
         </div>
       </section>
-    </div>
-
-    <aside class="dp-side" aria-label="Driver context">
       <section class="card dp-side-card" id="dpTeammateCard">
         <h2 class="dp-side-title"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6m2 3a5 5 0 0 1 2 4v2"/></svg><span>Teammate battle</span></h2>
         <div id="dpTeammate" class="dp-teammate"><p class="dp-muted">Loading…</p></div>
       </section>
+    </div>
+
+    <aside class="dp-side" aria-label="Driver context">
+      <a class="card dp-team-card" id="dpTeamCard" href="/teams" aria-label="View team profile">
+        <span class="dp-team-kicker">TEAM</span><strong id="dpTeamCardName">Team</strong>
+        <img id="dpTeamCar" alt="" loading="lazy" decoding="async" hidden>
+        <span class="dp-team-more">View team <span aria-hidden="true">↗</span></span>
+      </a>
+      <section class="card dp-side-card dp-standings-card" aria-labelledby="dpStandingsTitle">
+        <h2 class="dp-side-title" id="dpStandingsTitle">Championship standings</h2>
+        <div id="dpStandings"><p class="dp-muted">Loading…</p></div>
+        <a class="dp-standings-more" href="/standings">Full standings <span aria-hidden="true">↗</span></a>
+      </section>
+
 
       <section class="card dp-side-card" id="dpSeasonCard">
         <h2 class="dp-side-title"><svg class="dp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 5-5 4 3 7-8M15 7h4v4"/></svg><span>Season form</span></h2>
