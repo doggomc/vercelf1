@@ -1988,3 +1988,5 @@ a.tp-mini-who:hover .tp-mini-name { text-decoration: underline; text-underline-o
 .dp-gp { display: grid; grid-template-columns: 20px minmax(0, 1fr) 20px; width: 100%; gap: 6px; }
 .dp-gp .flag { grid-column: 1; }
 .dp-gp > span { grid-column: 2; text-align: center; }
+/* Inter's line box sits visually high beside the outline icons. */
+.dp-stat-label > span { transform: translateY(1.5px); }
