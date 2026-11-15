@@ -1975,3 +1975,11 @@ a.tp-mini-who:hover .tp-mini-name { text-decoration: underline; text-underline-o
 .dp-side-link { border-radius: 11px; }
 @media (min-width: 640px) { .dp-panel { padding: 26px; } }
 @media (max-width: 400px) { .dp-stat { padding: 12px; } .dp-stat-label { font-size: 11px; gap: 5px; } }
+
+/* Keep result headings and their values aligned, including the flag/name pair. */
+.dp-table th, .dp-table td, .dp-table .t-num { text-align: center; }
+.dp-table thead th:first-child, .dp-table tbody td:first-child { padding-left: 12px; padding-right: 12px; }
+.dp-gp { justify-content: center; }
+@media (max-width: 560px) {
+  .dp-table thead th:first-child, .dp-table tbody td:first-child { padding-left: 8px; padding-right: 8px; }
+}
