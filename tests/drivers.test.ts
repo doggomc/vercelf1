@@ -56,6 +56,7 @@ describe('portraits', () => {
     expect(portrait('max_verstappen', 320)).toContain('2026redbullracingmaxver01right.webp');
     expect(portrait('arvid_lindblad', 320)).toContain('2026racingbullsarvlin01right.webp');
     expect(portrait('antonelli', 600)).toContain('w_600');
+    expect(portrait('rafael_camara', 320)).toContain('haas/rafcam01/2026haasrafcam01right.webp');
   });
   it('falls back to the CDN silhouette rather than a broken image', () => {
     const url = portrait('nobody', 320);

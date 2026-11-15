@@ -20,6 +20,7 @@ export const DRIVER_PORTRAIT: Record<string, string> = {
   colapinto: 'alpine/fracol01/2026alpinefracol01right.webp',
   ocon: 'haasf1team/estoco01/2026haasf1teamestoco01right.webp',
   bearman: 'haasf1team/olibea01/2026haasf1teamolibea01right.webp',
+  rafael_camara: 'haas/rafcam01/2026haasrafcam01right.webp',
   hirakawa: 'haasf1team/ryohir01/2026haasf1teamryohir01right.webp',
   hulkenberg: 'audi/nichul01/2026audinichul01right.webp',
   bortoleto: 'audi/gabbor01/2026audigabbor01right.webp',
