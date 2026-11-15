@@ -998,6 +998,14 @@ body.is-leaving main { animation: pageOut .12s cubic-bezier(.4, 0, .2, 1) both; 
 .driver-card:hover .driver-fade::after { opacity: 1; }
 
 .driver-body { position: relative; z-index: 3; margin-top: -40px; padding: 0 16px 16px; }
+/* Cover the clipped portrait edge with the actual card colour. The overlap
+   prevents a subpixel compositing seam when the portrait scales on hover. */
+.driver-body::before {
+  content: ''; position: absolute; z-index: -1; inset: 30px 0 0;
+  background: var(--card); transition: background-color .2s var(--ease);
+  pointer-events: none;
+}
+.driver-card:hover .driver-body::before { background: var(--card-2); }
 .driver-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--fg-3); }
 .driver-meta .flag { border-radius: 3px; outline: 1px solid rgba(255,255,255,.14); width: 20px; height: 15px; object-fit: cover; }
 .driver-standing { font-weight: 650; color: var(--fg-2); font-variant-numeric: tabular-nums; }
@@ -1011,6 +1019,7 @@ body.is-leaving main { animation: pageOut .12s cubic-bezier(.4, 0, .2, 1) both; 
 .driver-swatch { width: 3px; height: 12px; border-radius: 999px; flex: none; }
 @media (max-width: 400px) {
   .driver-body { padding: 0 12px 13px; margin-top: -32px; }
+  .driver-body::before { top: 22px; }
   .driver-last { font-size: 16px; }
   .driver-first { font-size: 12px; }
 }
