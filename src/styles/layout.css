@@ -591,7 +591,7 @@ main { flex: 1 0 auto; }
 }
 .sc-cal-pop a:hover { background: rgba(255,255,255,.07); color: var(--white); }
 
-.sc-next-wrap { width: 100%; }
+.sc-next-wrap { width: 100%; margin-top: 22px; }
 @media (min-width: 1024px) { .sc-next-wrap { max-width: 340px; flex: none; } }
 .sc-next-card { padding: 20px; }
 .sc-next-label { margin: 0; font-size: 12px; font-weight: 600; color: var(--fg-3); }

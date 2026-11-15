@@ -35,4 +35,14 @@ describe('Grand Prix pages', () => {
     expect(source).toContain('winnerTeamColor(row.Constructor?.name)');
     expect(source).not.toContain('gp-title-muted');
   });
+  it('omits the circuit guide while retaining round navigation', () => {
+    const template = readFileSync('grand-prix.html', 'utf8');
+    expect(template).not.toContain('gp-circuit-guide');
+    expect(template).toContain('gp-round-nav');
+  });
+  it('places the next session below the calendar actions and above the season calendar', () => {
+    const html = readFileSync('schedule.html', 'utf8');
+    expect(html.indexOf('id="scCalBtn"')).toBeLessThan(html.indexOf('id="scNextCard"'));
+    expect(html.indexOf('id="scNextCard"')).toBeLessThan(html.indexOf('id="roundList"'));
+  });
 });

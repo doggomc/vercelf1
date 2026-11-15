@@ -26,16 +26,7 @@ if (!event) {
   const race = event.sessions.find(session => session.slug === 'race');
   const finished = Boolean(race && Date.now() >= race.ts + 2.5 * 3600000);
   const statusBadge = $('gpStatus'); if (statusBadge) statusBadge.innerHTML = finished ? '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 8 3 3 7-7"/></svg>Completed' : 'Upcoming';
-  set('gpLocation', `${event.circuit}, ${event.locality}, ${event.country}. Session times, weather, results and circuit information.`);
-  set('gpCircuit', `${event.circuit}: circuit guide`); set('gpCircuitLocation', `${event.locality}, ${event.country}`);
-  set('gpFactLocation', event.locality); set('gpFactCountry', event.country);
-  set('gpFactFormat', event.sprint ? 'Sprint weekend' : 'Grand Prix weekend');
-  // Verified Albert Park circuit specifications; omit figures rather than guess for other circuits.
-  if (event.round === 1) {
-    const facts = document.querySelector('.gp-circuit-facts');
-    if (facts) facts.innerHTML = '<div><dt>Circuit length</dt><dd>5.278 km</dd></div><div><dt>Race laps</dt><dd>58</dd></div><div><dt>Race distance</dt><dd>306.124 km</dd></div><div><dt>Corners</dt><dd>14</dd></div><div><dt>First Grand Prix</dt><dd>1996</dd></div><div><dt>Direction</dt><dd>Clockwise</dd></div>';
-  }
-  set('gpCircuitDescription', `${event.circuit} in ${event.locality}, ${event.country} hosts the ${name}. Times shown above use your device’s local time zone.`);
+  set('gpLocation', `${event.circuit}, ${event.locality}, ${event.country}. Session times, weather and results.`);
   set('gpWeatherTitle', `Weather in ${event.locality}`); set('gpWeatherLocation', event.locality);
   for (const [id, round] of [['gpPrevious',event.round-1],['gpNext',event.round+1]] as const) {
     const other = schedule.find(item => item.round === round); const link = $(id) as HTMLAnchorElement | null;
@@ -48,8 +39,6 @@ if (!event) {
       return `<tr><td>${esc(row.position)}</td><td><a class="gp-champ-driver" href="${esc(winnerDriverHref(row.Driver.givenName,row.Driver.familyName))}"><span class="team-bar" style="--team:${esc(winnerTeamColor(team))}"></span><img src="${esc(headshot(row.Driver.driverId,64))}" alt="" width="32" height="32" loading="lazy" decoding="async"><span><b>${esc(row.Driver.familyName)}</b><small>${esc(winnerTeamName(team))}</small></span></a></td><td>${esc(row.points)}</td></tr>`;
     }).join('')}</tbody></table></div>`;
   }).catch(() => { set('gpChampionship', 'Standings are unavailable right now.'); });
-  const image = $('gpCircuitImage') as HTMLImageElement | null;
-  if (image) { image.src = `/assets/replay-circuits/${event.round}-640.webp`; image.alt = `Formula 1 racing at ${event.circuit}, ${event.locality}`; }
   const sessionList = $('gpSessions');
   if (sessionList) sessionList.innerHTML = event.sessions.map(session => {
     const date = new Intl.DateTimeFormat(undefined, {weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}).format(session.ts);
