@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { schedule } from '../src/data/schedule';
-import { grandPrixHref, grandPrixSlug } from '../src/pages/schedule-format';
+import { grandPrixHref, grandPrixSlug, roundFlagCode } from '../src/pages/schedule-format';
 import { readFileSync } from 'node:fs';
 describe('Grand Prix pages', () => {
   it('assigns every round a unique clean URL', () => {
@@ -19,5 +19,14 @@ describe('Grand Prix pages', () => {
     expect(source).toContain('Date.now() < start');
     expect(source).toContain('Results are unavailable right now');
     expect(source).toContain('Results are not available yet');
+  });
+  it('uses vector flags and icons for the race header', () => {
+    const template = readFileSync('grand-prix.html', 'utf8');
+    const source = readFileSync('src/pages/grand-prix.ts', 'utf8');
+    expect(template).not.toContain('🏆');
+    expect(template).toContain('gp-winner-label"><svg');
+    expect(source).toContain('assets/flags/vector/');
+    expect(source).toContain('gpStatus');
+    for (const event of schedule) expect(readFileSync(`assets/flags/vector/${roundFlagCode(event.round)}.svg`, 'utf8')).toContain('<svg');
   });
 });

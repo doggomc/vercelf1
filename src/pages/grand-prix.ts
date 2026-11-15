@@ -2,7 +2,6 @@ import { initShell } from '../ui/shell';
 import '../viewer-counter';
 import { JOLPI, SITE_SEASON } from '../config';
 import { schedule } from '../data/schedule';
-import { flagHtml } from '../data/flags';
 import { headshot, portrait } from '../data/driver-portraits';
 import { loadStandings } from './driver-core';
 import { displayRoundName, grandPrixSlug, esc, formatWeekendRange, grandPrixHref, roundFlagCode, winnerDriverHref, winnerTeamColor, winnerTeamName } from './schedule-format';
@@ -23,10 +22,10 @@ if (!event) {
   const name = displayRoundName(event);
   document.title = `${name} 2026 — Schedule and results | FreeF1`;
   set('gpCrumb', name); set('gpRound', `Round ${event.round} · ${formatWeekendRange(event.sessions[0].ts, event.sessions[event.sessions.length - 1].ts)} 2026${event.sprint ? ' · SPRINT WEEKEND' : ''}`);
-  const title = $('gpTitle'); if (title) title.innerHTML = `${flagHtml(roundFlagCode(event.round), 'flag gp-flag')}<span>${esc(name)} <span class="gp-year">2026</span> <span class="gp-title-muted">${Date.now() >= (event.sessions.find(session => session.slug === 'race')?.ts ?? Infinity) + 2.5 * 3600000 ? 'results' : 'schedule'}</span></span>`;
+  const title = $('gpTitle'); if (title) title.innerHTML = `<img class="gp-flag" src="/assets/flags/vector/${roundFlagCode(event.round)}.svg" alt="" width="44" height="32" decoding="async"><span>${esc(name)} <span class="gp-year">2026</span> <span class="gp-title-muted">${Date.now() >= (event.sessions.find(session => session.slug === 'race')?.ts ?? Infinity) + 2.5 * 3600000 ? 'results' : 'schedule'}</span></span>`;
   const race = event.sessions.find(session => session.slug === 'race');
   const finished = Boolean(race && Date.now() >= race.ts + 2.5 * 3600000);
-  set('gpStatus', finished ? '✓ Completed' : 'Upcoming');
+  const statusBadge = $('gpStatus'); if (statusBadge) statusBadge.innerHTML = finished ? '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 8 3 3 7-7"/></svg>Completed' : 'Upcoming';
   set('gpLocation', `${event.circuit}, ${event.locality}, ${event.country}. Session times, weather, results and circuit information.`);
   set('gpCircuit', `${event.circuit}: circuit guide`); set('gpCircuitLocation', `${event.locality}, ${event.country}`);
   set('gpFactLocation', event.locality); set('gpFactCountry', event.country);
@@ -54,7 +53,7 @@ if (!event) {
   const sessionList = $('gpSessions');
   if (sessionList) sessionList.innerHTML = event.sessions.map(session => {
     const date = new Intl.DateTimeFormat(undefined, {weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}).format(session.ts);
-    const status = Date.now() >= session.ts + 2.5 * 3600000 ? '✓ Done' : Date.now() < session.ts ? 'Upcoming' : 'Started';
+    const status = Date.now() >= session.ts + 2.5 * 3600000 ? '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m3 8 3 3 7-7"/></svg> Done' : Date.now() < session.ts ? 'Upcoming' : 'Started';
     return `<li><span class="gp-session-copy"><span class="gp-session-name">${esc(session.name)}</span><time datetime="${esc(session.start)}">${esc(date)}</time></span><span class="gp-session-status">${status}</span></li>`;
   }).join('');
   const sprint = event.sessions.find(item => item.slug === 'sprint');
