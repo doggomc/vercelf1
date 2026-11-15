@@ -2,6 +2,7 @@ import { initShell } from '../ui/shell';
 /* Every page except the cockpit carries the open-page counter in its header. */
 import '../viewer-counter';
 import { CIRCUIT_COUNTRY, bornFacts, displayName, shortRaceName, splitName, teamLabel } from '../data/driver-facts';
+import { driverWorldTitles } from '../data/driver-world-titles';
 import { NATIONALITY_FLAG } from '../data/driver-flags';
 import { flagHtml } from '../data/flags';
 import { portrait } from '../data/driver-portraits';
@@ -157,7 +158,10 @@ async function paint(): Promise<void> {
   setText('statPoints', standingsRow.points);
   setText('statPointsNote', `after ${standings.round} of 23 rounds`);
 
-  setText('factTeam', team);
+  const titles = driverWorldTitles(driver.driverId);
+  setText('factTitles', titles === null ? '—' : String(titles));
+  const titlesNode = $('factTitles');
+  if (titlesNode) titlesNode.title = 'Completed championships through 2025';
   setText('factCountry', driver.nationality ?? '—');
   const born = bornFacts(driver.dateOfBirth);
   setText('factBorn', born ? `${born.label}${born.age !== null ? ` (${born.age})` : ''}` : '—');
