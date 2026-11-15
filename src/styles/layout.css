@@ -2224,3 +2224,8 @@ body[data-page="team"] .tp-mini-who { gap: 12px; }
 .gp-winner-label svg { width: 16px; height: 16px; color: #ffc400; flex: none; }
 .gp-session-status { display: inline-flex; align-items: center; gap: 4px; }
 .gp-session-status svg { width: 15px; height: 15px; }
+/* Keep the round label and its status on the same visual centre line. */
+.gp-eyebrow { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; line-height: 1.25; }
+.gp-status { margin-left: 0; }
+.gp-flag { width: 46px; height: 30px; flex-shrink: 0; object-fit: fill; outline: 1px solid #ffffff30; }
+.gp-result-driver .gp-result-ribbon { display: block; width: 3px; height: 29px; flex: none; border-radius: 3px; background: var(--team); }

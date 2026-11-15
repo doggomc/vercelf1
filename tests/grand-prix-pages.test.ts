@@ -29,4 +29,10 @@ describe('Grand Prix pages', () => {
     expect(source).toContain('gpStatus');
     for (const event of schedule) expect(readFileSync(`assets/flags/vector/${roundFlagCode(event.round)}.svg`, 'utf8')).toContain('<svg');
   });
+  it('shows team ribbons in result rows and keeps the title free of result status', () => {
+    const source = readFileSync('src/pages/grand-prix.ts', 'utf8');
+    expect(source).toContain('gp-result-ribbon');
+    expect(source).toContain('winnerTeamColor(row.Constructor?.name)');
+    expect(source).not.toContain('gp-title-muted');
+  });
 });

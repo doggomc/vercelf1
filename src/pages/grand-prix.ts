@@ -22,7 +22,7 @@ if (!event) {
   const name = displayRoundName(event);
   document.title = `${name} 2026 — Schedule and results | FreeF1`;
   set('gpCrumb', name); set('gpRound', `Round ${event.round} · ${formatWeekendRange(event.sessions[0].ts, event.sessions[event.sessions.length - 1].ts)} 2026${event.sprint ? ' · SPRINT WEEKEND' : ''}`);
-  const title = $('gpTitle'); if (title) title.innerHTML = `<img class="gp-flag" src="/assets/flags/vector/${roundFlagCode(event.round)}.svg" alt="" width="44" height="32" decoding="async"><span>${esc(name)} <span class="gp-year">2026</span> <span class="gp-title-muted">${Date.now() >= (event.sessions.find(session => session.slug === 'race')?.ts ?? Infinity) + 2.5 * 3600000 ? 'results' : 'schedule'}</span></span>`;
+  const title = $('gpTitle'); if (title) title.innerHTML = `<img class="gp-flag" src="/assets/flags/vector/${roundFlagCode(event.round)}.svg" alt="" width="44" height="32" decoding="async"><span>${esc(name)} <span class="gp-year">2026</span></span>`;
   const race = event.sessions.find(session => session.slug === 'race');
   const finished = Boolean(race && Date.now() >= race.ts + 2.5 * 3600000);
   const statusBadge = $('gpStatus'); if (statusBadge) statusBadge.innerHTML = finished ? '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 8 3 3 7-7"/></svg>Completed' : 'Upcoming';
@@ -125,7 +125,7 @@ if (!event) {
       const headers = quali ? ['Pos','Driver','Q1','Q2','Q3'] : ['Pos','Driver','Grid','Time / status','Pts'];
       const html = rows.map(row => {
         const driver = row.Driver; const full = `${driver?.givenName ?? ''} ${driver?.familyName ?? ''}`.trim();
-        const driverHtml = full ? `<a class="gp-result-driver" href="${esc(winnerDriverHref(driver?.givenName ?? '', driver?.familyName ?? ''))}"><img src="${esc(headshot(driver?.driverId ?? null, 64))}" alt="" width="32" height="32" loading="lazy" decoding="async"><span><b>${esc(full)}</b><small>${esc(winnerTeamName(row.Constructor?.name ?? ''))}</small></span></a>` : '—';
+        const driverHtml = full ? `<a class="gp-result-driver" href="${esc(winnerDriverHref(driver?.givenName ?? '', driver?.familyName ?? ''))}"><span class="gp-result-ribbon" style="--team:${esc(winnerTeamColor(row.Constructor?.name))}" aria-hidden="true"></span><img src="${esc(headshot(driver?.driverId ?? null, 64))}" alt="" width="32" height="32" loading="lazy" decoding="async"><span><b>${esc(full)}</b><small>${esc(winnerTeamName(row.Constructor?.name ?? ''))}</small></span></a>` : '—';
         const position = row.positionText && !/^\d+$/.test(row.positionText) ? row.positionText : row.position ?? '—';
         const values = quali ? [row.Q1 || '—', row.Q2 || '—', row.Q3 || '—'] : [row.grid === '0' ? 'PL' : row.grid || '—', row.Time?.time || row.status || '—', row.points ?? '—'];
         return `<tr><td>${esc(position)}</td><td>${driverHtml}</td>${values.map(value => `<td class="gp-result-number">${esc(value)}</td>`).join('')}</tr>`;
