@@ -1,6 +1,6 @@
 import { BACKEND_API } from '../config';
 
-export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams' | 'zlive';
+export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams' | 'zlive' | 'aura';
 
 export interface OtherStreamItem {
   key: string;
@@ -14,6 +14,7 @@ export interface OtherStreamItem {
   viewers: number;
   alwaysLive: boolean;
   startAt?: number;
+  status?: 'live' | 'scheduled';
   embedUrl: string;
   fallbackUrl: string;
   color: string;
@@ -27,6 +28,7 @@ export interface OtherStreamsResult {
 
 const DEFAULT_BACKEND = BACKEND_API;
 const EMBDLOL_STRUCT_URL = 'https://api.embdlol.st/struct';
+const AURA_SCHEDULE_URL = 'https://aurasports.cfd/api/schedule';
 const ZLIVE_MANIFEST_URL = 'https://zlive.st/embed/manifest.json';
 const TIMSTREAMS_EVENTS_URL = 'https://tim-streams.com/api/live-upcoming';
 const STREAMFREE_STREAMS_URL = 'https://strmfree.st/api/v1/streams';
@@ -62,6 +64,7 @@ const PROVIDER_COLORS: Record<OtherStreamProvider, string> = {
   strmfree: '#E75D38',
   timstreams: '#8B7CF6',
   zlive: '#B48CFF',
+  aura: '#C1FF55',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -639,7 +642,7 @@ export function parseTimstreamsEvents(payload: unknown): OtherStreamItem[] {
     const urls = buildTimstreamsUrls(id);
     if (!urls) continue;
     seen.add(id);
-    out.push({ key: `timstreams:${id}`, provider: 'timstreams', id, title, category, subtitle: `${category} · TimStreams`, tag: 'TimStreams', viewers: 0, alwaysLive: false, startAt, ...urls, color: pickStreamColor('timstreams', category) });
+    out.push({ key: `timstreams:${id}`, provider: 'timstreams', id, title, category, subtitle: `${category} · TimStreams`, tag: 'TimStreams', viewers: 0, alwaysLive: false, startAt, status: 'scheduled', ...urls, color: pickStreamColor('timstreams', category) });
   }
   return out;
 }
@@ -672,6 +675,35 @@ export function parseZliveSports(payload: unknown): OtherStreamItem[] {
   return items;
 }
 
+/** AuraSports publishes sports events and a player-only embed endpoint. */
+export function buildAuraUrls(rawId: string): { embedUrl: string; fallbackUrl: string } | null {
+  const id = String(rawId || '').trim();
+  if (!/^[a-z0-9_-]{1,160}$/i.test(id) || isFormula1Text(id)) return null;
+  const url = `https://play.aurasportsplayer.cfd/event/${encodeURIComponent(id)}`;
+  return { embedUrl: url, fallbackUrl: url };
+}
+
+export function parseAuraEvents(payload: unknown): OtherStreamItem[] {
+  if (!Array.isArray(payload)) return [];
+  const items: OtherStreamItem[] = [], seen = new Set<string>();
+  for (const group of payload) {
+    if (!group || typeof group !== 'object' || !Array.isArray(group.schedule)) continue;
+    for (const raw of group.schedule) {
+      if (!raw || typeof raw !== 'object') continue;
+      const event = raw as Record<string, unknown>;
+      const id = String(event.id || '').trim(), title = String(event.title || '').trim().slice(0, 140);
+      const category = String(event.league_name || event.category || group.category_name || 'Sports').trim().slice(0, 80);
+      const state = String(event.status || '').toLowerCase();
+      const startAt = Number(event.date);
+      if (!title || seen.has(id) || !['live', 'scheduled'].includes(state) || !Number.isFinite(startAt) || startAt < 1e12 || startAt > 4e12 || isFormula1Text(`${title} ${id} ${category}`)) continue;
+      const urls = buildAuraUrls(id); if (!urls) continue;
+      seen.add(id);
+      items.push({ key: `aura:${id}`, provider: 'aura', id, title, category, subtitle: `${category} · Aura Sports`, tag: 'Aura Sports', viewers: 0, alwaysLive: false, startAt, status: state === 'live' ? 'live' : 'scheduled', ...urls, color: pickStreamColor('aura', category) });
+    }
+  }
+  return items;
+}
+
 const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
   embdlol: '1',
   ppv: '2',
@@ -679,6 +711,7 @@ const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
   strmfree: '4',
   timstreams: '5',
   zlive: '6',
+  aura: '7',
 };
 
 const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
@@ -688,12 +721,14 @@ const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
   '4': 'strmfree',
   '5': 'timstreams',
   '6': 'zlive',
+  '7': 'aura',
   embdlol: 'embdlol',
   ppv: 'ppv',
   weelo: 'weelo',
   strmfree: 'strmfree',
   timstreams: 'timstreams',
   zlive: 'zlive',
+  aura: 'aura',
 };
 
 function slugifyStreamLabel(value: string): string {
@@ -714,7 +749,8 @@ export function buildPrivateCockpitHref(item: OtherStreamItem): string {
   params.set('cat', item.category);
   if (item.subtitle) params.set('sub', item.subtitle);
   if (item.alwaysLive) params.set('al', '1');
-  if (item.provider === 'timstreams' && item.startAt) params.set('start', String(item.startAt));
+  if ((item.provider === 'timstreams' || item.provider === 'aura') && item.startAt) params.set('start', String(item.startAt));
+  if (item.provider === 'aura' && item.status === 'scheduled') params.set('scheduled', '1');
   return `/private-cockpit?${params.toString()}`;
 }
 
@@ -726,6 +762,7 @@ export interface ResolvedPrivateStream {
   subtitle: string;
   alwaysLive: boolean;
   startAt?: number;
+  status?: 'live' | 'scheduled';
   stagePath: string;
   embedUrl: string;
   fallbackUrl: string;
@@ -754,6 +791,11 @@ export function parsePrivateCockpitParams(
     fallbackUrl = urls.fallbackUrl;
   } else if (provider === 'weelo') {
     const urls = buildWeeloUrls(rawId, backend);
+    if (!urls) return null;
+    embedUrl = urls.embedUrl;
+    fallbackUrl = urls.fallbackUrl;
+  } else if (provider === 'aura') {
+    const urls = buildAuraUrls(rawId);
     if (!urls) return null;
     embedUrl = urls.embedUrl;
     fallbackUrl = urls.fallbackUrl;
@@ -796,7 +838,8 @@ export function parsePrivateCockpitParams(
     category,
     subtitle,
     alwaysLive,
-    startAt: provider === 'timstreams' && /^\d{13}$/.test(params.get('start') || '') ? Number(params.get('start')) : undefined,
+    startAt: (provider === 'timstreams' || provider === 'aura') && /^\d{13}$/.test(params.get('start') || '') ? Number(params.get('start')) : undefined,
+    status: provider === 'timstreams' || (provider === 'aura' && params.get('scheduled') === '1') ? 'scheduled' : undefined,
     stagePath: `freef1://live/other/${slugifyStreamLabel(title)}`,
     embedUrl,
     fallbackUrl,
@@ -858,7 +901,7 @@ export async function fetchAllOtherStreams(options: {
     throw lastError || new Error('Weelo unavailable');
   };
 
-  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes, zliveRes] = await Promise.allSettled([
+  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes, zliveRes, auraRes] = await Promise.allSettled([
     fetchJsonWithTimeout(EMBDLOL_STRUCT_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(PPV_STREAMS_URL, {}, 8500, fetchImpl),
     fetchWeeloPlayers(),
@@ -867,6 +910,7 @@ export async function fetchAllOtherStreams(options: {
     fetchStreamfree(fetchImpl, !options.fetchImpl),
     fetchJsonWithTimeout(TIMSTREAMS_EVENTS_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(ZLIVE_MANIFEST_URL, {}, 8500, fetchImpl),
+    fetchJsonWithTimeout(AURA_SCHEDULE_URL, {}, 8500, fetchImpl),
   ]);
 
   const embItems = embRes.status === 'fulfilled' ? parseEmbdlolStruct(embRes.value, backend) : [];
@@ -884,7 +928,8 @@ export async function fetchAllOtherStreams(options: {
   const streamfreeItems = streamfreeRes.status === 'fulfilled' ? parseStreamfreeStreams(streamfreeRes.value) : [];
   const timstreamsItems = timstreamsRes.status === 'fulfilled' ? parseTimstreamsEvents(timstreamsRes.value) : [];
   const zliveItems = zliveRes.status === 'fulfilled' ? parseZliveSports(zliveRes.value) : [];
-  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems, ...timstreamsItems, ...zliveItems];
+  const auraItems = auraRes.status === 'fulfilled' ? parseAuraEvents(auraRes.value) : [];
+  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems, ...timstreamsItems, ...zliveItems, ...auraItems];
 
   return {
     items,
@@ -896,6 +941,7 @@ export async function fetchAllOtherStreams(options: {
       strmfree: streamfreeItems.length,
       timstreams: timstreamsItems.length,
       zlive: zliveItems.length,
+      aura: auraItems.length,
     },
     providerOk: {
       embdlol: embRes.status === 'fulfilled',
@@ -904,6 +950,7 @@ export async function fetchAllOtherStreams(options: {
       strmfree: streamfreeRes.status === 'fulfilled',
       timstreams: timstreamsRes.status === 'fulfilled',
       zlive: zliveRes.status === 'fulfilled',
+      aura: auraRes.status === 'fulfilled',
     },
   };
 }

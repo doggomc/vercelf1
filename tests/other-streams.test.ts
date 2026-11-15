@@ -4,6 +4,8 @@ import {
   buildStreamfreeUrls,
   buildTimstreamsUrls,
   buildZliveUrls,
+  buildAuraUrls,
+  parseAuraEvents,
   parseZliveSports,
   extractTimstreamsPlayer,
   parseTimstreamsEvents,
@@ -19,6 +21,36 @@ import {
 } from '../src/lib/other-streams';
 
 describe('Other streams non-F1 filtering & private cockpit resolution', () => {
+  it('adds live and scheduled Aura Sports events via the player-only embed', () => {
+    const items = parseAuraEvents([{ category_name: 'nfl', schedule: [
+      { id: 'espn-123', title: 'Team A at Team B', league_name: 'NFL', status: 'live', date: 1794751200000, iframeUrl: 'https://evil.test/anything' },
+      { id: 'espn-456', title: 'Team C at Team D', league_name: 'NFL', status: 'scheduled', date: 1794762000000 },
+      { id: 'f1-race', title: 'Formula 1 race', league_name: 'F1', status: 'live', date: 1794751200000 },
+      { id: 'past', title: 'Finished game', league_name: 'NFL', status: 'finished', date: 1794751200000 },
+      { id: '../bad', title: 'Bad', league_name: 'NFL', status: 'live', date: 1794751200000 },
+    ] }]);
+    expect(items.map(i => i.id)).toEqual(['espn-123', 'espn-456']);
+    expect(items[0].embedUrl).toBe('https://play.aurasportsplayer.cfd/event/espn-123');
+    expect(items[0].status).toBe('live');
+    expect(items[1].status).toBe('scheduled');
+    const resolved = parsePrivateCockpitParams(new URL(buildPrivateCockpitHref(items[1]), 'https://freef1-live.vercel.app').search);
+    expect(resolved?.status).toBe('scheduled');
+    expect(resolved?.startAt).toBe(1794762000000);
+    expect(resolved?.embedUrl).toBe('https://play.aurasportsplayer.cfd/event/espn-456');
+    expect(buildAuraUrls('../bad')).toBeNull();
+    expect(parsePrivateCockpitParams('?s=7&id=https%3A%2F%2Fevil.example')).toBeNull();
+  });
+
+  it('fetches Aura independently of other providers', async () => {
+    const mockFetch: typeof fetch = async input => {
+      if (String(input).includes('aurasports.cfd/api/schedule')) return new Response(JSON.stringify([{category_name:'nfl',schedule:[{id:'espn-123',title:'Team A at Team B',status:'live',date:1794751200000}]}]), {status:200});
+      throw new Error('offline');
+    };
+    const result = await fetchAllOtherStreams({fetchImpl: mockFetch});
+    expect(result.providerOk.aura).toBe(true);
+    expect(result.counts.aura).toBe(1);
+  });
+
   it('includes only live ZLive sports and uses the provider player-only embed', () => {
     const items = parseZliveSports({ channels: [
       { id: 'TSN4', name: 'TSN 4', sport: 'Sports', live: true, quality: 'FHD', region: 'CA', url: 'https://evil.example/should-not-be-used' },

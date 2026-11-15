@@ -1,5 +1,6 @@
 import { initShell } from '../ui/shell';
 import '../viewer-counter';
+import { streamCategory } from '../lib/stream-categories';
 import {
   buildPrivateCockpitHref,
   fetchAllOtherStreams,
@@ -24,6 +25,9 @@ const scrollPrev = document.getElementById('categoryScrollPrev') as HTMLButtonEl
 const scrollNext = document.getElementById('categoryScrollNext') as HTMLButtonElement | null;
 const gliderEl = document.getElementById('tabsGlider');
 const liveTotalEl = document.getElementById('liveTotalCount');
+const providerFilter = document.getElementById('providerFilter') as HTMLSelectElement | null;
+const PROVIDER_LABELS: Record<OtherStreamItem['provider'], string> = { aura: 'Aura Sports', embdlol: 'EMB', ppv: 'PPV', strmfree: 'StreamFree', timstreams: 'TimStreams', weelo: 'Weelo', zlive: 'ZLive' };
+let activeProvider = 'all';
 const searchInput = document.getElementById('streamSearch') as HTMLInputElement | null;
 const clearSearchBtn = document.getElementById('clearSearchBtn') as HTMLButtonElement | null;
 const refreshBtn = document.getElementById('refreshStreamsBtn') as HTMLButtonElement | null;
@@ -107,7 +111,7 @@ function createStreamCard(item: OtherStreamItem, index: number): HTMLAnchorEleme
   badges.className = 'os-card-badges';
 
   const liveBadge = document.createElement('span');
-  const scheduled = item.provider === 'timstreams';
+  const scheduled = item.status === 'scheduled';
   const upcoming = scheduled && item.startAt != null && item.startAt > Date.now();
   liveBadge.className = `os-badge ${scheduled ? 'os-badge-scheduled' : item.alwaysLive ? 'os-badge-247' : 'os-badge-live'}`;
   const dot = document.createElement('span');
@@ -145,7 +149,8 @@ function createStreamCard(item: OtherStreamItem, index: number): HTMLAnchorEleme
 
   const footTag = document.createElement('span');
   footTag.className = 'os-foot-tag';
-  footTag.textContent = item.tag || (item.alwaysLive ? '24/7 channel' : 'Live broadcast');
+  const providerName = PROVIDER_LABELS[item.provider];
+  footTag.textContent = item.tag && !item.tag.toLowerCase().includes(providerName.toLowerCase()) ? `${providerName} · ${item.tag}` : item.tag || providerName;
   foot.appendChild(footTag);
 
   if (item.viewers > 0) {
@@ -191,7 +196,8 @@ function makeFilterButton(key: string, label: string, count: number, isActive: b
 function renderFilters(immediateGlider = false): void {
   if (!filtersEl) return;
   const categoryMap = new Map<string, number>();
-  for (const item of allItems) {
+  const providerItems = activeProvider === 'all' ? allItems : allItems.filter(item => item.provider === activeProvider);
+  for (const item of providerItems) {
     categoryMap.set(item.category, (categoryMap.get(item.category) || 0) + 1);
   }
 
@@ -206,7 +212,7 @@ function renderFilters(immediateGlider = false): void {
 
   const nodes: Node[] = [];
   if (gliderEl) nodes.push(gliderEl);
-  nodes.push(makeFilterButton('all', 'All', allItems.length, activeCategory === 'all'));
+  nodes.push(makeFilterButton('all', 'All', providerItems.length, activeCategory === 'all'));
   for (const [cat, count] of sortedCategories) {
     nodes.push(makeFilterButton(cat, cat, count, activeCategory === cat));
   }
@@ -220,13 +226,27 @@ function renderList(): void {
   const needle = searchQuery.trim().toLowerCase();
 
   const filtered = allItems.filter((item) => {
+    if (activeProvider !== 'all' && item.provider !== activeProvider) return false;
     if (activeCategory !== 'all' && item.category !== activeCategory) return false;
     if (!needle) return true;
-    const haystack = `${item.title} ${item.category} ${item.subtitle}`.toLowerCase();
+    const haystack = `${item.title} ${item.category} ${item.subtitle} ${PROVIDER_LABELS[item.provider]}`.toLowerCase();
     return haystack.includes(needle);
   });
 
-  gridEl.replaceChildren(...filtered.map((item, idx) => createStreamCard(item, idx)));
+  filtered.sort((a, b) => PROVIDER_LABELS[a.provider].localeCompare(PROVIDER_LABELS[b.provider]) || a.title.localeCompare(b.title));
+  const nodes: Node[] = [];
+  let previousProvider = '';
+  filtered.forEach((item, idx) => {
+    if (item.provider !== previousProvider) {
+      previousProvider = item.provider;
+      const heading = document.createElement('h3');
+      heading.className = 'os-provider-heading';
+      heading.textContent = PROVIDER_LABELS[item.provider];
+      nodes.push(heading);
+    }
+    nodes.push(createStreamCard(item, idx));
+  });
+  gridEl.replaceChildren(...nodes);
   const isEmpty = filtered.length === 0;
   gridEl.hidden = isEmpty;
   emptyEl.hidden = !isEmpty;
@@ -277,7 +297,13 @@ async function loadStreams(initial = false): Promise<void> {
 
   try {
     const result = await fetchAllOtherStreams({ backend: backendMeta });
-    allItems = result.items;
+    allItems = result.items.map(item => ({ ...item, category: streamCategory(item.category, item.title) }));
+    if (providerFilter) {
+      const providers = [...new Set(allItems.map(item => item.provider))].sort((a, b) => PROVIDER_LABELS[a].localeCompare(PROVIDER_LABELS[b]));
+      if (activeProvider !== 'all' && !providers.includes(activeProvider as OtherStreamItem['provider'])) activeProvider = 'all';
+      providerFilter.replaceChildren(new Option('All providers', 'all'), ...providers.map(provider => new Option(PROVIDER_LABELS[provider], provider)));
+      providerFilter.value = activeProvider;
+    }
     lastLoadedAt = Date.now();
     if (liveTotalEl) liveTotalEl.textContent = String(allItems.length);
     renderFilters(initial);
@@ -296,6 +322,12 @@ async function loadStreams(initial = false): Promise<void> {
     if (refreshLabel) refreshLabel.textContent = 'Refresh';
   }
 }
+
+providerFilter?.addEventListener('change', () => {
+  activeProvider = providerFilter.value;
+  renderFilters(true);
+  renderList();
+});
 
 filtersEl?.addEventListener('click', (e) => {
   const btn = (e.target as Element | null)?.closest<HTMLButtonElement>('button[data-category]');

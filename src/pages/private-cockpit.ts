@@ -166,10 +166,10 @@ if (!resolved) {
   document.title = `${resolved.title} — Private Cockpit · FreeF1`;
   if (stageLabel) stageLabel.textContent = resolved.stagePath;
   if (overridePill) {
-    overridePill.textContent = resolved.provider === 'timstreams' ? 'Scheduled event' : resolved.alwaysLive ? '24/7 · Live' : 'Live Feed';
+    overridePill.textContent = resolved.status === 'scheduled' ? 'Scheduled event' : resolved.alwaysLive ? '24/7 · Live' : 'Live Feed';
     overridePill.classList.add('active');
   }
-  if (badgeEl) badgeEl.textContent = resolved.provider === 'timstreams' ? (resolved.startAt && resolved.startAt > Date.now() ? 'Upcoming' : 'Scheduled') : 'Live now';
+  if (badgeEl) badgeEl.textContent = resolved.status === 'scheduled' ? (resolved.startAt && resolved.startAt > Date.now() ? 'Upcoming' : 'Scheduled') : 'Live now';
   if (categoryEl) categoryEl.textContent = resolved.category;
   if (titleEl) titleEl.textContent = resolved.title;
   if (metaEl) metaEl.textContent = resolved.subtitle;

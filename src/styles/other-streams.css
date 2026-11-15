@@ -619,3 +619,10 @@
 .os-tabs-arrow:disabled { opacity: .3; cursor: default; }
 @media (max-width: 759px), (hover: none) { .os-tabs-arrow { display: none; } .os-tabs-navigation { max-width: 100%; } }
 @media (prefers-reduced-motion: reduce) { .os-tabs-arrow { transition: none; } }
+/* Source filtering and clear provider group labels. */
+.os-provider-filter { display: flex; align-items: center; gap: 8px; flex: none; color: var(--fg-3); font-size: 12px; font-weight: 600; }
+.os-provider-filter select { max-width: 155px; height: 38px; padding: 0 28px 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); color: var(--white); font: 500 13px var(--font-body); cursor: pointer; }
+.os-provider-filter select:focus-visible { outline: 2px solid #aabfff; outline-offset: 2px; }
+.os-provider-heading { grid-column: 1 / -1; margin: 14px 0 0; font-size: 15px; font-weight: 700; color: var(--fg-2); }
+.os-provider-heading:first-child { margin-top: 0; }
+@media (max-width: 680px) { .os-provider-filter { width: 100%; } .os-provider-filter select { flex: 1; max-width: none; } }
