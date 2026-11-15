@@ -3,6 +3,8 @@ import {
   buildPrivateCockpitHref,
   buildStreamfreeUrls,
   buildTimstreamsUrls,
+  buildZliveUrls,
+  parseZliveSports,
   extractTimstreamsPlayer,
   parseTimstreamsEvents,
   parseTimstreamsTime,
@@ -17,6 +19,33 @@ import {
 } from '../src/lib/other-streams';
 
 describe('Other streams non-F1 filtering & private cockpit resolution', () => {
+  it('includes only live ZLive sports and uses the provider player-only embed', () => {
+    const items = parseZliveSports({ channels: [
+      { id: 'TSN4', name: 'TSN 4', sport: 'Sports', live: true, quality: 'FHD', region: 'CA', url: 'https://evil.example/should-not-be-used' },
+      { id: 'adult-swim', name: 'Adult Swim', sport: 'Kids', live: true },
+      { id: 'sky-f1', name: 'Sky Sports F1', sport: 'Sports', live: true },
+      { id: 'movie', name: 'Movie channel', sport: 'Entertainment', live: true },
+      { id: 'offline', name: 'Offline channel', sport: 'Sports', live: false },
+      { id: '../bad', name: 'Bad path', sport: 'Sports', live: true },
+    ] });
+    expect(items).toHaveLength(1);
+    expect(items[0].embedUrl).toBe('https://zlive.st/embed/TSN4');
+    expect(parsePrivateCockpitParams(new URL(buildPrivateCockpitHref(items[0]), 'https://freef1-live.vercel.app').search)?.embedUrl).toBe(items[0].embedUrl);
+    expect(buildZliveUrls('../bad')).toBeNull();
+    expect(parsePrivateCockpitParams('?s=6&id=https%3A%2F%2Fevil.example')).toBeNull();
+  });
+
+  it('fetches ZLive independently of other providers', async () => {
+    const mockFetch: typeof fetch = async input => {
+      if (String(input).includes('zlive.st/embed/manifest.json')) return new Response(JSON.stringify({channels:[{id:'TSN4',name:'TSN 4',sport:'Sports',live:true}]}), {status:200});
+      throw new Error('offline');
+    };
+    const result = await fetchAllOtherStreams({fetchImpl: mockFetch});
+    expect(result.providerOk.zlive).toBe(true);
+    expect(result.counts.zlive).toBe(1);
+    expect(result.items[0].provider).toBe('zlive');
+  });
+
   it('adds free TimStreams events and opens only validated provider event pages', () => {
     const parsed = parseTimstreamsEvents({ genres: [{ id: 1, name: 'Soccer' }, { id: 2, name: 'Motorsport' }], events: [
       { url: 'home-v-away', name: 'Home vs Away', genre: 1, time: '2026-11-15T09:00', streams: [{ url: 'https://example.com/player', vip: false }] },

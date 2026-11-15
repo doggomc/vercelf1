@@ -1,6 +1,6 @@
 import { BACKEND_API } from '../config';
 
-export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams';
+export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams' | 'zlive';
 
 export interface OtherStreamItem {
   key: string;
@@ -27,6 +27,7 @@ export interface OtherStreamsResult {
 
 const DEFAULT_BACKEND = BACKEND_API;
 const EMBDLOL_STRUCT_URL = 'https://api.embdlol.st/struct';
+const ZLIVE_MANIFEST_URL = 'https://zlive.st/embed/manifest.json';
 const TIMSTREAMS_EVENTS_URL = 'https://tim-streams.com/api/live-upcoming';
 const STREAMFREE_STREAMS_URL = 'https://strmfree.st/api/v1/streams';
 const STREAMFREE_CACHE_KEY = 'freef1-streamfree-v1';
@@ -60,6 +61,7 @@ const PROVIDER_COLORS: Record<OtherStreamProvider, string> = {
   weelo: '#38BDF8',
   strmfree: '#E75D38',
   timstreams: '#8B7CF6',
+  zlive: '#B48CFF',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -642,12 +644,41 @@ export function parseTimstreamsEvents(payload: unknown): OtherStreamItem[] {
   return out;
 }
 
+/** ZLive publishes a CORS-enabled manifest and a player-only embed API. */
+export function buildZliveUrls(rawId: string): { embedUrl: string; fallbackUrl: string } | null {
+  const id = String(rawId || '').trim();
+  if (!/^[a-z0-9_-]{1,150}$/i.test(id) || isFormula1Text(id)) return null;
+  const url = `https://zlive.st/embed/${encodeURIComponent(id)}`;
+  return { embedUrl: url, fallbackUrl: url };
+}
+
+export function parseZliveSports(payload: unknown): OtherStreamItem[] {
+  const channels = (payload as { channels?: unknown } | null)?.channels;
+  if (!Array.isArray(channels)) return [];
+  const items: OtherStreamItem[] = [], seen = new Set<string>();
+  for (const value of channels) {
+    if (!value || typeof value !== 'object') continue;
+    const channel = value as Record<string, unknown>;
+    const id = String(channel.id || '').trim();
+    const title = String(channel.name || '').trim().slice(0, 140);
+    if (String(channel.sport || '').trim().toLowerCase() !== 'sports' || channel.live !== true || !title || isFormula1Text(`${title} ${id}`) || isLowResStream(`${title} ${channel.quality || ''}`) || seen.has(id)) continue;
+    const urls = buildZliveUrls(id);
+    if (!urls) continue;
+    seen.add(id);
+    const region = String(channel.region || '').trim().slice(0, 40);
+    const quality = String(channel.quality || '').trim().slice(0, 20);
+    items.push({ key: `zlive:${id}`, provider: 'zlive', id, title, category: 'Sports', subtitle: ['Sports', region, 'ZLive'].filter(Boolean).join(' · '), tag: ['ZLive', quality].filter(Boolean).join(' · '), viewers: 0, alwaysLive: false, ...urls, color: pickStreamColor('zlive', 'Sports') });
+  }
+  return items;
+}
+
 const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
   embdlol: '1',
   ppv: '2',
   weelo: '3',
   strmfree: '4',
   timstreams: '5',
+  zlive: '6',
 };
 
 const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
@@ -656,11 +687,13 @@ const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
   '3': 'weelo',
   '4': 'strmfree',
   '5': 'timstreams',
+  '6': 'zlive',
   embdlol: 'embdlol',
   ppv: 'ppv',
   weelo: 'weelo',
   strmfree: 'strmfree',
   timstreams: 'timstreams',
+  zlive: 'zlive',
 };
 
 function slugifyStreamLabel(value: string): string {
@@ -721,6 +754,11 @@ export function parsePrivateCockpitParams(
     fallbackUrl = urls.fallbackUrl;
   } else if (provider === 'weelo') {
     const urls = buildWeeloUrls(rawId, backend);
+    if (!urls) return null;
+    embedUrl = urls.embedUrl;
+    fallbackUrl = urls.fallbackUrl;
+  } else if (provider === 'zlive') {
+    const urls = buildZliveUrls(rawId);
     if (!urls) return null;
     embedUrl = urls.embedUrl;
     fallbackUrl = urls.fallbackUrl;
@@ -820,7 +858,7 @@ export async function fetchAllOtherStreams(options: {
     throw lastError || new Error('Weelo unavailable');
   };
 
-  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes] = await Promise.allSettled([
+  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes, zliveRes] = await Promise.allSettled([
     fetchJsonWithTimeout(EMBDLOL_STRUCT_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(PPV_STREAMS_URL, {}, 8500, fetchImpl),
     fetchWeeloPlayers(),
@@ -828,6 +866,7 @@ export async function fetchAllOtherStreams(options: {
     fetchJsonWithTimeout(WEELO_FEED_URL, { referrerPolicy: 'no-referrer' }, 6500, fetchImpl),
     fetchStreamfree(fetchImpl, !options.fetchImpl),
     fetchJsonWithTimeout(TIMSTREAMS_EVENTS_URL, {}, 8500, fetchImpl),
+    fetchJsonWithTimeout(ZLIVE_MANIFEST_URL, {}, 8500, fetchImpl),
   ]);
 
   const embItems = embRes.status === 'fulfilled' ? parseEmbdlolStruct(embRes.value, backend) : [];
@@ -844,7 +883,8 @@ export async function fetchAllOtherStreams(options: {
 
   const streamfreeItems = streamfreeRes.status === 'fulfilled' ? parseStreamfreeStreams(streamfreeRes.value) : [];
   const timstreamsItems = timstreamsRes.status === 'fulfilled' ? parseTimstreamsEvents(timstreamsRes.value) : [];
-  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems, ...timstreamsItems];
+  const zliveItems = zliveRes.status === 'fulfilled' ? parseZliveSports(zliveRes.value) : [];
+  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems, ...timstreamsItems, ...zliveItems];
 
   return {
     items,
@@ -855,6 +895,7 @@ export async function fetchAllOtherStreams(options: {
       weelo: weeloItems.length,
       strmfree: streamfreeItems.length,
       timstreams: timstreamsItems.length,
+      zlive: zliveItems.length,
     },
     providerOk: {
       embdlol: embRes.status === 'fulfilled',
@@ -862,6 +903,7 @@ export async function fetchAllOtherStreams(options: {
       weelo: weeloOk,
       strmfree: streamfreeRes.status === 'fulfilled',
       timstreams: timstreamsRes.status === 'fulfilled',
+      zlive: zliveRes.status === 'fulfilled',
     },
   };
 }
