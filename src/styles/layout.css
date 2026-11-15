@@ -2086,3 +2086,13 @@ body[data-page="driver"] .dp-standing-row { display: table-row; }
 .dp-standing-name { flex: 1; }
 .dp-standing-name b { font-size: 14px; font-weight: 600; }
 .dp-standing-name small { font-size: 12px; }
+
+/* Icons and labels share a centered line box; the tiny optical adjustment
+   accounts for the typeface's cap-height within that line box. */
+body[data-page="driver"] .dp-label-icon { display: block; width: 16px; height: 16px; flex: 0 0 16px; color: var(--fg-3); }
+body[data-page="driver"] .dp-stat-label, body[data-page="driver"] .dp-fact-label, body[data-page="driver"] .dp-heading-icon { display: flex; align-items: center; gap: 8px; line-height: 1.3; }
+body[data-page="driver"] .dp-stat-label > span, body[data-page="driver"] .dp-fact-label > span, body[data-page="driver"] .dp-heading-icon > span { transform: translateY(1px); min-width: 0; }
+body[data-page="driver"] .dp-stat-label .dp-label-icon { color: var(--team); }
+body[data-page="driver"] .dp-heading-icon .dp-label-icon { width: 19px; height: 19px; flex-basis: 19px; }
+body[data-page="driver"] .dp-fact-label .dp-label-icon { width: 14px; height: 14px; flex-basis: 14px; }
+@media (max-width: 400px) { body[data-page="driver"] .dp-stat-label, body[data-page="driver"] .dp-fact-label { gap: 6px; } }
