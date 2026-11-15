@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildPrivateCockpitHref,
   compareStreamProviders,
+  isDirectoryLive,
   buildStreamfreeUrls,
   buildTimstreamsUrls,
   buildZliveUrls,
@@ -26,6 +27,13 @@ import {
 } from '../src/lib/other-streams';
 
 describe('Other streams non-F1 filtering & private cockpit resolution', () => {
+  it('hides scheduled streams from the directory, including unconfirmed past starts', () => {
+    const item = parseNtvRaptor({success:true,all:[{id:'ppv-2',title:'Teams',category:'Football',date:2000000000000,live:false,sources:[{url:'https://taifood-blog.asia/embed/soccer/match'}]}]}, 1900000000000)[0];
+    expect(isDirectoryLive(item)).toBe(false);
+    expect(isDirectoryLive({...item, status:'live'})).toBe(true);
+    expect(isDirectoryLive({...item, status:undefined})).toBe(true);
+  });
+
   it('orders PPV, EMB and StreamFree first, with the remaining providers alphabetically', () => {
     const labels = {ppv:'PPV', embdlol:'EMB', strmfree:'StreamFree', aura:'Aura Sports', bintv:'BinTV', ntv:'NTV Raptor', timstreams:'TimStreams', weelo:'Weelo', zlive:'ZLive'};
     const providers: Array<keyof typeof labels> = ['zlive','embdlol','aura','strmfree','ppv','bintv'];

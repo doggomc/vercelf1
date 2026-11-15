@@ -27,6 +27,13 @@ export interface OtherStreamItem {
   color: string;
 }
 
+/** Only show streams not explicitly marked scheduled; some providers do not
+ * supply a live flag, so their existing live-only feeds remain eligible. */
+export function isDirectoryLive(item: OtherStreamItem): boolean {
+  return item.status !== 'scheduled';
+}
+
+
 export interface OtherStreamsResult {
   items: OtherStreamItem[];
   counts: Record<'all' | OtherStreamProvider, number>;

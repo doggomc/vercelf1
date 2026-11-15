@@ -4,6 +4,7 @@ import { streamCategory } from '../lib/stream-categories';
 import {
   buildPrivateCockpitHref,
   compareStreamProviders,
+  isDirectoryLive,
   fetchAllOtherStreams,
   type OtherStreamItem,
 } from '../lib/other-streams';
@@ -298,7 +299,7 @@ async function loadStreams(initial = false): Promise<void> {
 
   try {
     const result = await fetchAllOtherStreams({ backend: backendMeta });
-    allItems = result.items.map(item => ({ ...item, category: streamCategory(item.category, item.title) }));
+    allItems = result.items.filter(isDirectoryLive).map(item => ({ ...item, category: streamCategory(item.category, item.title) }));
     if (providerFilter) {
       const providers = [...new Set(allItems.map(item => item.provider))].sort((a, b) => compareStreamProviders(a, b, PROVIDER_LABELS));
       if (activeProvider !== 'all' && !providers.includes(activeProvider as OtherStreamItem['provider'])) activeProvider = 'all';
