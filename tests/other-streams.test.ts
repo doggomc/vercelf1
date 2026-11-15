@@ -3,6 +3,7 @@ import {
   buildPrivateCockpitHref,
   buildStreamfreeUrls,
   buildTimstreamsUrls,
+  extractTimstreamsPlayer,
   parseTimstreamsEvents,
   parseTimstreamsTime,
   parseStreamfreeStreams,
@@ -34,6 +35,18 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
     expect(result?.embedUrl).toBe('https://tim-streams.com/watch/home-v-away');
     expect(result?.startAt).toBe(parsed[0].startAt);
     expect(parsePrivateCockpitParams('?s=5&id=https%3A%2F%2Fevil.test')).toBeNull();
+  });
+
+  it('uses only the current, free and allowlisted TimStreams player without the chat page', () => {
+    const payload = { item: { url: 'home-v-away', streams: [
+      { url: 'https://evil.example/player' },
+      { url: 'https://ehgembxe.cfd/abc-123' },
+    ] } };
+    expect(extractTimstreamsPlayer(payload, 'home-v-away')).toBe('https://ehgembxe.cfd/abc-123');
+    expect(extractTimstreamsPlayer(payload, 'other-event')).toBeNull();
+    expect(extractTimstreamsPlayer({ item: { url: 'home-v-away', vip: true, streams: payload.item.streams } }, 'home-v-away')).toBeNull();
+    expect(extractTimstreamsPlayer({ item: { url: 'home-v-away', streams: [{url: 'https://ehgembxe.cfd/abc', vip: true}] } }, 'home-v-away')).toBeNull();
+    expect(extractTimstreamsPlayer({ item: { url: 'home-v-away', streams: [{url: 'https://ehgembxe.cfd.evil.example/abc'}] } }, 'home-v-away')).toBeNull();
   });
 
   it('fetches TimStreams independently while preserving other providers on failure', async () => {

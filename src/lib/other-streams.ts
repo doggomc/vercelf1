@@ -596,6 +596,23 @@ export function buildTimstreamsUrls(rawId: string): { embedUrl: string; fallback
   return { embedUrl: url, fallbackUrl: url };
 }
 
+/** The provider's event API returns its current player URL. Keep this an
+ * explicit host/path allowlist: a URL in a query string must never select a host. */
+export function extractTimstreamsPlayer(payload: unknown, eventId: string): string | null {
+  const item = (payload as { item?: { url?: unknown; vip?: unknown; streams?: unknown } } | null)?.item;
+  if (!item || item.url !== eventId || item.vip === true || !Array.isArray(item.streams)) return null;
+  for (const value of item.streams) {
+    if (!value || typeof value !== 'object') continue;
+    const stream = value as { url?: unknown; vip?: unknown };
+    if (stream.vip === true || typeof stream.url !== 'string') continue;
+    try {
+      const url = new URL(stream.url);
+      if (url.protocol === 'https:' && url.hostname === 'ehgembxe.cfd' && !url.port && !url.username && !url.password && !url.search && !url.hash && /^\/[a-z0-9-]{1,160}$/i.test(url.pathname)) return url.href;
+    } catch { /* Ignore malformed provider URLs. */ }
+  }
+  return null;
+}
+
 export function parseTimstreamsEvents(payload: unknown): OtherStreamItem[] {
   const data = payload as { events?: unknown; genres?: unknown } | null;
   if (!Array.isArray(data?.events)) return [];

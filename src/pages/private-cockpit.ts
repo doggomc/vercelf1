@@ -4,7 +4,7 @@ import { initPageGate } from '../features/page-gate';
 import '../viewer-counter';
 import { setCounterContext } from '../features/counter-context';
 import { mountCockpitViewerCount } from '../features/cockpit-viewers';
-import { parsePrivateCockpitParams } from '../lib/other-streams';
+import { extractTimstreamsPlayer, parsePrivateCockpitParams } from '../lib/other-streams';
 
 initShell({ nav: false, transitions: false });
 
@@ -86,7 +86,7 @@ function isLocalDevHost(): boolean {
   return location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 }
 
-function mountStream(useFallback = false): void {
+async function mountStream(useFallback = false): Promise<void> {
   if (document.getElementById('partialOutageStage')) return;
   if (!resolved || !stageBox) {
     showMissingState();
@@ -101,12 +101,30 @@ function mountStream(useFallback = false): void {
   /* f1admin stripped embeds restrict frame-ancestors to *.vercel.app / *.netlify.app,
      so local dev/preview uses the direct upstream embed URL. */
   const preferFallback = useFallback || isLocalDevHost();
-  const targetUrl = preferFallback ? resolved.fallbackUrl : resolved.embedUrl;
+  let targetUrl = preferFallback ? resolved.fallbackUrl : resolved.embedUrl;
 
   clearFrames();
   noStreamEl?.classList.remove('visible');
   if (loaderTextEl) loaderTextEl.textContent = useFallback ? 'Switching to backup feed…' : 'Establishing feed…';
   loaderEl?.classList.remove('hidden');
+
+  if (resolved.provider === 'timstreams') {
+    try {
+      const response = await fetch(`https://tim-streams.com/api/watch/${encodeURIComponent(resolved.id)}`, { signal: AbortSignal.timeout(10000) });
+      if (!response.ok) throw new Error('Provider unavailable');
+      const player = extractTimstreamsPlayer(await response.json(), resolved.id);
+      if (!player) throw new Error('No permitted player');
+      if (token !== activeToken || document.getElementById('partialOutageStage')) return;
+      targetUrl = player;
+    } catch {
+      if (token !== activeToken) return;
+      loaderEl?.classList.add('hidden');
+      if (noStreamTitleEl) noStreamTitleEl.textContent = 'Feed unavailable';
+      if (noStreamTextEl) noStreamTextEl.textContent = 'The TimStreams player could not be loaded. Please try again later.';
+      noStreamEl?.classList.add('visible');
+      return;
+    }
+  }
 
   const frame = makeStreamIframe(targetUrl, resolved.title);
   let settled = false;
@@ -130,7 +148,7 @@ function mountStream(useFallback = false): void {
   frame.addEventListener('error', () => {
     if (token !== activeToken) return;
     if (!useFallback && resolved.fallbackUrl && resolved.fallbackUrl !== resolved.embedUrl) {
-      mountStream(true);
+      void mountStream(true);
       return;
     }
     settled = true;
@@ -156,8 +174,8 @@ if (!resolved) {
   if (titleEl) titleEl.textContent = resolved.title;
   if (metaEl) metaEl.textContent = resolved.subtitle;
 
-  void initPageGate().then(() => mountStream(false));
+  void initPageGate().then(() => { void mountStream(false); });
 }
 
-reloadBtn?.addEventListener('click', () => mountStream(false));
-retryBtn?.addEventListener('click', () => mountStream(false));
+reloadBtn?.addEventListener('click', () => { void mountStream(false); });
+retryBtn?.addEventListener('click', () => { void mountStream(false); });
