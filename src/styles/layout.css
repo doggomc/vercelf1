@@ -1983,3 +1983,8 @@ a.tp-mini-who:hover .tp-mini-name { text-decoration: underline; text-underline-o
 @media (max-width: 560px) {
   .dp-table thead th:first-child, .dp-table tbody td:first-child { padding-left: 8px; padding-right: 8px; }
 }
+/* Reserve a fixed flag gutter in every race cell, with a matching gutter on
+   the other side so race names stay centered under the heading. */
+.dp-gp { display: grid; grid-template-columns: 20px minmax(0, 1fr) 20px; width: 100%; gap: 6px; }
+.dp-gp .flag { grid-column: 1; }
+.dp-gp > span { grid-column: 2; text-align: center; }
