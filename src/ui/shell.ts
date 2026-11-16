@@ -4,7 +4,6 @@ type ShellOptions = {
   transitions?: boolean;
 };
 
-const prefetched = new Set<string>();
 const pathKey = (p: string) => p.replace(/\/index\.html$/, '/').replace(/\.html$/, '').replace(/\/+$/, '') || '/';
 
 function crossPageHref(target: EventTarget | null): string | null {
@@ -12,16 +11,6 @@ function crossPageHref(target: EventTarget | null): string | null {
   const raw = a?.getAttribute('href') || '';
   if (!a || !raw || raw[0] === '#' || (a.target && a.target !== '_self') || a.hasAttribute('download') || a.origin !== location.origin) return null;
   return pathKey(a.pathname) === pathKey(location.pathname) && a.search === location.search ? null : a.pathname + a.search + a.hash;
-}
-
-function prefetch(e: Event): void {
-  const href = crossPageHref(e.target)?.split('#')[0];
-  if (!href || prefetched.has(href) || (navigator as { connection?: { saveData?: boolean } }).connection?.saveData) return;
-  prefetched.add(href);
-  const link = document.createElement('link');
-  link.rel = 'prefetch';
-  link.href = href;
-  document.head.appendChild(link);
 }
 
 /** Map standalone detail routes to their parent navigation section. */
@@ -95,8 +84,6 @@ export function initShell(options: ShellOptions = {}): void {
   if (nav || document.body.dataset.page === 'cockpit') {
     const s = document.createElement('script'); s.type = 'module'; s.src = import.meta.env.DEV ? '/src/features/session-island.ts' : '/island.js'; document.head.append(s);
   }
-  addEventListener('pointerdown', prefetch, { passive: true });
-  document.querySelector('.nav')?.addEventListener('pointerover', prefetch, { passive: true });
   if (nav) {
     bindNav();
     void import('../features/page-gate').then((m) => m.initPageGate());

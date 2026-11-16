@@ -148,6 +148,18 @@ assert(existsSync('dist/assets/flags/it-40.png'), 'flags are self-hosted; assets
 /* The racing number falls back to Archivo without a word if this file is absent. */
 assert(existsSync('dist/assets/fonts/ZenDots-latin.woff2'), 'the Zen Dots face for racing numbers is missing from dist');
 assert(readFileSync('dist/fonts.css', 'utf8').includes("font-family: 'Zen Dots'"), 'fonts.css no longer declares Zen Dots');
+// Every preloaded font must exactly match a CSS URL to avoid a second download.
+for (const page of ['index.html', 'schedule.html', 'grand-prix.html', 'cockpit.html', 'drivers.html', 'teams.html']) {
+  const html = readFileSync(`dist/${page}`, 'utf8');
+  const cssPath = html.match(/href="(\/font-cache\/fonts-[a-f0-9]+\.css)"/)?.[1];
+  assert(cssPath && existsSync(`dist${cssPath}`), `${page} is missing the versioned font stylesheet`);
+  const css = readFileSync(`dist${cssPath}`, 'utf8');
+  for (const match of html.matchAll(/href="(\/font-cache\/[^" ]+\.woff2)"/g)) {
+    assert(existsSync(`dist${match[1]}`), `${page} has a missing preloaded font`);
+    assert(css.includes(match[1]), `${page} font preload and stylesheet disagree`);
+  }
+}
+
 for (const page of PAGES) {
   const html = readFileSync(`dist/${page}`, 'utf8');
   assert(!html.includes('/src/'), `Unbuilt source reference in ${page}`);

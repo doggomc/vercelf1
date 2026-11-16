@@ -5,7 +5,7 @@ import { grandPrixPages } from './scripts/grand-prix-pages';
 import { resolve, extname, join, relative, sep } from 'node:path';
 import { createReadStream } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { existsSync, readdirSync, readFileSync, statSync, cpSync, writeFileSync, unlinkSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync, cpSync, writeFileSync, unlinkSync, mkdirSync } from 'node:fs';
 
 /* Static files live in the repo root, not in a public/ folder:
    - assets/      photos, fonts, icons — served at /assets/*
@@ -309,9 +309,52 @@ function dedupeRootAssets(): Plugin {
   };
 }
 
+/** Publish content-addressed fonts and stylesheet. The HTML and CSS references
+ * use the same versioned font URLs, preserving preload reuse and allowing safe
+ * long-lived browser caching without making changed files stale. */
+function versionedFonts(): Plugin {
+  return { name: 'freef1-versioned-fonts', apply: 'build', closeBundle: { order: 'post', handler() {
+    const fontDir = join(DIST_DIR, 'assets/fonts');
+    const output = join(DIST_DIR, 'font-cache');
+    const cssFile = join(DIST_DIR, 'fonts.css');
+    if (!existsSync(cssFile)) throw new Error('Missing fonts.css');
+    const versions = new Map<string, string>();
+    for (const file of readdirSync(fontDir)) {
+      if (!/\.woff2$/i.test(file)) continue;
+      const data = readFileSync(join(fontDir, file));
+      const hash = createHash('sha256').update(data).digest('hex').slice(0, 16);
+      const version = file.replace(/\.woff2$/i, `-${hash}.woff2`);
+      versions.set(`/assets/fonts/${file}`, `/font-cache/${version}`);
+    }
+    // Only files referenced by CSS are included; missing references fail the build.
+    let css = readFileSync(cssFile, 'utf8').replace(/\/assets\/fonts\/[a-z0-9.-]+\.woff2/gi, (path) => {
+      const versioned = versions.get(path);
+      if (!versioned) throw new Error(`Missing font: ${path}`);
+      return versioned;
+    });
+    const hash = createHash('sha256').update(css).digest('hex').slice(0, 16);
+    const stylesheet = `/font-cache/fonts-${hash}.css`;
+    mkdirSync(output, { recursive: true });
+    writeFileSync(join(DIST_DIR, stylesheet.slice(1)), css);
+    for (const [original, versioned] of versions) cpSync(join(DIST_DIR, original.slice(1)), join(DIST_DIR, versioned.slice(1)));
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) { if (entry.name !== 'assets' && entry.name !== 'bundles' && entry.name !== 'font-cache') walk(path); continue; }
+        if (!entry.name.endsWith('.html')) continue;
+        const original = readFileSync(path, 'utf8');
+        let html = original.replaceAll('href="/fonts.css"', `href="${stylesheet}"`);
+        for (const [from, to] of versions) html = html.replaceAll(`href="${from}"`, `href="${to}"`);
+        if (html !== original) writeFileSync(path, html);
+      }
+    };
+    walk(DIST_DIR);
+  }}};
+}
+
 export default defineConfig({
   publicDir: false,
-  plugins: [configuredBackend(), serveStaticFolders(), dedupeRootAssets(), driverPages(), teamPages(), grandPrixPages()],
+  plugins: [configuredBackend(), serveStaticFolders(), dedupeRootAssets(), driverPages(), teamPages(), grandPrixPages(), versionedFonts()],
   server: {
     host: '0.0.0.0', port: 4173,
     allowedHosts: ['.e2b.app', 'localhost'],
