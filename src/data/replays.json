@@ -1,13 +1,181 @@
 {
- "generatedAt": "2026-10-30T21:29:49.056Z",
+ "generatedAt": "2026-11-18T20:39:28.147Z",
  "source": "https://fullraces.com",
  "seasons": [
   2026,
   2025
  ],
- "count": 278,
- "withPlayers": 198,
+ "count": 288,
+ "withPlayers": 208,
  "items": [
+  {
+   "slug": "race-f1-2026-sao-paulo-brazil-grand-prix-full-race-replay-november-8-2026-formula-1",
+   "url": "https://fullraces.com/race-f1-2026-sao-paulo-brazil-grand-prix-full-race-replay-november-8-2026-formula-1",
+   "season": 2026,
+   "session": "Race",
+   "sessionKey": "race",
+   "event": "Sao Paulo Brazil Grand Prix",
+   "date": "2026-11-08",
+   "players": [
+    {
+     "provider": "OK.ru 1080p",
+     "url": "https://ok.ru/videoembed/16803021851308"
+    },
+    {
+     "provider": "SkySports",
+     "url": "https://ok.ru/videoembed/16813357075116?nochat=1&autoplay=1"
+    }
+   ],
+   "fetchedAt": "2026-11-18T20:39:29.131Z"
+  },
+  {
+   "slug": "3rd-practice-f1-2026-sao-paulo-brazil-grand-prix-full-race-replay-november-7-2026-formula-1",
+   "url": "https://fullraces.com/3rd-practice-f1-2026-sao-paulo-brazil-grand-prix-full-race-replay-november-7-2026-formula-1",
+   "season": 2026,
+   "session": "Practice 3",
+   "sessionKey": "3rd-practice",
+   "event": "Sao Paulo Brazil Grand Prix",
+   "date": "2026-11-07",
+   "players": [
+    {
+     "provider": "OK.ru 1080p",
+     "url": "https://ok.ru/videoembed/16093668379283"
+    }
+   ],
+   "fetchedAt": "2026-11-18T20:39:32.977Z"
+  },
+  {
+   "slug": "qualifying-f1-2026-sao-paulo-brazil-grand-prix-full-race-replay-november-7-2026-formula-1",
+   "url": "https://fullraces.com/qualifying-f1-2026-sao-paulo-brazil-grand-prix-full-race-replay-november-7-2026-formula-1",
+   "season": 2026,
+   "session": "Qualifying",
+   "sessionKey": "qualifying",
+   "event": "Sao Paulo Brazil Grand Prix",
+   "date": "2026-11-07",
+   "players": [
+    {
+     "provider": "OK.ru 1080p",
+     "url": "https://ok.ru/videoembed/16095922621075"
+    }
+   ],
+   "fetchedAt": "2026-11-18T20:39:30.817Z"
+  },
+  {
+   "slug": "1st-practice-f1-2026-sao-paulo-brazil-grand-prix-full-race-replay-november-6-2026-formula-1",
+   "url": "https://fullraces.com/1st-practice-f1-2026-sao-paulo-brazil-grand-prix-full-race-replay-november-6-2026-formula-1",
+   "season": 2026,
+   "session": "Practice 1",
+   "sessionKey": "1st-practice",
+   "event": "Sao Paulo Brazil Grand Prix",
+   "date": "2026-11-06",
+   "players": [
+    {
+     "provider": "OK.ru 1080p",
+     "url": "https://ok.ru/videoembed/16080675867283"
+    }
+   ],
+   "fetchedAt": "2026-11-18T20:39:37.254Z"
+  },
+  {
+   "slug": "2nd-practice-f1-2026-sao-paulo-brazil-grand-prix-full-race-replay-november-6-2026-formula-1",
+   "url": "https://fullraces.com/2nd-practice-f1-2026-sao-paulo-brazil-grand-prix-full-race-replay-november-6-2026-formula-1",
+   "season": 2026,
+   "session": "Practice 2",
+   "sessionKey": "2nd-practice",
+   "event": "Sao Paulo Brazil Grand Prix",
+   "date": "2026-11-06",
+   "players": [
+    {
+     "provider": "OK.ru 1080p",
+     "url": "https://ok.ru/videoembed/16081852959379"
+    }
+   ],
+   "fetchedAt": "2026-11-18T20:39:35.130Z"
+  },
+  {
+   "slug": "race-f1-2026-mexico-city-grand-prix-full-race-replay-november-1-2026-formula-1",
+   "url": "https://fullraces.com/race-f1-2026-mexico-city-grand-prix-full-race-replay-november-1-2026-formula-1",
+   "season": 2026,
+   "session": "Race",
+   "sessionKey": "race",
+   "event": "Mexico City Grand Prix",
+   "date": "2026-11-01",
+   "players": [
+    {
+     "provider": "F1TV 1080p",
+     "url": "https://ok.ru/videoembed/16714114796204"
+    },
+    {
+     "provider": "SkySports",
+     "url": "https://ok.ru/videoembed/16723911707308?nochat=1&autoplay=1"
+    }
+   ],
+   "fetchedAt": "2026-11-18T20:39:40.481Z"
+  },
+  {
+   "slug": "3rd-practice-f1-2026-mexico-city-grand-prix-full-race-replay-october-31-2026-formula-1",
+   "url": "https://fullraces.com/3rd-practice-f1-2026-mexico-city-grand-prix-full-race-replay-october-31-2026-formula-1",
+   "season": 2026,
+   "session": "Practice 3",
+   "sessionKey": "3rd-practice",
+   "event": "Mexico City Grand Prix",
+   "date": "2026-10-31",
+   "players": [
+    {
+     "provider": "OK.ru 1080p",
+     "url": "https://ok.ru/videoembed/16701288745644"
+    }
+   ],
+   "fetchedAt": "2026-11-18T20:39:45.033Z"
+  },
+  {
+   "slug": "qualifying-f1-2026-mexico-city-grand-prix-full-race-replay-october-31-2026-formula-1",
+   "url": "https://fullraces.com/qualifying-f1-2026-mexico-city-grand-prix-full-race-replay-october-31-2026-formula-1",
+   "season": 2026,
+   "session": "Qualifying",
+   "sessionKey": "qualifying",
+   "event": "Mexico City Grand Prix",
+   "date": "2026-10-31",
+   "players": [
+    {
+     "provider": "OK.ru 1080p",
+     "url": "https://ok.ru/videoembed/16702161554092"
+    }
+   ],
+   "fetchedAt": "2026-11-18T20:39:42.841Z"
+  },
+  {
+   "slug": "1st-practice-f1-2026-mexico-city-grand-prix-full-race-replay-october-30-2026-formula-1",
+   "url": "https://fullraces.com/1st-practice-f1-2026-mexico-city-grand-prix-full-race-replay-october-30-2026-formula-1",
+   "season": 2026,
+   "session": "Practice 1",
+   "sessionKey": "1st-practice",
+   "event": "Mexico City Grand Prix",
+   "date": "2026-10-30",
+   "players": [
+    {
+     "provider": "OK.ru 1080p",
+     "url": "https://ok.ru/videoembed/16689497574060"
+    }
+   ],
+   "fetchedAt": "2026-11-18T20:39:49.085Z"
+  },
+  {
+   "slug": "2nd-practice-f1-2026-mexico-city-grand-prix-full-race-replay-october-30-2026-formula-1",
+   "url": "https://fullraces.com/2nd-practice-f1-2026-mexico-city-grand-prix-full-race-replay-october-30-2026-formula-1",
+   "season": 2026,
+   "session": "Practice 2",
+   "sessionKey": "2nd-practice",
+   "event": "Mexico City Grand Prix",
+   "date": "2026-10-30",
+   "players": [
+    {
+     "provider": "OK.ru 1080p",
+     "url": "https://ok.ru/videoembed/16689865034412"
+    }
+   ],
+   "fetchedAt": "2026-11-18T20:39:47.370Z"
+  },
   {
    "slug": "race-f1-2026-united-states-grand-prix-full-race-replay-october-25-2026-formula-1",
    "url": "https://fullraces.com/race-f1-2026-united-states-grand-prix-full-race-replay-october-25-2026-formula-1",
@@ -1793,7 +1961,7 @@
    "event": "Japanese Grand Prix",
    "date": "2026-03-28",
    "players": [],
-   "fetchedAt": "2026-10-30T21:26:26.788Z"
+   "fetchedAt": "2026-11-18T20:39:50.740Z"
   },
   {
    "slug": "qualifying-f1-2026-japanese-grand-prix-full-race-replay-march-28-2026-formula-1",
@@ -1804,7 +1972,7 @@
    "event": "Japanese Grand Prix",
    "date": "2026-03-28",
    "players": [],
-   "fetchedAt": "2026-10-30T21:26:28.897Z"
+   "fetchedAt": "2026-11-18T20:39:52.418Z"
   },
   {
    "slug": "1st-practice-f1-2026-japanese-grand-prix-full-race-replay-march-27-2026-formula-1",
@@ -1815,7 +1983,7 @@
    "event": "Japanese Grand Prix",
    "date": "2026-03-27",
    "players": [],
-   "fetchedAt": "2026-10-30T21:26:32.180Z"
+   "fetchedAt": "2026-11-18T20:39:56.105Z"
   },
   {
    "slug": "2nd-practice-f1-2026-japanese-grand-prix-full-race-replay-march-27-2026-formula-1",
@@ -1826,7 +1994,7 @@
    "event": "Japanese Grand Prix",
    "date": "2026-03-27",
    "players": [],
-   "fetchedAt": "2026-10-30T21:26:30.563Z"
+   "fetchedAt": "2026-11-18T20:39:54.086Z"
   },
   {
    "slug": "drivers-press-conference-f1-2026-japanese-grand-prix-full-replay-march-26-2026-formula-1",
@@ -3141,7 +3309,7 @@
    "event": "Hungarian Grand Prix",
    "date": "2025-08-03",
    "players": [],
-   "fetchedAt": "2026-10-30T21:27:06.852Z"
+   "fetchedAt": "2026-11-18T20:39:57.747Z"
   },
   {
    "slug": "3rd-practice-f1-2025-hungarian-grand-prix-full-race-replay-august-2-2025-formula-1",
@@ -3152,7 +3320,7 @@
    "event": "Hungarian Grand Prix",
    "date": "2025-08-02",
    "players": [],
-   "fetchedAt": "2026-10-30T21:27:08.434Z"
+   "fetchedAt": "2026-11-18T20:39:59.431Z"
   },
   {
    "slug": "qualifying-f1-2025-hungarian-grand-prix-full-race-replay-august-2-2025-formula-1",
@@ -3163,7 +3331,7 @@
    "event": "Hungarian Grand Prix",
    "date": "2025-08-02",
    "players": [],
-   "fetchedAt": "2026-10-30T21:27:10.619Z"
+   "fetchedAt": "2026-11-18T20:40:01.108Z"
   },
   {
    "slug": "drivers-press-conference-f1-2025-hungarian-grand-prix-full-replay-july-31-2025-formula-1",
@@ -3190,7 +3358,7 @@
    "event": "Belgium Grand Prix",
    "date": "2025-07-27",
    "players": [],
-   "fetchedAt": "2026-10-30T21:27:13.830Z"
+   "fetchedAt": "2026-11-18T20:40:02.815Z"
   },
   {
    "slug": "qualifying-f1-2025-belgium-grand-prix-full-race-replay--july-26-2025-formula-1",
@@ -3201,7 +3369,7 @@
    "event": "Belgium Grand Prix",
    "date": "2025-07-26",
    "players": [],
-   "fetchedAt": "2026-10-30T21:27:17.559Z"
+   "fetchedAt": "2026-11-18T20:40:07.647Z"
   },
   {
    "slug": "sprint-f1-2025-belgium-grand-prix-full-race-replay-july-26-2025-formula-1",
@@ -3212,7 +3380,7 @@
    "event": "Belgium Grand Prix",
    "date": "2025-07-26",
    "players": [],
-   "fetchedAt": "2026-10-30T21:27:15.480Z"
+   "fetchedAt": "2026-11-18T20:40:04.546Z"
   },
   {
    "slug": "1st-practice-f1-2025-hungarian-grand-prix-full-race-replay-july-25-2025-formula-1",
@@ -3223,7 +3391,7 @@
    "event": "Hungarian Grand Prix",
    "date": "2025-07-25",
    "players": [],
-   "fetchedAt": "2026-10-30T21:27:21.053Z"
+   "fetchedAt": "2026-11-18T20:40:11.962Z"
   },
   {
    "slug": "1st-practice-f1-2025-belgium-grand-prix-full-race-replay-july-25-2025-formula-1",
@@ -3234,7 +3402,7 @@
    "event": "Belgium Grand Prix",
    "date": "2025-07-25",
    "players": [],
-   "fetchedAt": "2026-10-30T21:27:24.932Z"
+   "fetchedAt": "2026-11-18T20:40:15.784Z"
   },
   {
    "slug": "2nd-practice-f1-2025-hungarian-grand-prix-full-race-replay-july-25-2025-formula-1",
@@ -3245,7 +3413,7 @@
    "event": "Hungarian Grand Prix",
    "date": "2025-07-25",
    "players": [],
-   "fetchedAt": "2026-10-30T21:27:19.462Z"
+   "fetchedAt": "2026-11-18T20:40:09.831Z"
   },
   {
    "slug": "sprint-qualifying-f1-2025-belgium-grand-prix-full-race-replay-july-25-2025-formula-1",
@@ -3256,7 +3424,7 @@
    "event": "Belgium Grand Prix",
    "date": "2025-07-25",
    "players": [],
-   "fetchedAt": "2026-10-30T21:27:23.278Z"
+   "fetchedAt": "2026-11-18T20:40:13.602Z"
   },
   {
    "slug": "drivers-press-conference-f1-2025-belgium-grand-prix-full-replay-july-24-2025-formula-1",

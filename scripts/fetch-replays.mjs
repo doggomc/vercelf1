@@ -73,7 +73,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function get(url) {
   try {
-    const { stdout } = await run('curl', ['-sL', '--max-time', '25', '-A', UA, url], { maxBuffer: 32 * 1024 * 1024 });
+    const { stdout } = await run('curl', ['-fsSL', '--max-time', '25', '-A', UA, url], { maxBuffer: 32 * 1024 * 1024 });
     if (stdout && stdout.length > 200) return stdout;
   } catch { /* fall through to fetch */ }
   const response = await fetch(url, { headers: { 'User-Agent': UA, Accept: '*/*' } });
@@ -160,18 +160,21 @@ function providerFromCaption(before) {
 function playersFromPage(html) {
   const players = [];
   const seen = new Set();
-  for (const match of html.matchAll(/<iframe[^>]*?src=["']([^"']+)["']/gi)) {
-    const raw = match[1].trim();
+  for (const match of html.matchAll(/<(?:iframe[^>]*?src|a[^>]*?href)=["']([^"']+)["']/gi)) {
+    const raw = match[1].trim().replace(/&amp;/gi, '&');
     const absolute = raw.startsWith('//') ? 'https:' + raw : raw;
     let parsed;
     try { parsed = new URL(absolute); } catch { continue; }
     if (parsed.protocol !== 'https:') continue;
     const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
     if (!HOSTS.some((entry) => host === entry || host.endsWith('.' + entry))) continue;
-    if (seen.has(absolute)) continue;
-    seen.add(absolute);
+    if (host === 'ok.ru' && !/^\/videoembed\/\d+$/.test(parsed.pathname)) continue;
+    if (match[0].toLowerCase().startsWith('<a') && host !== 'ok.ru') continue;
+    const identity = `${host}${parsed.pathname}`;
+    if (seen.has(identity)) continue;
+    seen.add(identity);
     const provider = providerFromCaption(html.slice(Math.max(0, match.index - 700), match.index)) || host;
-    players.push({ provider, url: absolute });
+    players.push({ provider, url: parsed.href });
   }
   return players;
 }
@@ -208,6 +211,7 @@ async function main() {
   const xml = await get(SITEMAP);
   const slugs = slugsFromSitemap(xml);
   console.log(`sitemap: ${slugs.length} replay sessions`);
+  if (!slugs.length) throw new Error('Sitemap yielded no replay sessions; retaining existing index');
 
   if (args.has('--health')) {
     /* Report (and optionally prune) players that ok.ru has taken down. */
@@ -261,18 +265,32 @@ async function main() {
     return previous ? { ...base, players: previous.players || [], fetchedAt: previous.fetchedAt || null } : { ...base, players: [], fetchedAt: null };
   });
 
+  // Retain previously indexed sessions if the source sitemap temporarily drops them.
+  const indexed = new Set(items.map(item => item.slug));
+  for (const item of (existing.items || [])) if (!indexed.has(item.slug)) items.push(item);
+
   let fetched = 0;
   if (!SITEMAP_ONLY) {
     const pending = items
-      .filter((item) => FETCH_ALL || !item.players.length)
+      .filter((item) => {
+        if (FETCH_ALL) return true;
+        const age = Date.now() - Date.parse(item.date || '');
+        const last = Date.parse(item.fetchedAt || '') || 0;
+        return Number.isFinite(age) && age >= -86400000 && age < 30 * 86400000 && (!last || Date.now() - last > 12 * 3600000);
+      })
       .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
       .slice(0, MAX_PAGES_PER_RUN);
     console.log(`players to fetch: ${pending.length}${pending.length === MAX_PAGES_PER_RUN ? ' (capped, re-run for more)' : ''}`);
     for (const item of pending) {
       try {
         const html = await get(BASE + item.slug);
-        item.players = playersFromPage(html);
-        item.fetchedAt = new Date().toISOString();
+        const fresh = playersFromPage(html);
+        if (fresh.length && JSON.stringify(fresh) !== JSON.stringify(item.players)) {
+          item.players = fresh;
+          item.fetchedAt = new Date().toISOString();
+        } else if (!item.fetchedAt && !item.players.length) {
+          item.fetchedAt = new Date().toISOString();
+        }
         fetched++;
         process.stdout.write(`\r  ${fetched}/${pending.length} ${item.date || ''} ${item.session} ${item.players.length} player(s)          `);
       } catch (error) {
@@ -294,6 +312,7 @@ async function main() {
     items
   };
   mkdirSync(dirname(OUT), { recursive: true });
+  if (JSON.stringify(items) === JSON.stringify(existing.items || [])) { console.log('No changes to replay index'); return; }
   writeFileSync(OUT, JSON.stringify(payload, null, 1) + '\n');
   console.log(`wrote ${OUT}`);
   console.log(`sessions: ${payload.count} | with players: ${payload.withPlayers} | seasons: ${seasons.join(', ')}`);
