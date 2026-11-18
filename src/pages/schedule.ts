@@ -31,6 +31,24 @@ function scheduleFlag(code: string): string {
   return `<span class="flag sc-flag sc-flag-atlas" aria-hidden="true" style="background-image:url('${SCHEDULE_FLAG_ATLAS}');background-size:${80 * scale}px ${FLAG_CODES.length * 80 * scale}px;background-position:${x}px ${y}px"></span>`;
 }
 
+// Preload thumbnails near the viewport, not the entire calendar. Keep a generous
+// buffer for fast scrolling and load immediately on older browsers.
+let circuitObserver: IntersectionObserver | undefined;
+function loadNearbyCircuits(): void {
+  circuitObserver?.disconnect();
+  const images = document.querySelectorAll<HTMLImageElement>('img[data-circuit-src]');
+  const load = (img: HTMLImageElement) => {
+    if (img.dataset.circuitSrc) { img.src = img.dataset.circuitSrc; delete img.dataset.circuitSrc; }
+  };
+  if (!('IntersectionObserver' in window)) { images.forEach(load); return; }
+  circuitObserver = new IntersectionObserver(entries => entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const img = entry.target as HTMLImageElement;
+    load(img); circuitObserver?.unobserve(img);
+  }), { rootMargin: '1000px 0px' });
+  images.forEach(img => circuitObserver?.observe(img));
+}
+
 type WinnerInfo = {
   familyName: string;
   fullName: string;
@@ -222,7 +240,7 @@ function render(): void {
             <span class="sc-rnd-num num">${event.round}</span>
           </div>
           <div class="sc-thumb">
-            <img src="/assets/circuits/${event.round}.webp" alt="" width="144" height="81" loading="lazy" decoding="async">
+            <img data-circuit-src="/assets/circuits/${event.round}.webp" alt="" width="144" height="81" decoding="async">
           </div>
           <div class="sc-main">
             <div class="sc-title-row">
@@ -265,6 +283,7 @@ function render(): void {
     }
     featured.hidden = !original;
   }
+  loadNearbyCircuits();
 }
 
 function toggleRound(event: MouseEvent): void {

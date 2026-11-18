@@ -1,3 +1,4 @@
+@import './outage.css';
 .notice-dialog {
   position: fixed;
   inset: 0;

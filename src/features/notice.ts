@@ -1,4 +1,3 @@
-import '../styles/outage.css';
 import '../styles/notice.css';
 
 /** A native modal gives the notice keyboard focus management and Escape-to-close. */

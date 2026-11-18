@@ -23,7 +23,12 @@ describe('CDN request efficiency', () => {
     expect(path && existsSync(`.${path}`)).toBe(true);
     const map = source.match(/FLAG_HEIGHTS: Record<string, number> = \{([^}]+)\}/)?.[1] || '';
     for (const code of ROUND_FLAGS) expect(map).toMatch(new RegExp(`\\b${code}:`));
-    expect(source).toContain('loading="lazy"');
+    expect(source).toContain('data-circuit-src');
+    expect(source).toContain("rootMargin: '1000px 0px'");
+  });
+  it('bundles notice and outage styles into one on-demand stylesheet', () => {
+    expect(readFileSync('src/styles/notice.css', 'utf8')).toContain("@import './outage.css'");
+    expect(readFileSync('src/features/notice.ts', 'utf8')).not.toContain("import '../styles/outage.css'");
   });
   it('loads Weelo metadata from the configured backend rather than the frontend origin', () => {
     const source = readFileSync('src/features/catalogues.ts', 'utf8');
