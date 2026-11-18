@@ -19,7 +19,7 @@ import { $ } from './services/dom';
 import { schedule, type RaceEvent, type Session } from './data/schedule';
 import { mapPool } from './services/pool';
 import type { Catalogues } from './features/catalogues';
-import { staleSession, canonicalSessionSlug } from './features/session-guard';
+import { staleSession, canonicalSessionSlug, autoPpvMatchesSession } from './features/session-guard';
 /* ═══════════════════════════════════════════════════════════════════════════
    FreeF1 - Formula 1 Live Companion
    Client Application Logic
@@ -429,7 +429,7 @@ function taifoodUsable(url: string, source: StreamSource): boolean {
   if (!cataloguesReady) return true;     // before the list answers, judge nothing
   const list = catalogues.taifood || {};
   // The PPV chip's own address comes from the PPV feed, not from the substream channel list.
-  if (source.id === 'ppv' || source.id === 'ppv-stripped') return true;
+  if (source.id === 'ppv' || source.id === 'ppv-stripped' || (source.managedAuto && source.autoProvider === 'ppv')) return true;
   return taifoodPublishesId(url, list);
 }
 
@@ -777,7 +777,7 @@ let sourceConfigKnown = false;
 let disabledSourceIds = new Set<string>();
 let autoWindowState: 'unknown' | 'active' | 'closed' | 'unavailable' = 'unknown';
 let autoWindowStart: number | null = null;
-const sourceEnabled = (s) => sourceConfigKnown && Boolean(s) && !disabledSourceIds.has(s.id) && !(relaysDisabled && ((s.stripped && s.id !== 'sky-uk') || s.links?.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url)))) && (autoStreamsActive ? Boolean(s.managedAuto) : !s.managedAuto && !s.hidden);
+const sourceEnabled = (s) => sourceConfigKnown && Boolean(s) && !disabledSourceIds.has(s.id) && !(relaysDisabled && ((s.stripped && s.id !== 'sky-uk') || s.links?.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url)))) && (autoStreamsActive ? Boolean(s.managedAuto) && (s.autoProvider !== 'ppv' || autoPpvMatchesSession(s.label, s.links?.[0]?.url, currentSession?.slug)) : !s.managedAuto && !s.hidden);
 
 /* ═══ Session key ═══
    Every source URL is derived from the live event + session, and the key is stamped onto feeds

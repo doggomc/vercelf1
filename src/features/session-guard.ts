@@ -28,3 +28,20 @@ export function staleSession(uri: unknown, sessionSlug: string): boolean {
   if (!match || !wanted) return false;
   return canonicalSessionSlug(match[2]) !== wanted;
 }
+
+/** Match session-specific automatic PPV feeds to the session selected in the
+ * cockpit. Unrecognised entries fail closed rather than opening a stale race. */
+export function autoPpvMatchesSession(label: unknown, url: unknown, session: unknown): boolean {
+  const text = `${String(label || '')} ${String(url || '')}`.toLowerCase().replace(/[_/]+/g, ' ');
+  const patterns: Array<[RegExp, string]> = [
+    [/\b(?:sprint[ -]+(?:qualifying|shootout)|shootout|sprint[ -]*q)\b/, 'sprint-qualifying'],
+    [/\b(?:free[ -]+)?practice[ -]*1\b|\bfp[ -]*1\b/, 'fp1'],
+    [/\b(?:free[ -]+)?practice[ -]*2\b|\bfp[ -]*2\b/, 'fp2'],
+    [/\b(?:free[ -]+)?practice[ -]*3\b|\bfp[ -]*3\b/, 'fp3'],
+    [/\b(?:qualifying|quali)\b/, 'qualifying'],
+    [/\bsprint\b/, 'sprint'],
+    [/\brace\b/, 'race'],
+  ];
+  const match = patterns.find(([regex]) => regex.test(text));
+  return Boolean(match && match[1] === canonicalSessionSlug(session));
+}
