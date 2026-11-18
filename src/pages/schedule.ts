@@ -16,6 +16,21 @@ import {
 
 initShell();
 
+// One lossless atlas replaces separate flag requests on the schedule only.
+// Original 80px images are kept untouched in 80px cells; background sizing
+// reproduces the existing 20×15 object-fit: cover crop for each aspect ratio.
+const SCHEDULE_FLAG_ATLAS = '/assets/flags/schedule-flags-cb40f82c14f86942.png';
+const FLAG_HEIGHTS: Record<string, number> = { ae:40, at:53, au:40, az:40, be:69, br:56, ca:40, cn:53, es:53, gb:40, hu:40, it:53, jp:53, mc:64, mx:46, my:40, nl:53, qa:31, sg:53, us:42 };
+const FLAG_CODES = Object.keys(FLAG_HEIGHTS);
+function scheduleFlag(code: string): string {
+  const index = FLAG_CODES.indexOf(code), height = FLAG_HEIGHTS[code];
+  if (index < 0 || !height) return flagHtml(code, 'flag sc-flag');
+  const scale = Math.max(20 / 80, 15 / height);
+  const x = (20 - 80 * scale) / 2;
+  const y = -index * 80 * scale + (15 - height * scale) / 2;
+  return `<span class="flag sc-flag sc-flag-atlas" aria-hidden="true" style="background-image:url('${SCHEDULE_FLAG_ATLAS}');background-size:${80 * scale}px ${FLAG_CODES.length * 80 * scale}px;background-position:${x}px ${y}px"></span>`;
+}
+
 type WinnerInfo = {
   familyName: string;
   fullName: string;
@@ -207,11 +222,11 @@ function render(): void {
             <span class="sc-rnd-num num">${event.round}</span>
           </div>
           <div class="sc-thumb">
-            <img src="/assets/circuits/${event.round}.webp" alt="" width="144" height="81" loading="${event.round <= 6 ? 'eager' : 'lazy'}" decoding="async">
+            <img src="/assets/circuits/${event.round}.webp" alt="" width="144" height="81" loading="lazy" decoding="async">
           </div>
           <div class="sc-main">
             <div class="sc-title-row">
-              ${flagHtml(roundFlagCode(event.round), 'flag sc-flag')}
+              ${scheduleFlag(roundFlagCode(event.round))}
               <h3 class="sc-gp-name">${esc(title)}</h3>
               ${event.sprint ? '<span class="sc-lozenge sc-lozenge-sprint">Sprint</span>' : ''}
             </div>

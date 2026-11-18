@@ -98,6 +98,15 @@
       ]
     },
     {
+      "source": "/assets/flags/schedule-flags-cb40f82c14f86942.png",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
       "source": "/island.js",
       "headers": [
         {

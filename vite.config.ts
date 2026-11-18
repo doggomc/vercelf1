@@ -383,6 +383,7 @@ export default defineConfig({
         // a cold-load request without adding the player to other pages.
         manualChunks(id) {
           const path = id.replaceAll('\\', '/');
+          if (/\/src\/(?:services\/weekend|data\/schedule)\.ts$/.test(path)) return 'weekend-data';
           if (/\/src\/interaction-guard\.ts$/.test(path)) return 'interaction-guard';
           if (/\/src\/types\/site-config\.ts$/.test(path)) return 'cockpit-support';
           if (/\/src\/data\/(?:driver-flags|flags)\.ts$/.test(path)) return 'flag-data';
