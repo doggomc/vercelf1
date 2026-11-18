@@ -9,6 +9,10 @@ import {
   buildAuraUrls,
   buildBintvUrls,
   buildNtvUrls,
+  buildMatchoraUrls,
+  buildLive24Urls,
+  parseMatchora,
+  parseLive24,
   parseNtvRaptor,
   parseBintvStreams,
   parseAuraEvents,
@@ -27,6 +31,24 @@ import {
 } from '../src/lib/other-streams';
 
 describe('Other streams non-F1 filtering & private cockpit resolution', () => {
+  it('adds only live non-F1 Matchora sports channel players', () => {
+    const now = 1900000000000;
+    const base = {id:'event1', home:'Team A', away:'Team B', sport:'Football', league:'League', kickoff:1899999000, live:true, finished:false, channels:[{id:'12345',name:'Sports HD',playing:true,dead:false},{id:'12346',name:'F1',playing:true}]};
+    const items = parseMatchora({events:[base, {...base,id:'future',kickoff:1900000001}, {...base,id:'f1',league:'Formula 1'}, {...base,id:'non-sport',sport:'Movies'}, {...base,id:'finished',finished:true}]},now);
+    expect(items).toHaveLength(1);
+    expect(items[0].embedUrl).toBe('https://matchora.pro/embed/channel/12345');
+    expect(parsePrivateCockpitParams(buildPrivateCockpitHref(items[0]).split('?')[1])?.embedUrl).toBe(items[0].embedUrl);
+    expect(buildMatchoraUrls('../unsafe')).toBeNull();
+  });
+  it('validates Live24 player URLs and excludes future and F1 events', () => {
+    const now = 1900000000000;
+    const event = {title:'Team A vs Team B', category:'Football', tournament:'League', live:true,date:now-1000,sources:[{url:'https://livelive24.st/live24.html?url=game-stream-1',channelName:'Stream 1'},{url:'https://evil.test/live24.html?url=bad'}]};
+    const items = parseLive24({success:true,live:[event,{...event,title:'Formula 1',date:now-1},{...event,date:now+1}]},now);
+    expect(items).toHaveLength(1);
+    expect(parsePrivateCockpitParams(buildPrivateCockpitHref(items[0]).split('?')[1])?.embedUrl).toBe(items[0].embedUrl);
+    expect(buildLive24Urls('../bad')).toBeNull();
+  });
+
   it('hides scheduled streams from the directory, including unconfirmed past starts', () => {
     const item = parseNtvRaptor({success:true,all:[{id:'ppv-2',title:'Teams',category:'Football',date:2000000000000,live:false,sources:[{url:'https://taifood-blog.asia/embed/soccer/match'}]}]}, 1900000000000)[0];
     expect(isDirectoryLive(item)).toBe(false);
@@ -35,7 +57,7 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
   });
 
   it('orders PPV, EMB and StreamFree first, with the remaining providers alphabetically', () => {
-    const labels = {ppv:'PPV', embdlol:'EMB', strmfree:'StreamFree', aura:'Aura Sports', bintv:'BinTV', ntv:'NTV Raptor', timstreams:'TimStreams', weelo:'Weelo', zlive:'ZLive'};
+    const labels = {matchora:'Matchora', live24:'Live24', ppv:'PPV', embdlol:'EMB', strmfree:'StreamFree', aura:'Aura Sports', bintv:'BinTV', ntv:'NTV Raptor', timstreams:'TimStreams', weelo:'Weelo', zlive:'ZLive'};
     const providers: Array<keyof typeof labels> = ['zlive','embdlol','aura','strmfree','ppv','bintv'];
     expect(providers.sort((a,b)=>compareStreamProviders(a,b,labels))).toEqual(['ppv','embdlol','strmfree','aura','bintv','zlive']);
   });

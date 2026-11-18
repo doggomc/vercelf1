@@ -1,6 +1,6 @@
 import { BACKEND_API } from '../config';
 
-export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams' | 'zlive' | 'aura' | 'bintv' | 'ntv';
+export type OtherStreamProvider = 'embdlol' | 'ppv' | 'weelo' | 'strmfree' | 'timstreams' | 'zlive' | 'aura' | 'bintv' | 'ntv' | 'matchora' | 'live24';
 
 /** Priority for directory headings and provider selector; remaining providers
  * retain alphabetical order by their display name. */
@@ -42,6 +42,8 @@ export interface OtherStreamsResult {
 
 const DEFAULT_BACKEND = BACKEND_API;
 const EMBDLOL_STRUCT_URL = 'https://api.embdlol.st/struct';
+const MATCHORA_URL = 'https://matchora.to/api/v1/schedule?watchable=1';
+const LIVE24_URL = 'https://ntv.cx/api/get-matches?server=falcon&type=both';
 const NTV_RAPTOR_URL = 'https://ntv.cx/api/get-matches?server=raptor&type=both';
 const NTV_CACHE_KEY = 'freef1-ntv-raptor-v1';
 const BINTV_EVENTS_URL = 'https://api.yosintv.fun/api/public/bintvjson';
@@ -85,6 +87,8 @@ const PROVIDER_COLORS: Record<OtherStreamProvider, string> = {
   aura: '#C1FF55',
   bintv: '#58B6E8',
   ntv: '#E3BC45',
+  matchora: '#E55F67',
+  live24: '#4B9DDE',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -820,6 +824,64 @@ export function parseNtvRaptor(payload: unknown, now = Date.now()): OtherStreamI
   return out;
 }
 
+/** Fantastic Soda's Matchora and Live24 feeds: keep only positively identified
+ * live sports, and build player URLs from constrained IDs rather than trusting URLs. */
+const SODA_SPORTS = /\b(?:football|soccer|basketball|hockey|cricket|tennis|golf|rugby|baseball|boxing|mma|ufc|wrestling|volleyball|handball|racing|motorsport|darts|snooker|cycling|curling|badminton|table tennis|lacrosse|futsal|american football|australian football|esports?)\b/i;
+export function buildMatchoraUrls(id: string): { embedUrl: string; fallbackUrl: string } | null {
+  if (!/^[0-9]{1,20}$/.test(id)) return null;
+  const url = `https://matchora.pro/embed/channel/${id}`;
+  return { embedUrl: url, fallbackUrl: url };
+}
+export function buildLive24Urls(id: string): { embedUrl: string; fallbackUrl: string } | null {
+  if (!/^[a-z0-9][a-z0-9-]{0,159}$/.test(id) || isFormula1Text(id)) return null;
+  const url = `https://livelive24.st/live24.html?url=${encodeURIComponent(id)}`;
+  return { embedUrl: url, fallbackUrl: url };
+}
+export function parseMatchora(payload: unknown, now = Date.now()): OtherStreamItem[] {
+  const data = payload as {events?: unknown} | null;
+  if (!Array.isArray(data?.events)) return [];
+  const out: OtherStreamItem[] = [], seen = new Set<string>();
+  for (const raw of data.events) {
+    if (!raw || typeof raw !== 'object') continue;
+    const e = raw as Record<string, unknown>;
+    const category = String(e.sport || '').trim().slice(0, 80), league = String(e.league || '').trim().slice(0, 80);
+    const title = [e.home, e.away].map(x => String(x || '').trim()).filter(Boolean).join(' vs ').slice(0, 140);
+    const kickoff = Number(e.kickoff) * 1000, eventId = String(e.id || '');
+    if (e.live !== true || e.finished === true || !title || !SODA_SPORTS.test(category) || isFormula1Text(`${title} ${category} ${league} ${eventId}`) || !Number.isFinite(kickoff) || kickoff <= 0 || kickoff > now) continue;
+    for (const rawChannel of Array.isArray(e.channels) ? e.channels : []) {
+      if (!rawChannel || typeof rawChannel !== 'object') continue;
+      const c = rawChannel as Record<string, unknown>, id = String(c.id || ''), name = String(c.name || '').trim().slice(0, 80);
+      if (c.dead === true || c.playing === false || isFormula1Text(`${name} ${id}`) || isLowResStream(String(c.quality || ''))) continue;
+      const urls = buildMatchoraUrls(id), key = `${eventId}:${id}`;
+      if (!urls || seen.has(key)) continue;
+      seen.add(key);
+      out.push({key:`matchora:${key}`,provider:'matchora',id,title,category,subtitle:[category,league,name].filter(Boolean).join(' · '),tag:name ? `Matchora · ${name}` : 'Matchora',viewers:Math.max(0,Math.min(Number(c.watching)||0,100000000)),alwaysLive:false,startAt:kickoff,status:'live',...urls,color:pickStreamColor('matchora',category)});
+    }
+  }
+  return out;
+}
+export function parseLive24(payload: unknown, now = Date.now()): OtherStreamItem[] {
+  const data = payload as {success?: unknown; live?: unknown} | null;
+  if (data?.success !== true || !Array.isArray(data.live)) return [];
+  const out: OtherStreamItem[] = [], seen = new Set<string>();
+  for (const raw of data.live) {
+    if (!raw || typeof raw !== 'object') continue;
+    const e = raw as Record<string, unknown>, title = String(e.title || '').trim().slice(0,140), category = String(e.category || '').trim().slice(0,80), league = String(e.tournament || '').trim().slice(0,80), startAt = Number(e.date);
+    if (e.live !== true || !title || !SODA_SPORTS.test(`${category} ${league} ${title}`) || isFormula1Text(`${title} ${category} ${league} ${e.id || ''}`) || !Number.isFinite(startAt) || startAt <= 0 || startAt > now) continue;
+    for (const rawSource of Array.isArray(e.sources) ? e.sources : []) {
+      if (!rawSource || typeof rawSource !== 'object') continue;
+      const source = rawSource as Record<string, unknown>; let url: URL;
+      try { url = new URL(String(source.url || '')); } catch { continue; }
+      if (url.protocol !== 'https:' || url.hostname !== 'livelive24.st' || url.port || url.username || url.password || url.pathname !== '/live24.html' || url.hash || [...url.searchParams.keys()].some(k => k !== 'url') || url.searchParams.getAll('url').length !== 1) continue;
+      const id = url.searchParams.get('url') || '', label = String(source.channelName || '').trim().slice(0,80), urls = buildLive24Urls(id);
+      if (!urls || seen.has(id) || isFormula1Text(label) || isLowResStream(label)) continue;
+      seen.add(id);
+      out.push({key:`live24:${id}`,provider:'live24',id,title,category,subtitle:[category,league,label].filter(Boolean).join(' · '),tag:label ? `Live24 · ${label}` : 'Live24',viewers:0,alwaysLive:false,startAt,status:'live',...urls,color:pickStreamColor('live24',category)});
+    }
+  }
+  return out;
+}
+
 const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
   embdlol: '1',
   ppv: '2',
@@ -830,6 +892,8 @@ const PROVIDER_TO_CODE: Record<OtherStreamProvider, string> = {
   aura: '7',
   bintv: '8',
   ntv: '9',
+  matchora: '10',
+  live24: '11',
 };
 
 const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
@@ -842,6 +906,8 @@ const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
   '7': 'aura',
   '8': 'bintv',
   '9': 'ntv',
+  '10': 'matchora',
+  '11': 'live24',
   embdlol: 'embdlol',
   ppv: 'ppv',
   weelo: 'weelo',
@@ -851,6 +917,8 @@ const CODE_TO_PROVIDER: Record<string, OtherStreamProvider> = {
   aura: 'aura',
   bintv: 'bintv',
   ntv: 'ntv',
+  matchora: 'matchora',
+  live24: 'live24',
 };
 
 function slugifyStreamLabel(value: string): string {
@@ -913,6 +981,11 @@ export function parsePrivateCockpitParams(
     fallbackUrl = urls.fallbackUrl;
   } else if (provider === 'weelo') {
     const urls = buildWeeloUrls(rawId, backend);
+    if (!urls) return null;
+    embedUrl = urls.embedUrl;
+    fallbackUrl = urls.fallbackUrl;
+  } else if (provider === 'matchora' || provider === 'live24') {
+    const urls = provider === 'matchora' ? buildMatchoraUrls(rawId) : buildLive24Urls(rawId);
     if (!urls) return null;
     embedUrl = urls.embedUrl;
     fallbackUrl = urls.fallbackUrl;
@@ -1059,7 +1132,7 @@ export async function fetchAllOtherStreams(options: {
     throw lastError || new Error('Weelo unavailable');
   };
 
-  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes, zliveRes, auraRes, bintvRes, ntvRes] = await Promise.allSettled([
+  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes, zliveRes, auraRes, bintvRes, ntvRes, matchoraRes, live24Res] = await Promise.allSettled([
     fetchJsonWithTimeout(EMBDLOL_STRUCT_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(PPV_STREAMS_URL, {}, 8500, fetchImpl),
     fetchWeeloPlayers(),
@@ -1071,6 +1144,8 @@ export async function fetchAllOtherStreams(options: {
     fetchJsonWithTimeout(AURA_SCHEDULE_URL, {}, 8500, fetchImpl),
     fetchBintv(fetchImpl, !options.fetchImpl),
     fetchNtv(fetchImpl, !options.fetchImpl),
+    fetchJsonWithTimeout(MATCHORA_URL, {}, 8500, fetchImpl),
+    fetchJsonWithTimeout(LIVE24_URL, {}, 8500, fetchImpl),
   ]);
 
   const embItems = embRes.status === 'fulfilled' ? parseEmbdlolStruct(embRes.value, backend) : [];
@@ -1092,7 +1167,9 @@ export async function fetchAllOtherStreams(options: {
   const bintvItems = bintvRes.status === 'fulfilled' ? parseBintvStreams(bintvRes.value) : [];
   const ppvUrls = new Set(ppvItems.map(item => item.embedUrl));
   const ntvItems = ntvRes.status === 'fulfilled' ? parseNtvRaptor(ntvRes.value).filter(item => !ppvUrls.has(item.embedUrl)) : [];
-  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems, ...timstreamsItems, ...zliveItems, ...auraItems, ...bintvItems, ...ntvItems];
+  const matchoraItems = matchoraRes.status === 'fulfilled' ? parseMatchora(matchoraRes.value) : [];
+  const live24Items = live24Res.status === 'fulfilled' ? parseLive24(live24Res.value) : [];
+  const items = [...embItems, ...weeloItems, ...ppvItems, ...streamfreeItems, ...timstreamsItems, ...zliveItems, ...auraItems, ...bintvItems, ...ntvItems, ...matchoraItems, ...live24Items];
 
   return {
     items,
@@ -1107,6 +1184,8 @@ export async function fetchAllOtherStreams(options: {
       aura: auraItems.length,
       bintv: bintvItems.length,
       ntv: ntvItems.length,
+      matchora: matchoraItems.length,
+      live24: live24Items.length,
     },
     providerOk: {
       embdlol: embRes.status === 'fulfilled',
@@ -1118,6 +1197,8 @@ export async function fetchAllOtherStreams(options: {
       aura: auraRes.status === 'fulfilled',
       bintv: bintvRes.status === 'fulfilled',
       ntv: ntvRes.status === 'fulfilled',
+      matchora: matchoraRes.status === 'fulfilled',
+      live24: live24Res.status === 'fulfilled',
     },
   };
 }
