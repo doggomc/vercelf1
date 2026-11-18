@@ -35,7 +35,8 @@ describe('replay cockpit session rail', () => {
     const html = readFileSync(new URL('../replay-cockpit.html', import.meta.url), 'utf8');
     expect(html).toMatch(/<aside class="replay-rail"[\s\S]*id="replayControls"[\s\S]*<\/aside>/);
     expect(html).toContain('.replay-rail.is-beside');
-    expect(html).not.toMatch(/replay-page \.wplayer\s*\{/);
+    expect(html).toMatch(/replay-page \.wplayer\s*\{\s*flex-shrink:\s*0/);
+    expect(html).not.toMatch(/replay-page \.wplayer\s*\{[^}]*\bwidth\s*:/);
     const script = readFileSync(new URL('../src/pages/replay-cockpit.ts', import.meta.url), 'utf8');
     expect(script).toContain('player.getBoundingClientRect().right');
     expect(script).toContain('railContainer.getBoundingClientRect().right');

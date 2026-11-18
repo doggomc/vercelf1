@@ -56,6 +56,13 @@
   body.theater.replay-page { overflow-x: hidden; overflow-y: auto; }
   body.theater.replay-page #watch { position: relative; inset: auto; min-height: 100vh; }
   body.theater.replay-page .wrap.watch-grid { height: auto; min-height: 100vh; overflow: visible; }
+  /* Never let the flex column compress the player below its 16:9 stage:
+     on short screens that cuts off OK.ru's bottom controls. Scroll instead. */
+  body.theater.replay-page .watch-main { height: auto; min-height: calc(100vh - 24px); }
+  body.theater.replay-page .wplayer { flex-shrink: 0; }
+  @media (max-width: 1100px) {
+    body.theater.replay-page .watch-main { min-height: 0; }
+  }
   .replay-help { width: min(100%, calc((100vh - 150px) * 16 / 9)); margin: 0; color: var(--rr-fg-3); font: 400 13px/1.5 'Inter', system-ui, sans-serif; }
   .replay-rail { width: min(100%, calc((100vh - 150px) * 16 / 9)); margin: 0 auto 18px; padding: 18px; border: 1px solid #ffffff17; border-radius: 18px; background: #151619; box-shadow: 0 14px 35px #0002; }
   .replay-rail.is-beside { position: absolute; top: 12px; right: 16px; width: var(--rail-width); max-height: calc(100vh - 24px); margin: 0; overflow-y: auto; scrollbar-width: thin; }
