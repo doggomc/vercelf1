@@ -36,12 +36,12 @@ export function safeSource(url: string): string | null {
   } catch { return null; }
 }
 
-type FullRacesItem = {slug: string; season: number; session: string; sessionKey: string; event: string; date: string | null; players: {provider:string;url:string}[]};
+type FullRacesItem = {slug: string; season: number; sessionKey: string; event: string; date: string | null; players: {provider:string;url:string}[]};
 const SESSIONS: Record<string, [string,string]> = {
   '1st-practice':['fp1','Practice 1'], '2nd-practice':['fp2','Practice 2'], '3rd-practice':['fp3','Practice 3'],
   'practice-1':['fp1','Practice 1'], 'practice-2':['fp2','Practice 2'], 'practice-3':['fp3','Practice 3'],
-  'sprint-qualifying':['sprint-qualifying','Sprint Qualifying'], 'sprint-shootout':['sprint-qualifying','Sprint Qualifying'],
-  sprint:['sprint','Sprint'], qualifying:['qualifying','Qualifying'], race:['race','Race'],
+  'sprint-qualifying':['sprint-qualifying','Sprint Qualifying'], 'spint-qualifying':['sprint-qualifying','Sprint Qualifying'], 'sprint-shootout':['sprint-qualifying','Sprint Qualifying'],
+  practice:['fp1','Practice 1'], sprint:['sprint','Sprint'], qualifying:['qualifying','Qualifying'], race:['race','Race'],
 };
 const EVENTS_2025: Array<[string,string,string,string]> = [
   ['australia','Australian','Albert Park','Australia'],['china','Chinese','Shanghai','China'],['japan','Japanese','Suzuka','Japan'],['bahrain','Bahrain','Sakhir','Bahrain'],['saudi','Saudi Arabian','Jeddah','Saudi Arabia'],['miami','Miami','Miami','United States'],['emilia','Emilia Romagna','Imola','Italy'],['monaco','Monaco','Monaco','Monaco'],['spain','Spanish','Barcelona','Spain'],['canad','Canadian','Montreal','Canada'],['austria','Austrian','Spielberg','Austria'],['brit','British','Silverstone','United Kingdom'],['belgi','Belgian','Spa','Belgium'],['hungar','Hungarian','Budapest','Hungary'],['dutch','Dutch','Zandvoort','Netherlands'],['ital','Italian','Monza','Italy'],['azerbaijan','Azerbaijan','Baku','Azerbaijan'],['singapore','Singapore','Singapore','Singapore'],['united states','United States','Austin','United States'],['mexico','Mexico City','Mexico City','Mexico'],['sao paulo','São Paulo','Interlagos','Brazil'],['las vegas','Las Vegas','Las Vegas','United States'],['qatar','Qatar','Lusail','Qatar'],['abu dhabi','Abu Dhabi','Yas Marina','United Arab Emirates'],
@@ -79,7 +79,7 @@ export function fullRacesEvents(items: FullRacesItem[]): Event[] {
 }
 export async function fetchWeekends(signal?: AbortSignal): Promise<Weekend[]> {
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-  const { default: data } = await import('../data/replays.json');
+  const { default: data } = await import('../data/replays-browser.json');
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
   const weekends = groupWeekends(fullRacesEvents(data.items as FullRacesItem[]));
   if (!weekends.length) throw new Error('FullRaces index unavailable');

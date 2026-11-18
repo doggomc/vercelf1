@@ -25,6 +25,11 @@
 <link rel="stylesheet" href="/src/styles/layout.css">
 <link rel="stylesheet" href="/src/styles/other-streams.css">
 <link rel="stylesheet" href="/src/styles/replays.css">
+<style>
+.rp-season-label { display:flex; align-items:center; gap:8px; color:var(--rr-fg-3); font:600 13px Inter,system-ui,sans-serif; white-space:nowrap; }
+.rp-season-label select { color:var(--rr-fg); background:#1c1d20; border:1px solid #ffffff24; border-radius:10px; padding:9px 30px 9px 12px; font:inherit; cursor:pointer; }
+@media(max-width:600px){ .rp-season-label { margin-top:10px; } }
+</style>
 </head>
 <body data-page="replays">
 <a class="skip-link" href="#main">Skip to content</a>
@@ -66,7 +71,7 @@
   <section class="wrap section rise rise-1" aria-label="Race replays">
     <div id="featured"></div>
     <div class="rp-section-heading"><div><span class="eyebrow">THE ARCHIVE</span><h2>Race weekends</h2></div><span>Choose a session to watch</span></div>
-    <div class="os-toolbar"><div class="os-tabs-scroll"><div class="os-tabs" id="filters" role="tablist" aria-label="Filter by series"><span class="os-tabs-glider" id="tabsGlider" aria-hidden="true"></span></div></div></div>
+    <div class="os-toolbar"><div class="os-tabs-scroll"><div class="os-tabs" id="filters" role="tablist" aria-label="Filter by series"><span class="os-tabs-glider" id="tabsGlider" aria-hidden="true"></span></div></div><label class="rp-season-label" for="seasonFilter">Season <select id="seasonFilter" aria-label="Filter by season"><option value="2026">2026</option></select></label></div>
     <div class="rp-grid" id="grid" aria-live="polite"><p class="rp-message">Loading replays…</p></div>
     <div class="os-empty" id="empty" hidden><h2>No replays found</h2><p>Try another series or refresh to check again.</p></div>
   </section>

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import archive from '../src/data/replays-browser.json';
 import { groupWeekends, safeSource, replayHref, fullRacesEvents, type Event } from '../src/lib/replays-feed';
 const event = (series: Event['series'], round=13): Event => ({ id:`${series}-${round}`, title:'Grand Prix', series, season:2026, round, circuit:'Monza', country:'Italy', sessions:[{ key:'race', name:'Race', startsAt:'', replay:{ id:'abc', publishedAt:'2026-01-01', sources:[{label:'International Feed',url:'https://weellz.live/replay?id=abc'}] } }] });
 describe('replays feed', () => {
@@ -11,6 +12,12 @@ describe('replays feed', () => {
     expect(e.sessions[0].replay.sources.every(x=>x.url.includes('nochat=1'))).toBe(true);
     expect(safeSource('https://ok.ru.evil.test/videoembed/123')).toBeNull();
     expect(safeSource('https://ok.ru/videoembed/123/other')).toBeNull();
+  });
+  it('includes every indexed 2026 round through 20 and recognises FullRaces practice spellings', () => {
+    const events = fullRacesEvents(archive.items);
+    expect(events.filter(e => e.season === 2026).map(e => e.round).sort((a,b) => a-b)).toEqual(Array.from({length:20}, (_, i) => i+1));
+    const china = events.find(e => e.season === 2026 && e.round === 2)!;
+    expect(china.sessions.map(s => s.key)).toEqual(expect.arrayContaining(['fp1', 'sprint-qualifying']));
   });
   it('uses event and session identifiers in links', () => { const e=event('f1');expect(replayHref(e,e.sessions[0])).toBe('/replay-cockpit?e=f1-13&s=race'); });
 });

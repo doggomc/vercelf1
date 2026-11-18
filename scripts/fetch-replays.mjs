@@ -27,6 +27,11 @@ import { fileURLToPath } from 'node:url';
 const run = promisify(execFile);
 const here = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(here, '../src/data/replays.json');
+const BROWSER_OUT = resolve(here, '../src/data/replays-browser.json');
+function writeBrowserIndex(items) {
+  const compact = items.filter(i => i.players?.some(p => /^https:\/\/ok\.ru\/videoembed\/\d+/.test(p.url))).map(({slug, season, sessionKey, event, date, players}) => ({slug, season, sessionKey, event, date, players}));
+  writeFileSync(BROWSER_OUT, JSON.stringify({items: compact}));
+}
 
 const SITEMAP = 'https://fullraces.com/sitemap-publ.xml';
 const BASE = 'https://fullraces.com/';
@@ -239,6 +244,7 @@ async function main() {
     if (prune) {
       existing.generatedAt = new Date().toISOString();
       writeFileSync(OUT, JSON.stringify(existing, null, 1) + '\n');
+      writeBrowserIndex(existing.items || []);
     }
     console.log(`health: ${checked} ok.ru player(s) checked, ${dead} dead${prune ? ' and pruned' : ' (report only)'}`);
     return;
@@ -254,6 +260,7 @@ async function main() {
     }
     existing.generatedAt = new Date().toISOString();
     writeFileSync(OUT, JSON.stringify(existing, null, 1) + '\n');
+    writeBrowserIndex(existing.items || []);
     console.log(`relabelled ${changed} provider name(s)`);
     return;
   }
@@ -312,6 +319,7 @@ async function main() {
     items
   };
   mkdirSync(dirname(OUT), { recursive: true });
+  writeBrowserIndex(items);
   if (JSON.stringify(items) === JSON.stringify(existing.items || [])) { console.log('No changes to replay index'); return; }
   writeFileSync(OUT, JSON.stringify(payload, null, 1) + '\n');
   console.log(`wrote ${OUT}`);

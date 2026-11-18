@@ -9,10 +9,12 @@ const filters = document.querySelector<HTMLElement>('#filters')!;
 const glider = document.querySelector<HTMLElement>('#tabsGlider')!;
 const empty = document.querySelector<HTMLElement>('#empty')!;
 const refresh = document.querySelector<HTMLButtonElement>('#refresh')!;
+const seasonFilter = document.querySelector<HTMLSelectElement>('#seasonFilter')!;
 let weekends: Weekend[] = [];
-let filter = 'all';
+let filter = 'f1';
+let season = 2026;
 let loadFailed = false;
-const types: Array<[string,string]> = [['all','All'],...Object.entries(seriesNames)];
+const types: Array<[string,string]> = [['f1','F1']];
 function node<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text = ''): HTMLElementTagNameMap[K] { const el = document.createElement(tag); el.className = className; el.textContent = text; return el; }
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let switchTimer = 0;
@@ -88,7 +90,7 @@ function draw() {
   grid.replaceChildren();
   if (loadFailed) { empty.hidden = false; empty.querySelector('h2')!.textContent = 'Replays unavailable'; empty.querySelector('p')!.textContent = 'Please check your connection and try refreshing.'; return; }
   empty.hidden=true; empty.querySelector('h2')!.textContent='No replays found'; empty.querySelector('p')!.textContent='Try another series or refresh to check again.';
-  const list=weekends.map(w=>({...w,events:w.events.filter(e=>filter==='all'||e.series===filter)})).filter(w=>w.events.length);
+  const list=weekends.filter(w=>w.season===season).map(w=>({...w,events:w.events.filter(e=>filter==='all'||e.series===filter)})).filter(w=>w.events.length);
   for (const [index,w] of list.entries()) {
     const card=node('article','rp-card'); card.style.setProperty('--stagger',`${Math.min(index,8)*35}ms`);
     const top=node('div','rp-card-top'); const tag=node('span','rp-round',`ROUND ${String(w.round).padStart(2,'0')} · ${w.season}`); top.append(tag);
@@ -101,10 +103,11 @@ function draw() {
 }
 function drawFeatured() {
   featured.replaceChildren(); let latest: {w:Weekend;e:Event;s:Session}|null=null;
-  for(const w of weekends) for(const e of w.events) for(const s of e.sessions) if((filter === 'all' || e.series === filter) && (!latest || (Date.parse(s.replay.publishedAt || '') || 0) > (Date.parse(latest.s.replay.publishedAt || '') || 0))) latest={w,e,s};
+  for(const w of weekends.filter(w=>w.season===season)) for(const e of w.events) for(const s of e.sessions) if((filter === 'all' || e.series === filter) && (!latest || (Date.parse(s.replay.publishedAt || '') || 0) > (Date.parse(latest.s.replay.publishedAt || '') || 0))) latest={w,e,s};
   if(!latest)return; const {w,e,s}=latest;
   const hero=link(e,s,'rp-feature',''); const copy=node('div','rp-feature-copy');copy.append(node('span','rp-feature-label','●  JUST ADDED'),node('h2','',weekendTitle(w)),node('p','',`${seriesNames[e.series]} · ${s.name} · ${w.season}`),node('span','rp-watch','Watch replay  ↗'));hero.append(copy);
   if(w.season===2026 && w.round>=1 && w.round<=23){hero.append(circuitImage(w.round, true));}featured.append(hero);
 }
-async function load(){refresh.disabled=true;refresh.classList.add('is-spinning');try{weekends=await fetchWeekends();loadFailed=false;const count=weekends.reduce((n,w)=>n+w.events.reduce((a,e)=>a+e.sessions.length,0),0);summary.textContent=`${weekends.length} weekends · ${count} replays`;drawFeatured();draw();}catch{loadFailed=true;weekends=[];featured.replaceChildren();summary.textContent='Unable to load replays';grid.replaceChildren();empty.hidden=false;empty.querySelector('h2')!.textContent='Replays unavailable';empty.querySelector('p')!.textContent='Please check your connection and try refreshing.';}finally{refresh.disabled=false;refresh.classList.remove('is-spinning');}}
+async function load(){refresh.disabled=true;refresh.classList.add('is-spinning');try{weekends=await fetchWeekends();loadFailed=false;const seasons=[...new Set(weekends.map(w=>w.season))].sort((a,b)=>b-a);if(!seasons.includes(season)) season=seasons[0];seasonFilter.replaceChildren(...seasons.map(y=>{const option=document.createElement('option');option.value=String(y);option.textContent=String(y);option.selected=y===season;return option;}));const count=weekends.reduce((n,w)=>n+w.events.reduce((a,e)=>a+e.sessions.length,0),0);summary.textContent=`${weekends.length} weekends · ${count} replays`;drawFeatured();draw();}catch{loadFailed=true;weekends=[];featured.replaceChildren();summary.textContent='Unable to load replays';grid.replaceChildren();empty.hidden=false;empty.querySelector('h2')!.textContent='Replays unavailable';empty.querySelector('p')!.textContent='Please check your connection and try refreshing.';}finally{refresh.disabled=false;refresh.classList.remove('is-spinning');}}
+seasonFilter.addEventListener('change',()=>{season=Number(seasonFilter.value);drawFeatured();draw();});
 refresh.addEventListener('click',load);window.addEventListener('resize',glide);drawFilters();load();
