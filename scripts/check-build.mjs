@@ -64,7 +64,7 @@ const scheduleSize = pageGzip('schedule.html');
 console.log(`schedule gzip: ${scheduleSize} B of ${SCHEDULE_BUDGET}`);
 assert(scheduleSize < SCHEDULE_BUDGET, `schedule.html ships ${scheduleSize} B gzip — over the ${SCHEDULE_BUDGET} B budget`);
 assert(existsSync('dist/calendar/f1.ics'), 'dist/calendar/f1.ics missing');
-assert(existsSync('dist/island.js'), 'session island script missing');
+assert(manifest['src/features/session-island.ts']?.file?.startsWith('bundles/'), 'versioned session island script missing');
 for (const page of ['index.html', 'cockpit.html', 'schedule.html', 'standings.html', 'drivers.html', 'driver.html', 'teams.html', 'team.html', 'other.html', 'other-streams.html', 'replays.html', 'live-timing.html', 'help.html', '404.html']) {
   const html = readFileSync(`dist/${page}`, 'utf8');
   assert(html.includes('<div class=\"session-island-slot\"></div>'), `${page} must reserve island space in initial HTML`);
@@ -151,9 +151,9 @@ assert(readFileSync('dist/fonts.css', 'utf8').includes("font-family: 'Zen Dots'"
 // Every preloaded font must exactly match a CSS URL to avoid a second download.
 for (const page of ['index.html', 'schedule.html', 'grand-prix.html', 'cockpit.html', 'drivers.html', 'teams.html']) {
   const html = readFileSync(`dist/${page}`, 'utf8');
-  const cssPath = html.match(/href="(\/font-cache\/fonts-[a-f0-9]+\.css)"/)?.[1];
-  assert(cssPath && existsSync(`dist${cssPath}`), `${page} is missing the versioned font stylesheet`);
-  const css = readFileSync(`dist${cssPath}`, 'utf8');
+  const css = html.match(/<style data-freef1-fonts>([\s\S]*?)<\/style>/)?.[1];
+  assert(css, `${page} is missing its inline font declarations`);
+  assert(html.includes('href="data:image/svg+xml;base64,'), `${page} is missing its inline favicon`);
   for (const match of html.matchAll(/href="(\/font-cache\/[^" ]+\.woff2)"/g)) {
     assert(existsSync(`dist${match[1]}`), `${page} has a missing preloaded font`);
     assert(css.includes(match[1]), `${page} font preload and stylesheet disagree`);

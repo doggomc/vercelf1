@@ -803,7 +803,4 @@ import { $ } from './services/dom';
   });
 })();
 
-const islandScript = document.createElement('script');
-islandScript.type = 'module';
-islandScript.src = import.meta.env.DEV ? '/src/features/session-island.ts' : '/island.js';
-document.head.append(islandScript);
+void import('./features/session-island');

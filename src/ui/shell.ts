@@ -82,7 +82,7 @@ export function initShell(options: ShellOptions = {}): void {
   const { nav = true, transitions = true } = options;
   markCurrentLink(document);
   if (nav || document.body.dataset.page === 'cockpit') {
-    const s = document.createElement('script'); s.type = 'module'; s.src = import.meta.env.DEV ? '/src/features/session-island.ts' : '/island.js'; document.head.append(s);
+    void import('../features/session-island');
   }
   if (nav) {
     bindNav();

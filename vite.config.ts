@@ -309,9 +309,9 @@ function dedupeRootAssets(): Plugin {
   };
 }
 
-/** Publish content-addressed fonts and stylesheet. The HTML and CSS references
- * use the same versioned font URLs, preserving preload reuse and allowing safe
- * long-lived browser caching without making changed files stale. */
+/** Publish content-addressed fonts and inline their small declarations and favicon.
+ * HTML preloads and font-face rules share exactly the same URLs, allowing safe
+ * long-lived browser caching without making changed font files stale. */
 function versionedFonts(): Plugin {
   return { name: 'freef1-versioned-fonts', apply: 'build', closeBundle: { order: 'post', handler() {
     const fontDir = join(DIST_DIR, 'assets/fonts');
@@ -332,18 +332,23 @@ function versionedFonts(): Plugin {
       if (!versioned) throw new Error(`Missing font: ${path}`);
       return versioned;
     });
-    const hash = createHash('sha256').update(css).digest('hex').slice(0, 16);
-    const stylesheet = `/font-cache/fonts-${hash}.css`;
     mkdirSync(output, { recursive: true });
-    writeFileSync(join(DIST_DIR, stylesheet.slice(1)), css);
     for (const [original, versioned] of versions) cpSync(join(DIST_DIR, original.slice(1)), join(DIST_DIR, versioned.slice(1)));
+    const icon = readFileSync(join(DIST_DIR, 'assets/favicon.svg'));
+    const favicon = `data:image/svg+xml;base64,${icon.toString('base64')}`;
+    const apple = readFileSync(join(DIST_DIR, 'assets/apple-touch-icon.png'));
+    const appleHash = createHash('sha256').update(apple).digest('hex').slice(0, 16);
+    const appleUrl = `/font-cache/apple-touch-icon-${appleHash}.png`;
+    writeFileSync(join(DIST_DIR, appleUrl.slice(1)), apple);
     const walk = (dir: string) => {
       for (const entry of readdirSync(dir, { withFileTypes: true })) {
         const path = join(dir, entry.name);
         if (entry.isDirectory()) { if (entry.name !== 'assets' && entry.name !== 'bundles' && entry.name !== 'font-cache') walk(path); continue; }
         if (!entry.name.endsWith('.html')) continue;
         const original = readFileSync(path, 'utf8');
-        let html = original.replaceAll('href="/fonts.css"', `href="${stylesheet}"`);
+        let html = original.replace('<link rel="stylesheet" href="/fonts.css">', `<style data-freef1-fonts>${css}</style>`)
+          .replaceAll('href="/assets/favicon.svg"', `href="${favicon}"`)
+          .replaceAll('href="/assets/apple-touch-icon.png"', `href="${appleUrl}"`);
         for (const [from, to] of versions) html = html.replaceAll(`href="${from}"`, `href="${to}"`);
         if (html !== original) writeFileSync(path, html);
       }
@@ -373,7 +378,7 @@ export default defineConfig({
     cssCodeSplit: true,
     rollupOptions: {
       output: {
-        entryFileNames: chunk => chunk.name === 'session-island-entry' ? 'island.js' : 'bundles/[name]-[hash].js',
+        entryFileNames: 'bundles/[name]-[hash].js',
         // Bundle two small synchronous player-support modules together to save
         // a cold-load request without adding the player to other pages.
         manualChunks(id) {
@@ -384,7 +389,6 @@ export default defineConfig({
         },
       },
       input: {
-        'session-island-entry': resolve(ROOT, 'src/features/session-island.ts'),
         /* Separate pages, separate stylesheets: the public pages load layout.css
            and a few hundred bytes of shell, the cockpit loads the player runtime. */
         index: resolve(ROOT, 'index.html'),
