@@ -1691,7 +1691,7 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     if (s.managedAuto) {
       const providerTag = document.createElement('span');
       providerTag.className = 'src-pill-tag auto-provider-tag';
-      providerTag.textContent = ({ weelo: 'WEELO', ppv: 'PPV', strmfree: 'STREAMFREE', embdlol: 'EMB' } as Record<string, string>)[s.autoProvider || ''] || 'AUTO';
+      providerTag.textContent = ({ weelo: 'WEELO', ppv: 'PPV', strmfree: 'STREAMFREE', embdlol: 'EMB', cdnlive: 'CDNLIVE', wikisport: 'WIKISPORT' } as Record<string, string>)[s.autoProvider || ''] || 'AUTO';
       b.appendChild(providerTag);
     }
     const titleSpan = document.createElement('span');
@@ -2458,10 +2458,16 @@ async function refreshAutoStreams() {
       ? window.nextCheckAt - now : window.nextCheckAt - window.serverTime;
     autoNextCheckAt = now + Math.min(AUTO_MAX_WAIT_MS, Math.max(1000, remaining));
     if (window.active) {
-      const hosts: Record<string, string[]> = { weelo: ['weellz.live'], ppv: ['taifood-blog.asia'], strmfree: ['strmfree.st', 'streamfree.top'], embdlol: ['embdlol.st'] };
+      const hosts: Record<string, string[]> = { weelo: ['weellz.live'], ppv: ['taifood-blog.asia'], strmfree: ['strmfree.st', 'streamfree.top'], embdlol: ['embdlol.st'], cdnlive: ['cdnlivetv.tv'], wikisport: ['siempreon.shop', 'taifood-blog.asia', 'embedsports.me', 'tvpclive.com'] };
       const nextEntries = (Array.isArray(json.streams) ? json.streams : []).slice(0, 200).filter((row: any) => {
-        if (!row || !/^auto-(weelo|ppv|strmfree|embdlol)-[a-f0-9]{16}$/.test(row.id) || typeof row.label !== 'string' || !hosts[row.provider]) return false;
-        try { const url = new URL(row.url); return url.protocol === 'https:' && !url.username && !url.password && hosts[row.provider].includes(url.hostname); } catch { return false; }
+        if (!row || !/^auto-(weelo|ppv|strmfree|embdlol|cdnlive|wikisport)-[a-f0-9]{16}$/.test(row.id) || typeof row.label !== 'string' || !hosts[row.provider]) return false;
+        try {
+          const url = new URL(row.url);
+          if (url.protocol !== 'https:' || url.username || url.password || url.port || !hosts[row.provider].includes(url.hostname)) return false;
+          if (row.provider === 'cdnlive') return url.pathname === '/api/v1/channels/player/' && ['Sky Sports F1 FHD UK', 'DAZN F1 FHD'].includes(url.searchParams.get('name') || '');
+          if (row.provider === 'wikisport') return (url.hostname === 'siempreon.shop' && url.pathname === '/fslivepro.php') || (url.hostname === 'taifood-blog.asia' && /^\/embed\/[a-z0-9_/%-]+$/i.test(url.pathname)) || (url.hostname === 'embedsports.me' && /^\/streams\/[a-z0-9_-]+$/i.test(url.pathname)) || (url.hostname === 'tvpclive.com' && /^\/embed\/stream-[0-9]+\.php$/i.test(url.pathname));
+          return true;
+        } catch { return false; }
       });
       // Do not unmount an active player just because the provider's next listing changes or fails.
       const playing = sources[currentSource];

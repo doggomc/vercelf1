@@ -13,6 +13,9 @@ describe('primary and backup sources', () => {
     { id: 'emb-fullhd1', hidden: true, links: [] },
   ];
   it('keeps provider tiers stable even when Race Control changes a URL', () => {
+    expect(sourceTier({id:'auto-cdnlive',managedAuto:true,autoProvider:'cdnlive'})).toBe('backup');
+    expect(sourceTier({id:'auto-wiki',managedAuto:true,autoProvider:'wikisport'})).toBe('backup');
+    expect(sourceTier({id:'auto-strmfree',managedAuto:true,autoProvider:'strmfree'})).toBe('main');
     expect(sourceTier(sources[0])).toBe('backup');
     expect(sourceTier(sources[1])).toBe('backup');
     expect(sourceTier(sources[2])).toBe('main');

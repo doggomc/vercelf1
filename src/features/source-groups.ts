@@ -5,6 +5,7 @@ type SourceLike = {
   hidden?: boolean;
   managedCustom?: boolean;
   managedAuto?: boolean;
+  autoProvider?: string;
   special?: string;
   lang?: string;
   links?: Array<{ provider?: string }>;
@@ -13,7 +14,7 @@ type SourceLike = {
 const MAIN_PROVIDERS = new Set(['strmfree', 'weelo', 'weelo-stripped', 'embdlol', 'embdlol-stripped', 'ppv', 'ppv-stripped', 'taifood']);
 
 export function sourceTier(source: SourceLike): SourceTier {
-  if (source.managedAuto) return 'main';
+  if (source.managedAuto) return source.autoProvider === 'cdnlive' || source.autoProvider === 'wikisport' ? 'backup' : 'main';
   if (source.managedCustom || source.id.startsWith('custom-')) return 'custom';
   if (source.id === 'sky-uk' || source.id.startsWith('emb-') || source.id.startsWith('weelo-')) return 'main';
   const links = source.base?.links || source.links || [];
