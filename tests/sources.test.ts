@@ -190,6 +190,14 @@ describe('stream source link pools', () => {
     expect(feedKey('Moto3/2/GP - Qatar - Saturday - DAZN')).toBe('');
     expect(feedKey('Sky Sports Tennis')).toBe('');
     expect(feedKey('f1mexicosatita')).toBe('italian');
+    expect(feedKey('skyf1_en')).toBe('sky');
+    expect(feedKey('f1_appletv')).toBe('apple');
+    expect(feedKey('daznf1_hd')).toBe('dazn');
+    expect(feedKey('skyf1de')).toBe('skyde');
+    expect(feedKey('skyf1it')).toBe('skyit');
+    expect(feedKey('skyf1uhd')).toBe('uhd');
+    expect(feedKey('ssmotorsport_sd')).toBe('');
+    expect(feedKey('Sky Sport Event 1')).toBe('');
   });
 
   it('fails over at link level before source level', () => {
