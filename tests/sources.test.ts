@@ -52,9 +52,12 @@ describe('stream source link pools', () => {
     }
   });
 
-  it('puts stripped Sky HD first and removes strmfree Sky UHD', () => {
+  it('puts direct StreamFree Sky first and retains stripped Sky HD', () => {
     const order = [...block.matchAll(/\{ id: "(sky-[a-z0-9-]+)"/g)].map((m) => m[1]);
-    expect(order[0]).toBe('sky-uk');
+    expect(order[0]).toBe('sky-strmfree');
+    expect(order[1]).toBe('sky-uk');
+    expect(app).toContain('const DEFAULT_SOURCE_ID = "sky-strmfree"');
+    expect(block).toContain('https://strmfree.st/embed/racing/skyf11080p');
     expect(order).not.toContain('sky-uhd');
     expect(block).toContain('label: "Sky HD"');
     expect(block).not.toContain('label: "Sky UHD"');

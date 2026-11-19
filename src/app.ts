@@ -524,7 +524,7 @@ function mirrorLinks(key: string, quality: number): StreamLink[] {
 }
 
 /* What plays on load and on "jump to live"; if Race Control disables it, the first enabled source. */
-const DEFAULT_SOURCE_ID = "sky-uk";
+const DEFAULT_SOURCE_ID = "sky-strmfree";
 
 /* The embdlol feeds we draw a chip for; labels and languages are keyed below. */
 /* embdlol publishes ONE English F1 channel at a time, and fmexicofullhd1/3 are two names for it, so
@@ -640,6 +640,11 @@ function toStrippedStrmfreeLinkUrl(rawUrl: string): string {
    shell, cdnlivetv reports channel status, taifood ids come from the live manifests. Anything
    below 720p (taifood's _540p tier, embdlol's 720p German channel) is deliberately absent. */
 const sources: StreamSource[] = [
+  /* Direct StreamFree Sky F1 is the default; retain the separate stripped chip below. */
+  { id: "sky-strmfree", label: "Sky Sports F1 (StreamFree)", links: [
+      { provider: 'strmfree', quality: 1080, url: 'https://strmfree.st/embed/racing/skyf11080p' },
+      { provider: 'strmfree', quality: 1080, url: 'https://streamfree.top/embed/racing/skyf11080p' }
+  ]},
   /* Main channel: stripped 1080p strmfree across both mirror domains, with automatic server-side
      ad/popunder removal and lightweight playlist token relay. */
   { id: "sky-uk", label: "Sky HD", stripped: true, links: [
@@ -1074,6 +1079,14 @@ function linkPool(index: number): string[] {
   }
   const key = sessionKey();
   let links = source.links.slice();
+
+  // Use the provider's direct published 1080p mirrors before the known direct fallback.
+  if (source.id === 'sky-strmfree') {
+    const direct = mirrorLinks('skyf1', 1080).filter(mirror => {
+      try { const u = new URL(mirror.url || ''); return u.protocol === 'https:' && !u.username && !u.password && !u.port && ['strmfree.st', 'streamfree.top'].includes(u.hostname) && u.pathname.startsWith('/embed/'); } catch { return false; }
+    });
+    links = [...direct, ...links.filter(link => !direct.some(mirror => mirror.url === link.url))];
+  }
 
   /* Published mirrors first (they are the addresses the provider itself calls live), mapped through
      the stripped strmfree relay, then the static stripped list. */
