@@ -384,7 +384,9 @@ export default defineConfig({
         manualChunks(id) {
           const path = id.replaceAll('\\', '/');
           if (/\/src\/(?:services\/weekend|data\/schedule)\.ts$/.test(path)) return 'weekend-data';
-          if (/\/src\/interaction-guard\.ts$/.test(path)) return 'interaction-guard';
+          // Navigation and the two lightweight bootstraps are shared by the main
+          // pages. The counter safely does nothing where no counter element exists.
+          if (/\/src\/(?:interaction-guard|viewer-counter|ui\/shell)\.ts$/.test(path)) return 'shared-shell';
           if (/\/src\/types\/site-config\.ts$/.test(path)) return 'cockpit-support';
           if (/\/src\/data\/(?:driver-flags|flags)\.ts$/.test(path)) return 'flag-data';
         },

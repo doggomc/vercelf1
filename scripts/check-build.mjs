@@ -8,6 +8,16 @@ const root = manifest['index.html'];
    budget — a visitor reading the schedule must not pay for a video player. */
 const cockpit = manifest['cockpit.html'];
 assert(cockpit, 'cockpit.html must be a build entry');
+
+// These pages use the same hashed navigation/guard/counter bundle; avoid
+// accidentally reintroducing separate cold-load requests for the bootstraps.
+const sharedShell = Object.entries(manifest).find(([, entry]) => /^bundles\/shared-shell-.*\.js$/.test(entry.file))?.[0];
+assert(sharedShell, 'shared shell chunk missing');
+for (const page of ['index.html', 'cockpit.html', 'schedule.html', 'drivers.html']) {
+  assert((manifest[page]?.imports || []).includes(sharedShell), `${page} must use the shared shell chunk`);
+}
+assert(!Object.values(manifest).some(entry => /^bundles\/(?:viewer-counter|interaction-guard)-.*\.js$/.test(entry.file)), 'counter and interaction guard should not be separate chunks');
+
 const startup = new Set();
 function collect(key) {
   const entry = manifest[key];
