@@ -5,3 +5,6 @@ dist/
 !.env.example
 .playwright-cli/
 *.log
+
+# Generated Cloudflare Pages static-only build
+pages-static/
