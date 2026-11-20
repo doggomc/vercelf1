@@ -1,4 +1,4 @@
-import { ppvDisplayLabel } from './features/auto-label';
+import { sourceChipDisplay } from './features/auto-label';
 import { syncSourceSelection } from './features/source-selection';
 import { setCounterContext } from './features/counter-context';
 import { applyFailover } from './features/failover';
@@ -1403,9 +1403,9 @@ function updateHeader() {
   const src = sources[currentSource] || { id: "none", label: "-", links: [] };
   if (stageLabel) stageLabel.textContent = "freef1://live/" + currentEvent.slug + "/" + currentSession.slug + "/" + src.id;
   if (sourceLabel) {
-    const pill = describeSourcePill(src);
-    const parts = [pill.title];
-    if (pill.sub) parts.push(pill.sub);
+    const display = sourceChipDisplay(src);
+    const parts = [display.title];
+    if (display.quality) parts.push(display.quality);
     if (src.stripped && !(relaysDisabled && src.id === 'sky-uk')) parts.push('Stripped');
     sourceLabel.textContent = parts.join(' · ');
   }
@@ -1685,7 +1685,7 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     b.dataset.sourceIndex = String(i);
     const active = i === currentSource;
     const pill = describeSourcePill(s);
-    const ppvLabel = s.managedAuto ? ppvDisplayLabel(s.autoProvider, s.autoTag) : null;
+    const display = sourceChipDisplay(s);
     b.className = "chip src-pill" + (active ? " active" : "") + (s.stripped ? " chip-stripped" : "");
     b.setAttribute("aria-pressed", String(active));
     if (s.gated && !canPlayHevc()) b.title = HEVC_WARNING;
@@ -1696,37 +1696,36 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     } else if (s.embdlol && !s.custom && Object.keys(catalogues.embdlol).length > 0 && !catalogues.embdlol[s.embdlol]) {
       b.className += ' is-down';
       b.title = 'Not listed upstream for this session';
-    } else if (pill.badge) {
+    }
+
+    const providerTag = document.createElement('span');
+    providerTag.className = 'src-pill-tag auto-provider-tag';
+    providerTag.textContent = display.provider;
+    b.appendChild(providerTag);
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'src-pill-title';
+    titleSpan.textContent = display.title;
+    b.appendChild(titleSpan);
+    if (display.is4k) {
       b.className += ' has-tag';
       const tag = document.createElement('span');
       tag.className = 'src-pill-tag is-4k';
-      tag.textContent = pill.badge;
+      tag.textContent = '4K';
       b.appendChild(tag);
     }
-
-    if (s.managedAuto) {
-      const providerTag = document.createElement('span');
-      providerTag.className = 'src-pill-tag auto-provider-tag';
-      providerTag.textContent = ({ weelo: 'RACINGLAP', ppv: 'PPV', strmfree: 'STREAMFREE', embdlol: 'EMB', bintv: 'BINTV', cdnlive: 'CDNLIVE', wikisport: 'WIKISPORT' } as Record<string, string>)[s.autoProvider || ''] || 'AUTO';
-      b.appendChild(providerTag);
-    }
-    const titleSpan = document.createElement('span');
-    titleSpan.className = 'src-pill-title';
-    titleSpan.textContent = ppvLabel || pill.title;
-    b.appendChild(titleSpan);
-
-    if (pill.sub || (s.autoTag && !ppvLabel)) {
-      const subSpan = document.createElement('span');
-      subSpan.className = 'src-pill-sub';
-      subSpan.textContent = [pill.sub, ppvLabel ? '' : s.autoTag].filter(Boolean).join(' · ');
-      b.appendChild(subSpan);
-    }
-
     if (s.stripped && !(relaysDisabled && s.id === 'sky-uk')) {
       const strippedTag = document.createElement('span');
       strippedTag.className = 'src-pill-tag is-stripped';
       strippedTag.textContent = 'Stripped';
       b.appendChild(strippedTag);
+    }
+
+
+    if (display.quality) {
+      const subSpan = document.createElement('span');
+      subSpan.className = 'src-pill-sub';
+      subSpan.textContent = display.quality;
+      b.appendChild(subSpan);
     }
 
     b.onclick = async (click) => {
@@ -1771,7 +1770,7 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
   if (specials.length) {
     const block = document.createElement('div');
     block.className = 'special-row';
-    block.innerHTML = '<span class="special-head">Weelo · Onboards &amp; pit wall</span>';
+    block.innerHTML = '<span class="special-head">Onboards &amp; pit wall</span>';
     specials.forEach(i => block.appendChild(chipFor(sources[i], i)));
     linksEl.appendChild(block);
   }

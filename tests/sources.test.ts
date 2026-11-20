@@ -19,8 +19,9 @@ const ids = [
 
 describe('source provider branding', () => {
   it('labels the Weelo auto-provider badge RacingLap without changing its provider identity', () => {
-    expect(app).toContain("weelo: 'RACINGLAP'");
-    expect(app).toContain("s.autoProvider || ''");
+    const labels = readFileSync(new URL('../src/features/auto-label.ts', import.meta.url), 'utf8');
+    expect(labels).toContain("weelo: 'RACINGLAP'");
+    expect(app).toContain('sourceChipDisplay(s)');
   });
 });
 

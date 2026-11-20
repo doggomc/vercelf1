@@ -6941,3 +6941,6 @@ body[data-page="cockpit"].theater #watch .src-pill-sub {
   max-width: 100%;
   overflow-wrap: anywhere;
 }
+
+/* Provider is the first chip badge; special feeds are identified by their section. */
+.wsource-list .special-row button.chip.chip-special::before { content: none; }
