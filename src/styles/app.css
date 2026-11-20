@@ -6908,3 +6908,19 @@ body[data-page="cockpit"]:not(.theater) #watch .wsources { animation: cockpitRis
   .wplayer-stage .nostream p { font-size: .8rem; line-height: 1.4; overflow-wrap: anywhere; }
   .wplayer-stage .ns-actions { width: 100%; gap: 6px; margin-top: 2px; }
 }
+
+/* Long provider/session labels must not give the nested grid a min-content
+   width wider than the phone, which makes mobile browsers zoom the page out. */
+@media (max-width: 1100px) {
+  body[data-page="cockpit"] .watch-main { grid-template-columns: minmax(0, 1fr); }
+  body[data-page="cockpit"] #watch .wsource-list > button.chip,
+  body[data-page="cockpit"] #watch .wsource-list .special-row button.chip {
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  body[data-page="cockpit"] #watch .src-pill-title,
+  body[data-page="cockpit"] #watch .src-pill-sub { min-width: 0; overflow-wrap: anywhere; }
+}
