@@ -6924,3 +6924,20 @@ body[data-page="cockpit"]:not(.theater) #watch .wsources { animation: cockpitRis
   body[data-page="cockpit"] #watch .src-pill-title,
   body[data-page="cockpit"] #watch .src-pill-sub { min-width: 0; overflow-wrap: anywhere; }
 }
+
+/* Theater's narrow source rail needs multi-line names and provider details;
+   otherwise a long PPV session title clips its broadcaster/language label. */
+body[data-page="cockpit"].theater #watch .wsource-list > button.chip,
+body[data-page="cockpit"].theater #watch .wsource-list .special-row button.chip {
+  max-width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+body[data-page="cockpit"].theater #watch .src-pill-title,
+body[data-page="cockpit"].theater #watch .src-pill-sub {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
