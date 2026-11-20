@@ -66,7 +66,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: https://media.formula1.com https://upload.wikimedia.org https://a.espncdn.com; connect-src 'self' https://f1admin.onrender.com https://api.openf1.org https://api.jolpi.ca https: wss://freef1-viewer-counter.calvinbotha1julie.workers.dev wss://livetiming.formula1.com; frame-src https:; frame-ancestors 'self'; media-src 'self' data: https:"
+          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://*.freef1-assets.pages.dev; style-src 'self' 'unsafe-inline' https://*.freef1-assets.pages.dev; font-src 'self' data: https://*.freef1-assets.pages.dev; img-src 'self' data: https://media.formula1.com https://upload.wikimedia.org https://a.espncdn.com https://*.freef1-assets.pages.dev; connect-src 'self' https://f1admin.onrender.com https://api.openf1.org https://api.jolpi.ca https: wss://freef1-viewer-counter.calvinbotha1julie.workers.dev wss://livetiming.formula1.com; frame-src https:; frame-ancestors 'self'; media-src 'self' data: https:"
         }
       ]
     },
