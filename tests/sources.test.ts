@@ -25,6 +25,16 @@ describe('source provider branding', () => {
   });
 });
 
+describe('special stream badges', () => {
+  it('places the provider before the restored ONBD and DATA tags', () => {
+    const render = app.slice(app.indexOf('  const chipFor ='), app.indexOf('  const main = visible'));
+    expect(render.indexOf('b.appendChild(providerTag)')).toBeLessThan(render.indexOf('b.appendChild(specialTag)'));
+    expect(render).toContain("s.special === 'data' ? 'DATA'");
+    expect(render).toContain("'ONBD'");
+    expect(render.indexOf('b.appendChild(specialTag)')).toBeLessThan(render.indexOf('b.appendChild(titleSpan)'));
+  });
+});
+
 describe('stream source link pools', () => {
   it('declares a pool for every source', () => {
     expect(ids.length).toBeGreaterThanOrEqual(17);

@@ -1702,6 +1702,12 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     providerTag.className = 'src-pill-tag auto-provider-tag';
     providerTag.textContent = display.provider;
     b.appendChild(providerTag);
+    if (s.special) {
+      const specialTag = document.createElement('span');
+      specialTag.className = `src-pill-tag src-pill-special is-${s.special}`;
+      specialTag.textContent = s.special === 'data' ? 'DATA' : s.special === 'feed' ? 'FEED' : 'ONBD';
+      b.appendChild(specialTag);
+    }
     const titleSpan = document.createElement('span');
     titleSpan.className = 'src-pill-title';
     titleSpan.textContent = display.title;

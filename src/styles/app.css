@@ -6942,5 +6942,9 @@ body[data-page="cockpit"].theater #watch .src-pill-sub {
   overflow-wrap: anywhere;
 }
 
-/* Provider is the first chip badge; special feeds are identified by their section. */
+/* Use actual elements for special tags so the provider badge stays first. */
 .wsource-list .special-row button.chip.chip-special::before { content: none; }
+
+.src-pill-special { background: #ffffff12; color: var(--team); font-size: 9.5px; letter-spacing: .05em; }
+.src-pill-special.is-data { color: #669df1; background: #669df124; }
+.src-pill-special.is-feed { color: #cbd5e1; background: #ffffff14; }
