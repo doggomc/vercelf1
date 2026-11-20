@@ -281,6 +281,8 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
     expect(isEmbdlolF1Channel('Formula 1 Qatar Grand Prix')).toBe(true);
     expect(isEmbdlolF1Channel('Sky Sports F1')).toBe(true);
     expect(isEmbdlolF1Channel('fullhd1')).toBe(true);
+    for (const name of ['skyf1', 'skyf1uhd', 'f1atvp', 'daznf1', 'skyf1de', 'skyf1it']) expect(isEmbdlolF1Channel(name), name).toBe(true);
+    expect(isEmbdlolF1Channel('SkyMainEvent')).toBe(false);
 
     expect(isEmbdlolF1Channel('ufc310main')).toBe(false);
     expect(isEmbdlolF1Channel('f2monacofullhd1')).toBe(false);

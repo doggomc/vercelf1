@@ -197,6 +197,9 @@ describe('stream source link pools', () => {
     expect(feedKey('Moto3/2/GP - Qatar - Saturday - DAZN')).toBe('');
     expect(feedKey('Sky Sports Tennis')).toBe('');
     expect(feedKey('f1mexicosatita')).toBe('italian');
+    expect(feedKey('skyf1')).toBe('sky');
+    expect(feedKey('f1atvp')).toBe('apple');
+    expect(feedKey('daznf1')).toBe('dazn');
     expect(feedKey('skyf1_en')).toBe('sky');
     expect(feedKey('f1_appletv')).toBe('apple');
     expect(feedKey('daznf1_hd')).toBe('dazn');

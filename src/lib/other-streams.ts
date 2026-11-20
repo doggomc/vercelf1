@@ -152,6 +152,7 @@ export function isEmbdlolF1Channel(channelName: string): boolean {
     return false;
   }
   if (/^(?:f1|formula1|skyf1|skysportsf1)/.test(flat)) return true;
+  if (/^daznf1(?:hd)?$/.test(flat)) return true;
   if (EMB_BARE_F1_KEYS.has(flat)) return true;
   return false;
 }
