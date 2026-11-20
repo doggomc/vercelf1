@@ -867,6 +867,7 @@ const freshMints = new Set<string>();
 let currentSource = sources.findIndex((s) => s.id === DEFAULT_SOURCE_ID);
 let activeView = 'home';
 let playerLoadToken = 0;
+let sessionWindowBlocked = false;
 
 /* Resolve a link to an absolute address for the current session, or '' when it cannot be served.
    This is the single place a source's address is decided. */
@@ -1781,7 +1782,10 @@ let multiviewer: Promise<any> | undefined;
 /* Lazy: the grid, its button state and its own close control all live in one chunk, downloaded the
    first time somebody opens the grid (or straight away for a ?mv=1 address). */
 function openMultiViewer() {
-  void (multiviewer ??= import('./features/multiviewer').then((m) => (multiViewerControl = m.init(featureContext)))).then((m) => m?.show(true));
+  if (!streamOverride.active && !isStreamAvailable(currentSession)) return;
+  void (multiviewer ??= import('./features/multiviewer').then((m) => (multiViewerControl = m.init(featureContext)))).then((m) => {
+    if (streamOverride.active || isStreamAvailable(currentSession)) m?.show(true);
+  });
 }
 
 function chooseMultiViewer() {
@@ -2259,6 +2263,16 @@ function load() {
     setStreamOnScreen(true);
     return;
   }
+
+  // Auto-discovered URLs are represented internally as custom links, but they
+  // must not bypass the session schedule. No ordinary source plays between
+  // windows; Race Control's explicit stream override above remains available.
+  if (!isStreamAvailable(currentSession)) {
+    sessionWindowBlocked = true;
+    showNoStream({ blocked: false });
+    return;
+  }
+  sessionWindowBlocked = false;
 
   if (autoStreamsActive && !sources.some(sourceEnabled)) {
     showNoStream({ blocked: true, title: autoWindowState === 'closed' ? 'Auto-Streams paused' : 'No automatic streams available', text: autoWindowState === 'closed' ? 'Automatic discovery runs during race weekends. Your manual sources remain saved.' : 'No supported provider has published a Formula 1 feed yet. Auto-Streams will check again shortly.' });
@@ -3515,21 +3529,35 @@ setupCustomSelects();
 updateClocks();
 updateOverridePill(streamOverride);
 bootstrapSiteConfig();
+// Close an already-mounted player when its scheduled window ends, then reopen
+// when the next one starts. Discovery continues; explicit Race Control overrides
+// keep their existing behavior. Invalidating via load() also cancels pending mints.
+function syncSessionPlaybackWindow() {
+  const allowed = streamOverride.active || isStreamAvailable(currentSession);
+  if (!allowed) {
+    if (multiViewerControl?.isOpen?.()) multiViewerControl.show(false);
+    if (!sessionWindowBlocked || stageBox?.querySelector('iframe, video')) load();
+  } else if (sessionWindowBlocked && sourceConfigKnown) {
+    sessionWindowBlocked = false;
+    load();
+  }
+}
+
 // Background intervals
 window.setInterval(() => {
   if (!document.hidden) updateClocks();
 }, 1000);
 
 window.setInterval(() => {
-  if (!document.hidden) {
-    syncActiveSession();
-    updateCurrentStreamButton();
-  }
+  syncActiveSession();
+  syncSessionPlaybackWindow();
+  if (!document.hidden) updateCurrentStreamButton();
 }, 30000);
 
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
     syncActiveSession();
+    syncSessionPlaybackWindow();
     updateClocks();
     updateCurrentStreamButton();
     if (autoStreamsActive) scheduleAutoCheck();
