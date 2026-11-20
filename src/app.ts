@@ -1704,7 +1704,7 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     if (s.managedAuto) {
       const providerTag = document.createElement('span');
       providerTag.className = 'src-pill-tag auto-provider-tag';
-      providerTag.textContent = ({ weelo: 'WEELO', ppv: 'PPV', strmfree: 'STREAMFREE', embdlol: 'EMB', bintv: 'BINTV', cdnlive: 'CDNLIVE', wikisport: 'WIKISPORT' } as Record<string, string>)[s.autoProvider || ''] || 'AUTO';
+      providerTag.textContent = ({ weelo: 'RACINGLAP', ppv: 'PPV', strmfree: 'STREAMFREE', embdlol: 'EMB', bintv: 'BINTV', cdnlive: 'CDNLIVE', wikisport: 'WIKISPORT' } as Record<string, string>)[s.autoProvider || ''] || 'AUTO';
       b.appendChild(providerTag);
     }
     const titleSpan = document.createElement('span');

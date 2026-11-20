@@ -17,6 +17,13 @@ const ids = [
   ...embFeeds.map((f) => `emb-stripped-${f}`),
 ];
 
+describe('source provider branding', () => {
+  it('labels the Weelo auto-provider badge RacingLap without changing its provider identity', () => {
+    expect(app).toContain("weelo: 'RACINGLAP'");
+    expect(app).toContain("s.autoProvider || ''");
+  });
+});
+
 describe('stream source link pools', () => {
   it('declares a pool for every source', () => {
     expect(ids.length).toBeGreaterThanOrEqual(17);
