@@ -1,3 +1,4 @@
+import { ppvDisplayLabel } from './features/auto-label';
 import { syncSourceSelection } from './features/source-selection';
 import { setCounterContext } from './features/counter-context';
 import { applyFailover } from './features/failover';
@@ -1684,6 +1685,7 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     b.dataset.sourceIndex = String(i);
     const active = i === currentSource;
     const pill = describeSourcePill(s);
+    const ppvLabel = s.managedAuto ? ppvDisplayLabel(s.autoProvider, s.autoTag) : null;
     b.className = "chip src-pill" + (active ? " active" : "") + (s.stripped ? " chip-stripped" : "");
     b.setAttribute("aria-pressed", String(active));
     if (s.gated && !canPlayHevc()) b.title = HEVC_WARNING;
@@ -1710,13 +1712,13 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     }
     const titleSpan = document.createElement('span');
     titleSpan.className = 'src-pill-title';
-    titleSpan.textContent = pill.title;
+    titleSpan.textContent = ppvLabel || pill.title;
     b.appendChild(titleSpan);
 
-    if (pill.sub || s.autoTag) {
+    if (pill.sub || (s.autoTag && !ppvLabel)) {
       const subSpan = document.createElement('span');
       subSpan.className = 'src-pill-sub';
-      subSpan.textContent = [pill.sub, s.autoTag].filter(Boolean).join(' · ');
+      subSpan.textContent = [pill.sub, ppvLabel ? '' : s.autoTag].filter(Boolean).join(' · ');
       b.appendChild(subSpan);
     }
 
