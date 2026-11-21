@@ -738,7 +738,7 @@ export function buildBintvUrls(rawId: string): { embedUrl: string; fallbackUrl: 
     const raw = atob(encoded.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - encoded.length % 4) % 4));
     const url = new URL(raw);
     if (url.protocol !== 'https:' || url.username || url.password || url.port || url.search || url.hash) return null;
-    const allowed = (url.hostname === 'ehgembxe.cfd' && /^\/bintv\/[a-z0-9-]{1,160}$/i.test(url.pathname)) ||
+    const allowed = (['ehgembxe.cfd', 'shoewiki.click'].includes(url.hostname) && /^\/bintv\/[a-z0-9-]{1,160}$/i.test(url.pathname)) ||
       (url.hostname === 'embdlol.st' && /^\/embed\/[a-z0-9_-]{4,80}$/i.test(url.pathname));
     if (!allowed || isFormula1Text(url.pathname)) return null;
     const embedUrl = `https://bintv-sources.pages.dev/?id=${encodeURIComponent(encoded)}`;

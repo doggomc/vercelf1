@@ -114,6 +114,9 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
     const resolved = parsePrivateCockpitParams(new URL(buildPrivateCockpitHref(events[1]), 'https://freef1-live.vercel.app').search);
     expect(resolved?.embedUrl).toBe(events[1].embedUrl);
     expect(resolved?.status).toBe('scheduled');
+    expect(buildBintvUrls(encode('https://shoewiki.click/bintv/test-123'))?.embedUrl).toContain('bintv-sources.pages.dev');
+    expect(buildBintvUrls(encode('https://shoewiki.click.evil.example/bintv/test'))).toBeNull();
+    expect(buildBintvUrls(encode('https://shoewiki.click/not-bintv/test'))).toBeNull();
     expect(buildBintvUrls(encode('https://evil.example/abc'))).toBeNull();
     expect(buildBintvUrls(encode('https://ehgembxe.cfd/bintv/test?x=1'))).toBeNull();
     expect(buildBintvUrls(encode('https://ehgembxe.cfd.evil.example/bintv/test'))).toBeNull();

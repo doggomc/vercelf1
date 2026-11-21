@@ -2517,7 +2517,7 @@ async function refreshAutoStreams() {
             if (!/^[A-Za-z0-9_-]{1,240}$/.test(id)) return false;
             const decoded = atob(id.replace(/-/g, '+').replace(/_/g, '/'));
             const player = new URL(decoded);
-            return player.protocol === 'https:' && player.hostname === 'ehgembxe.cfd' && !player.username && !player.password && !player.port && !player.search && !player.hash && /^\/bintv\/[a-z0-9-]{1,160}$/i.test(player.pathname);
+            return player.protocol === 'https:' && ['ehgembxe.cfd', 'shoewiki.click'].includes(player.hostname) && !player.username && !player.password && !player.port && !player.search && !player.hash && /^\/bintv\/[a-z0-9-]{1,160}$/i.test(player.pathname);
           }
           if (row.provider === 'cdnlive') return url.pathname === '/api/v1/channels/player/' && ['Sky Sports F1 FHD UK', 'DAZN F1 FHD'].includes(url.searchParams.get('name') || '');
           if (row.provider === 'wikisport') return (url.hostname === 'siempreon.shop' && url.pathname === '/fslivepro.php') || (url.hostname === 'taifood-blog.asia' && /^\/embed\/[a-z0-9_/%-]+$/i.test(url.pathname)) || (url.hostname === 'embedsports.me' && /^\/streams\/[a-z0-9_-]+$/i.test(url.pathname)) || (url.hostname === 'tvpclive.com' && /^\/embed\/stream-[0-9]+\.php$/i.test(url.pathname));
