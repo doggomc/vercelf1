@@ -2,7 +2,7 @@
 type ChipSource = {
   id: string; label: string; managedAuto?: boolean; autoProvider?: string; autoTag?: string;
   special?: string; embdlol?: string; weelo?: string; gated?: boolean; stripped?: boolean;
-  custom?: boolean; managedCustom?: boolean;
+  custom?: boolean; managedCustom?: boolean; embDisplayName?: string;
   links?: Array<{ provider?: string; quality?: number }>;
 };
 const providers: Record<string, string> = {
@@ -28,11 +28,16 @@ export function sourceChipDisplay(source: ChipSource): {provider: string; title:
       title = match[2].replace(/^sky sport f1(?=\s*(?:·|$))/i, 'Sky Sports F1').trim();
     }
   }
-  if (providerId === 'embdlol' && /^(?:f1atvp|f1atpv|f1\s*apple\s*tv)$/i.test(title.replace(/[_-]/g, ''))) title = 'Apple TV';
+  if (providerId === 'embdlol') {
+    const names: Record<string, string> = {skyf1uk:'Sky Sports F1', skyf1:'Sky Sports F1', skyf1en:'Sky Sports F1', f1atvp:'Apple TV', f1atpv:'Apple TV', f1appletv:'Apple TV', daznf1:'DAZN', daznf1hd:'DAZN', skyf1de:'Sky DE', skyf1it:'Sky Italia', skyf1uhd:'Sky Sports F1 UHD', f1sd:'F1 SD'};
+    const key = title.replace(/[\s_-]+/g, '').toLowerCase();
+    if (names[key]) title = names[key];
+  }
   if (!source.managedAuto && providerId === 'embdlol') {
     const name = source.embdlol || '';
     const clean: Record<string, string> = {fullhd1:'F1 HD 1', fullhd3:'F1 HD 2', world:'World Feed', dazn:'DAZN', skyit:'Sky Italia', skyde:'Sky DE'};
-    if (clean[name]) title = clean[name];
+    if (source.embDisplayName) title = source.embDisplayName;
+    else if (clean[name]) title = clean[name];
   }
   // Remove only known provider suffixes; keep real broadcaster details such as (F1TV).
   title = title.replace(/\s*\((?:weelo|racinglap|emb|ppv|streamfree|strmfree|bintv|ehg)\)\s*$/i, '').trim();

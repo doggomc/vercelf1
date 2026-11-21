@@ -21,7 +21,8 @@ describe('source provider branding', () => {
   it('labels the Weelo auto-provider badge RacingLap without changing its provider identity', () => {
     const labels = readFileSync(new URL('../src/features/auto-label.ts', import.meta.url), 'utf8');
     expect(labels).toContain("weelo: 'RACINGLAP'");
-    expect(app).toContain('sourceChipDisplay(s)');
+    expect(app).toContain('displaySource(s)');
+    expect(app).toContain('sourceChipDisplay({...s, embDisplayName})');
   });
 });
 
@@ -209,6 +210,8 @@ describe('stream source link pools', () => {
     expect(feedKey('Sky Sports Tennis')).toBe('');
     expect(feedKey('f1mexicosatita')).toBe('italian');
     expect(feedKey('skyf1')).toBe('sky');
+    expect(feedKey('skyf1uk')).toBe('sky');
+    expect(feedKey('sky_f1_uk')).toBe('sky');
     expect(feedKey('f1atvp')).toBe('apple');
     expect(feedKey('daznf1')).toBe('dazn');
     expect(feedKey('skyf1_en')).toBe('sky');

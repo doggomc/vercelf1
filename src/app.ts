@@ -1403,7 +1403,7 @@ function updateHeader() {
   const src = sources[currentSource] || { id: "none", label: "-", links: [] };
   if (stageLabel) stageLabel.textContent = "freef1://live/" + currentEvent.slug + "/" + currentSession.slug + "/" + src.id;
   if (sourceLabel) {
-    const display = sourceChipDisplay(src);
+    const display = displaySource(src);
     const parts = [display.title];
     if (display.quality) parts.push(display.quality);
     if (src.stripped && !(relaysDisabled && src.id === 'sky-uk')) parts.push('Stripped');
@@ -1630,6 +1630,14 @@ const isWeeloSourceLive = (s: StreamSource | undefined): boolean => {
   return Boolean(st) && !specialDown(s);
 };
 
+/* Only relabel legacy slots when the catalogue identifies the actual broadcaster. */
+function displaySource(s: StreamSource) {
+  let embDisplayName = '';
+  if (s.embdlol === 'fullhd1' && catalogues.embdlol.sky && catalogues.embdlol.sky === catalogues.embdlol.fullhd1) embDisplayName = 'Sky Sports F1';
+  if (s.embdlol === 'fullhd3' && catalogues.embdlol.apple && catalogues.embdlol.apple === catalogues.embdlol.fullhd3) embDisplayName = 'Apple TV';
+  return sourceChipDisplay({...s, embDisplayName});
+}
+
 function renderTabBar() {
   /* Language tabs only: the multi-viewer is a button beside the player, in its own lazy chunk.
      The sliding ink under the active tab is a ::before on the bar, moved by :has() in CSS. */
@@ -1685,7 +1693,7 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     b.dataset.sourceIndex = String(i);
     const active = i === currentSource;
     const pill = describeSourcePill(s);
-    const display = sourceChipDisplay(s);
+    const display = displaySource(s);
     b.className = "chip src-pill" + (active ? " active" : "") + (s.stripped ? " chip-stripped" : "");
     b.setAttribute("aria-pressed", String(active));
     if (s.gated && !canPlayHevc()) b.title = HEVC_WARNING;

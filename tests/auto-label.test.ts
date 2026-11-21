@@ -10,6 +10,13 @@ describe('cockpit source chip presentation', () => {
     expect(auto('ppv', 'Las Vegas - Practice 3', 'HD | Apple TV (F1TV)')).toEqual({provider:'PPV', title:'Apple TV (F1TV)',quality:'HD',is4k:false});
     expect(auto('weelo', 'International Feed', 'Weelo · Upcoming')).toEqual({provider:'RACINGLAP', title:'International Feed',quality:'',is4k:false});
     expect(auto('embdlol', 'f1atvp', 'EMB')).toEqual({provider:'EMB', title:'Apple TV',quality:'',is4k:false});
+    expect(auto('embdlol', 'skyf1uk', 'EMB')).toEqual({provider:'EMB', title:'Sky Sports F1',quality:'',is4k:false});
+    expect(auto('embdlol', 'daznf1', 'EMB').title).toBe('DAZN');
+    expect(auto('embdlol', 'skyf1de', 'EMB').title).toBe('Sky DE');
+    expect(auto('embdlol', 'skyf1it', 'EMB').title).toBe('Sky Italia');
+    expect(auto('embdlol', 'skyf1uhd', 'EMB').is4k).toBe(true);
+    expect(sourceChipDisplay({id:'emb-fullhd1',label:'FULLHD1 (EMB)',embdlol:'fullhd1',embDisplayName:'Sky Sports F1',links:[]}).title).toBe('Sky Sports F1');
+    expect(sourceChipDisplay({id:'emb-fullhd3',label:'FULLHD3 (EMB)',embdlol:'fullhd3',embDisplayName:'Apple TV',links:[]}).title).toBe('Apple TV');
     expect(auto('embdlol', 'F1 Apple TV', 'EMB').title).toBe('Apple TV');
     expect(auto('embdlol', 'Sky F1 UHD', 'EMB').is4k).toBe(true);
     expect(auto('bintv', 'Sky Sports F1 · 4K HEVC', 'BinTV').is4k).toBe(true);
