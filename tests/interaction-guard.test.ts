@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 
 describe('page interaction guard', () => {
   afterEach(() => { vi.unstubAllGlobals(); vi.resetModules(); });
@@ -29,4 +30,10 @@ describe('page interaction guard', () => {
     handlers.keydown({ key: 'F5', preventDefault, stopImmediatePropagation });
     expect(preventDefault).not.toHaveBeenCalled();
   });
+});
+
+it('does not start the retired stripped-stream notice', () => {
+  const guard = readFileSync('src/interaction-guard.ts', 'utf8');
+  expect(guard).not.toContain('notice-loader');
+  expect(guard).not.toContain('initNotice');
 });

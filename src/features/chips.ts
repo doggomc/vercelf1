@@ -47,13 +47,18 @@ export function applySourceConfig(payload: any, host: {
       (payload?.relaysDisabled === true && ((source.stripped && source.id !== 'sky-uk') || relayOverride));
   });
   custom.forEach(source => { source.hidden = payload?.autoStreams === true || disabled.has(source.id) || (payload?.relaysDisabled === true && source.links.some(link => isStreamRelayUrl(link.url))); });
-  const automatic: StreamSource[] = payload?.autoStreams && Array.isArray(payload?.autoEntries) ? payload.autoEntries.map((item: any) => ({
+  const automatic: StreamSource[] = payload?.autoStreams && Array.isArray(payload?.autoEntries) ? payload.autoEntries.flatMap((item: any) => {
+    const original: StreamSource = {
     id: item.id, label: item.label, lang: item.tab === 'other' ? 'other' : 'en',
     managedAuto: true, autoProvider: item.provider, autoTag: item.tag,
     weelo: item.provider === 'weelo' ? new URL(item.url).searchParams.get('stream') || undefined : undefined,
     special: ['onboard', 'data', 'feed'].includes(item.special) ? item.special : undefined,
     links: [{ provider: 'custom', quality: 0, url: item.url }]
-  })) : [];
+    };
+    // Reuse the validated auto URL; no second discovery or relay request.
+    if (item.provider === 'strmfree') return [original, {...original, id: `${item.id}-sandbox`, stripped: true, sandboxDirect: true}];
+    return [original];
+  }) : [];
   const combined = [...builtins, ...custom, ...automatic];
   const rank = new Map<string, number>((Array.isArray(payload?.order) ? payload.order : []).map((id: string, i: number) => [id, i]));
   const baseline = new Map((defaultOrder.get(host.sources) || []).map((id, index) => [id, index]));

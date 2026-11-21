@@ -1,5 +1,3 @@
-import { initNotice } from './features/notice-loader';
-initNotice();
 /* Best-effort deterrent only: browser source and DevTools remain accessible. */
 (() => {
   const editable = (target: EventTarget | null): boolean =>

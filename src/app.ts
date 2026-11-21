@@ -473,7 +473,8 @@ interface StreamSource {
   gated?: boolean;              // the 4K chip: resolved server-side, plays through the nudge
   lang?: 'en' | 'other';        // which tab the chip belongs to
   special?: 'onboard' | 'data' | 'feed'; // drawn apart from the broadcaster chips
-  stripped?: boolean;           // ad-stripped Weelo counterpart relayed via /api/stream/weellz-embed
+  stripped?: boolean;           // marks the user-facing Stripped badge
+  sandboxDirect?: boolean;      // direct StreamFree iframe; never a Render relay
   weelo?: string;               // weelo stream id, when the pool is looked up there
   weellzUrls?: string[];        // live channel URLs synced from weellz.live (primary + backups)
   weellzPending?: boolean;      // true only while weellz.live marks the channel link pending
@@ -783,7 +784,7 @@ let sourceConfigKnown = false;
 let disabledSourceIds = new Set<string>();
 let autoWindowState: 'unknown' | 'active' | 'closed' | 'unavailable' = 'unknown';
 let autoWindowStart: number | null = null;
-const sourceEnabled = (s) => sourceConfigKnown && Boolean(s) && !disabledSourceIds.has(s.id) && !(relaysDisabled && ((s.stripped && s.id !== 'sky-uk') || s.links?.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url)))) && (autoStreamsActive ? Boolean(s.managedAuto) && (s.autoProvider !== 'ppv' || autoPpvMatchesSession(s.label, s.links?.[0]?.url, currentSession?.slug)) : !s.managedAuto && !s.hidden);
+const sourceEnabled = (s) => sourceConfigKnown && Boolean(s) && !disabledSourceIds.has(s.id) && !(s.sandboxDirect && disabledSourceIds.has(s.id.replace(/-sandbox$/, ''))) && !(relaysDisabled && ((s.stripped && !s.sandboxDirect && s.id !== 'sky-uk') || s.links?.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url)))) && (autoStreamsActive ? Boolean(s.managedAuto) && (s.autoProvider !== 'ppv' || autoPpvMatchesSession(s.label, s.links?.[0]?.url, currentSession?.slug)) : !s.managedAuto && !s.hidden);
 
 /* ═══ Session key ═══
    Every source URL is derived from the live event + session, and the key is stamped onto feeds
@@ -2067,13 +2068,17 @@ function isStrippedEmbed(url: string): boolean {
    sends only our domain — enough to look embedded, and no path or query ever leaves the site.
    Stripped weellz/embdlol embeds run inside an explicit sandbox with no-referrer so popup/navigation
    attempts are browser-blocked and direct HLS segment requests send no Referer. */
-function makeStreamIframe(url, rp) {
+function makeStreamIframe(url, rp, sandboxDirect = false) {
   const f = document.createElement("iframe");
   f.src = url;
   f.allow = IFRAME_ALLOW;
   f.setAttribute('allow', IFRAME_ALLOW);
   f.allowFullscreen = true;
-  if (isStrippedEmbed(url)) {
+  if (sandboxDirect) {
+    f.setAttribute('sandbox', 'allow-scripts');
+    f.setAttribute('scrolling', 'no');
+    f.referrerPolicy = 'strict-origin-when-cross-origin';
+  } else if (isStrippedEmbed(url)) {
     f.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation');
     f.referrerPolicy = 'origin';
   } else {
@@ -2123,7 +2128,7 @@ function attemptSource(token, order, idx, startedAt, linkIdx = 0, triedDynamic =
   const targetUrl = pool[linkIdx];
   setLoaderText(!idx && !linkIdx ? "Establishing feed…" : idx === order.length - 1 && linkIdx === pool.length - 1 ? "Every feed is unreachable…" : "Switching link…");
 
-  const f = makeStreamIframe(targetUrl, sources[sourceIndex].rp);
+  const f = makeStreamIframe(targetUrl, sources[sourceIndex].rp, Boolean(sources[sourceIndex].sandboxDirect));
   if (isHakunaCleanPlayer(targetUrl)) f.dataset.hakunaClean = 'true';
   let settled = false;
 
@@ -2521,8 +2526,9 @@ async function refreshAutoStreams() {
       });
       // Do not unmount an active player just because the provider's next listing changes or fails.
       const playing = sources[currentSource];
-      if (playing?.managedAuto && stageBox?.querySelector('iframe, video') && !nextEntries.some((entry: any) => entry.id === playing.id)) {
-        const previous = autoEntries.find((entry: any) => entry.id === playing.id);
+      const playingEntryId = playing?.sandboxDirect ? playing.id.replace(/-sandbox$/, '') : playing?.id;
+      if (playing?.managedAuto && stageBox?.querySelector('iframe, video') && !nextEntries.some((entry: any) => entry.id === playingEntryId)) {
+        const previous = autoEntries.find((entry: any) => entry.id === playingEntryId);
         if (previous) nextEntries.push(previous);
       }
       autoEntries = nextEntries;
