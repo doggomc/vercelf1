@@ -1,5 +1,5 @@
 {
-  "source": "https://racinglap.net/replays",
+  "source": "https://racinglap.net/api/v1/replays.json",
   "items": [
     {
       "season": 2026,
