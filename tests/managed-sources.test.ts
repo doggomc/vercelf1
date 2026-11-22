@@ -79,3 +79,14 @@ it('keeps BinTV event session metadata for the cockpit session guard', () => {
   applySourceConfig({autoStreams:true,autoEntries:[{id:'auto-bintv-abcdef1234567890',provider:'bintv',label:'Apple TV',tag:'4K',url:'https://bintv-sources.pages.dev/?id=abc',eventSession:'Las Vegas Grand Prix - Race',tab:'en'}]},host);
   expect(sources[0].eventSession).toBe('Las Vegas Grand Prix - Race');
 });
+
+it('preserves RacingLap session information and direct same-feed backup players', () => {
+  const sources: StreamSource[] = []; let index=-1;
+  const host={sources,current:()=>index,setCurrent:(i:number)=>{index=i},usable:(s:StreamSource|undefined)=>!!s,normalize:()=>{index=0},render:()=>{},reload:()=>{}};
+  const url='https://weellz.live/beta?stream=abc123';
+  const backup='https://weellz.live/at?id=def456';
+  applySourceConfig({autoStreams:true,autoEntries:[{id:'auto-weelo-abcdef1234567890',provider:'weelo',label:'International Feed',url,backups:[backup,'https://evil.test/at?id=abc','https://weellz.live/at?id=abc&extra=x'],eventSession:'Practice 1',eventStart:123456789,tab:'en'}]},host);
+  expect(sources[0].eventSession).toBe('Practice 1');
+  expect(sources[0].eventStart).toBe(123456789);
+  expect(sources[0].links.map(link=>link.url)).toEqual([url,backup]);
+});

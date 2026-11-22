@@ -16,6 +16,15 @@ export function setChip(source: StreamSource, custom: { label?: string; url?: st
   source.links = custom.url ? [{ provider: 'custom', quality: 0, url: custom.url }] : source.base.links;
 }
 
+function isRacingLapBackup(value: unknown): value is string {
+  try {
+    if (typeof value !== 'string' || value.length > 512) return false;
+    const u = new URL(value);
+    const key = u.pathname === '/beta' ? 'stream' : u.pathname === '/at' ? 'id' : '';
+    return u.protocol === 'https:' && u.hostname === 'weellz.live' && !u.username && !u.password && !u.port && !u.hash && !!key && [...u.searchParams.keys()].every(k => k === key) && u.searchParams.getAll(key).length === 1 && /^[A-Za-z0-9_-]{3,180}$/.test(u.searchParams.get(key) || '');
+  } catch { return false; }
+}
+
 /* Keep the last applied overrides here, so app.ts does not need a variable for them. */
 export function applySourceConfig(payload: any, host: {
   sources: StreamSource[];
@@ -51,10 +60,11 @@ export function applySourceConfig(payload: any, host: {
     const original: StreamSource = {
     id: item.id, label: item.label, lang: item.tab === 'other' ? 'other' : 'en',
     managedAuto: true, autoProvider: item.provider, autoTag: item.tag,
-    eventSession: item.provider === 'bintv' && typeof item.eventSession === 'string' ? item.eventSession.slice(0,120) : undefined,
+    eventSession: ['bintv','weelo'].includes(item.provider) && typeof item.eventSession === 'string' ? item.eventSession.slice(0,120) : undefined,
+    eventStart: item.provider === 'weelo' && Number.isFinite(item.eventStart) ? item.eventStart : undefined,
     weelo: item.provider === 'weelo' ? new URL(item.url).searchParams.get('stream') || undefined : undefined,
     special: ['onboard', 'data', 'feed'].includes(item.special) ? item.special : undefined,
-    links: [{ provider: 'custom', quality: 0, url: item.url }]
+    links: [{ provider: 'custom', quality: 0, url: item.url }, ...(item.provider === 'weelo' && Array.isArray(item.backups) ? item.backups.filter((url: unknown) => isRacingLapBackup(url)).slice(0,5).map((url: string) => ({ provider: 'custom', quality: 0, url })) : [])]
     };
     // Reuse the validated auto URL; no second discovery or relay request.
     if (item.provider === 'strmfree') return [original, {...original, id: `${item.id}-sandbox`, stripped: true, sandboxDirect: true}];

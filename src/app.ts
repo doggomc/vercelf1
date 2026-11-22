@@ -20,7 +20,7 @@ import { $ } from './services/dom';
 import { schedule, type RaceEvent, type Session } from './data/schedule';
 import { mapPool } from './services/pool';
 import type { Catalogues } from './features/catalogues';
-import { staleSession, canonicalSessionSlug, autoPpvMatchesSession } from './features/session-guard';
+import { staleSession, canonicalSessionSlug, autoPpvMatchesSession, autoRacingLapMatchesSession } from './features/session-guard';
 /* ═══════════════════════════════════════════════════════════════════════════
    FreeF1 - Formula 1 Live Companion
    Client Application Logic
@@ -483,7 +483,7 @@ interface StreamSource {
   /* Race Control's own view of the chip: the shipped name and pool, and the live state. */
   base?: { label: string; links: StreamLink[] };
   hidden?: boolean;
-  managedAuto?: boolean; autoProvider?: string; autoTag?: string; eventSession?: string;
+  managedAuto?: boolean; autoProvider?: string; autoTag?: string; eventSession?: string; eventStart?: number;
   custom?: boolean;             // Race Control pasted an address: play it as given, never judge it
 }
 
@@ -784,7 +784,7 @@ let sourceConfigKnown = false;
 let disabledSourceIds = new Set<string>();
 let autoWindowState: 'unknown' | 'active' | 'closed' | 'unavailable' = 'unknown';
 let autoWindowStart: number | null = null;
-const sourceEnabled = (s) => sourceConfigKnown && Boolean(s) && !disabledSourceIds.has(s.id) && !(s.sandboxDirect && disabledSourceIds.has(s.id.replace(/-sandbox$/, ''))) && !(relaysDisabled && ((s.stripped && !s.sandboxDirect && s.id !== 'sky-uk') || s.links?.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url)))) && (autoStreamsActive ? Boolean(s.managedAuto) && (s.autoProvider !== 'ppv' || autoPpvMatchesSession(s.label, s.links?.[0]?.url, currentSession?.slug)) && (s.autoProvider !== 'bintv' || !s.eventSession || autoPpvMatchesSession(s.eventSession, '', currentSession?.slug)) : !s.managedAuto && !s.hidden);
+const sourceEnabled = (s) => sourceConfigKnown && Boolean(s) && !disabledSourceIds.has(s.id) && !(s.sandboxDirect && disabledSourceIds.has(s.id.replace(/-sandbox$/, ''))) && !(relaysDisabled && ((s.stripped && !s.sandboxDirect && s.id !== 'sky-uk') || s.links?.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url)))) && (autoStreamsActive ? Boolean(s.managedAuto) && (s.autoProvider !== 'ppv' || autoPpvMatchesSession(s.label, s.links?.[0]?.url, currentSession?.slug)) && (s.autoProvider !== 'bintv' || !s.eventSession || autoPpvMatchesSession(s.eventSession, '', currentSession?.slug)) && (s.autoProvider !== 'weelo' || autoRacingLapMatchesSession(s.eventSession, s.eventStart, currentSession?.slug, currentSession?.ts)) : !s.managedAuto && !s.hidden);
 
 /* ═══ Session key ═══
    Every source URL is derived from the live event + session, and the key is stamped onto feeds
@@ -1072,6 +1072,8 @@ function linkPool(index: number): string[] {
   source.custom = custom;
   const pasted = source.links.find((l) => l.provider === 'custom' && l.url);
   if (pasted) {
+    // RacingLap's published backups are additional direct players for this same feed.
+    if (source.managedAuto && source.autoProvider === 'weelo') return source.links.map(link => customLink(link.url || '')).filter(Boolean);
     const url = customLink(pasted.url!);
     return url ? [url] : [];
   }

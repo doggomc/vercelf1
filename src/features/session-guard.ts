@@ -45,3 +45,10 @@ export function autoPpvMatchesSession(label: unknown, url: unknown, session: unk
   const match = patterns.find(([regex]) => regex.test(text));
   return Boolean(match && match[1] === canonicalSessionSlug(session));
 }
+
+/** Old RacingLap/Weelo entries have no session metadata; API entries must match the selected session and weekend. */
+export function autoRacingLapMatchesSession(label: unknown, start: unknown, session: unknown, selectedStart: unknown): boolean {
+  if (!label) return true;
+  if (!autoPpvMatchesSession(label, '', session)) return false;
+  return typeof start === 'number' && Number.isFinite(start) && typeof selectedStart === 'number' && Number.isFinite(selectedStart) && Math.abs(start - selectedStart) <= 8 * 3600_000;
+}

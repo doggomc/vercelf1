@@ -53,3 +53,12 @@ it('accepts a BinTV race event only for the matching session', () => {
   expect(autoPpvMatchesSession('Heineken Las Vegas Grand Prix - Race', '', 'race')).toBe(true);
   expect(autoPpvMatchesSession('Heineken Las Vegas Grand Prix - Race', '', 'fp1')).toBe(false);
 });
+
+it('matches RacingLap session and weekend, while retaining legacy feeds', async () => {
+  const {autoRacingLapMatchesSession: match}=await import('../src/features/session-guard');
+  expect(match('Practice 1',10000000,'fp1',10000000+1800000)).toBe(true);
+  expect(match('Practice 1',10000000,'race',10000000)).toBe(false);
+  expect(match('Practice 1',10000000,'fp1',10000000+9*3600000)).toBe(false);
+  expect(match('Practice 1',null,'fp1',10000000)).toBe(false);
+  expect(match(undefined,undefined,'race',10000000)).toBe(true);
+});
