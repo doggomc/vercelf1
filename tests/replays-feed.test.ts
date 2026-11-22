@@ -25,7 +25,7 @@ describe('replays feed', () => {
     const items = [{season:2026,round:19,key:'race',id:'TG5Ocb9P9Ge',sources:[feed,feed]}, {season:2026,round:19,key:'fp1',id:'practice',sources:[feed]}, {season:2026,round:19,key:'race',id:'bad',sources:[{label:'bad',url:'https://evil.test/replay?id=bad'}]}];
     const [merged] = mergeRacingLap(existing,items);
     expect(merged.id).toBe(existing[0].id);
-    expect(merged.sessions.find(s=>s.key==='race')!.replay.sources.map(s=>s.label)).toEqual(['Weellz · F1 TV','SkySports']);
+    expect(merged.sessions.find(s=>s.key==='race')!.replay.sources.map(s=>s.label)).toEqual(['RacingLap · F1 TV','SkySports']);
     expect(merged.sessions.find(s=>s.key==='fp1')!.replay.sources).toHaveLength(1);
     expect(existing[0].sessions[0].replay.sources).toHaveLength(1);
   });

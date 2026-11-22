@@ -86,7 +86,7 @@ export function mergeRacingLap(events: Event[], items: RacingLapItem[]): Event[]
     if (item.season !== 2026 || !Number.isInteger(item.round) || !names[item.key] || !/^[\w-]+$/.test(item.id) || !Array.isArray(item.sources)) continue;
     const scheduled = schedule.find(s => s.round === item.round);
     if (!scheduled) continue;
-    const sources = item.sources.flatMap(s => { const url = safeSource(s?.url); return url && new URL(url).hostname === 'weellz.live' ? [{label:String(s.label || 'Weellz').slice(0,80),url}] : []; });
+    const sources = item.sources.flatMap(s => { const url = safeSource(s?.url); return url && new URL(url).hostname === 'weellz.live' ? [{label:String(s.label || 'RacingLap').replace(/^Weellz(?=\s*·|$)/i, 'RacingLap').slice(0,80),url}] : []; });
     if (!sources.length) continue;
     let event = result.find(e => e.season === item.season && e.round === item.round && e.series === 'f1');
     if (!event) {

@@ -60,7 +60,7 @@ def main():
                 for b in session.buttons:
                     u=urllib.parse.urlparse(b['url']); q=urllib.parse.parse_qs(u.query)
                     if u.scheme=='https' and u.netloc=='weellz.live' and u.path=='/replay' and set(q)=={'id'} and len(q['id'])==1 and re.fullmatch(r'[\w-]+',q['id'][0]):
-                        item={'label':'Weellz · '+b['name'].strip()[:60], 'url':b['url']}
+                        item={'label':'RacingLap · '+b['name'].strip()[:60], 'url':b['url']}
                         if b['name'].strip() and item not in players: players.append(item)
                 if players: entries.append({'season':year,'round':round_number,'key':key,'id':replay_id,'sources':players})
     if not entries: raise ValueError('No replay players found; refusing to overwrite index')
