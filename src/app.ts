@@ -1824,6 +1824,30 @@ function chooseMultiViewer() {
 $('mvToggle')?.addEventListener('click', chooseMultiViewer);
 
 /* Theater mode: the window fills the viewport, the rail and sources step aside. Escape puts it back. */
+// Load timing code and connect only when explicitly opened. The cockpit player is untouched.
+const compactTimingToggle = $('compactTimingToggle');
+let compactTimingController: { open(): void; close(): void } | null = null;
+let compactTimingWanted = false;
+async function setCompactTiming(open: boolean) {
+  compactTimingWanted = open;
+  const panel = $('compactTimingPanel'), rail = $('watchSide');
+  if (panel) panel.hidden = !open;
+  if (rail) rail.hidden = open;
+  if (compactTimingToggle) compactTimingToggle.setAttribute('aria-pressed', String(open));
+  if (!open) { compactTimingController?.close(); return; }
+  try {
+    const mod = await import('./features/compact-timing');
+    if (!compactTimingWanted) return;
+    compactTimingController ||= mod.createCompactTiming();
+    compactTimingController.open();
+  } catch {
+    const status = $('compactTimingStatus');
+    if (status) status.textContent = 'Live timing unavailable. Please try again.';
+  }
+}
+compactTimingToggle?.addEventListener('click', () => { void setCompactTiming(!compactTimingWanted); });
+$('compactTimingClose')?.addEventListener('click', () => { void setCompactTiming(false); compactTimingToggle?.focus(); });
+
 const theaterBtn = $('theaterBtn');
 const sourcesBtn = $('sourcesToggle');
 /* Theater hides the nav, and the nav is where the connection count lives. The count comes with it
@@ -1837,6 +1861,7 @@ const mirrorOnline = () => {
 };
 
 const setTheater = (on: boolean) => {
+  if (on && compactTimingWanted) void setCompactTiming(false);
   document.body.classList.toggle('theater', on);
   if (theaterOnline) theaterOnline.hidden = !on;
   window.clearInterval(onlineMirror);

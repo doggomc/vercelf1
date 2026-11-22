@@ -6948,3 +6948,28 @@ body[data-page="cockpit"].theater #watch .src-pill-sub {
 .src-pill-special { background: #ffffff12; color: var(--team); font-size: 9.5px; letter-spacing: .05em; }
 .src-pill-special.is-data { color: #669df1; background: #669df124; }
 .src-pill-special.is-feed { color: #cbd5e1; background: #ffffff14; }
+
+/* Optional timing rail takes the existing rail column, never the player column. */
+.compact-timing { grid-column:2; position:sticky; top:72px; min-width:0; padding:17px; border:1px solid #ffffff17; border-radius:18px; background:#151619; box-shadow:0 14px 35px #0002; }
+.compact-timing-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.compact-timing-head h2 { margin:3px 0 0; font-size:18px; color:#fff; }
+.compact-timing-kicker { font:700 9px 'JetBrains Mono',monospace; letter-spacing:.13em; color:#e10600; }
+.compact-timing-head button { background:#ffffff0d; color:#b9bdc5; border:0; border-radius:8px; width:32px; height:32px; font-size:22px; cursor:pointer; }
+.compact-timing-head button:hover { background:#ffffff1a; color:white; }
+.compact-timing-status { font-size:11px; color:#9ba1ac; margin:12px 0 9px; }
+.compact-timing-scroll { max-height:calc(100vh - 250px); min-height:120px; overflow:auto; }
+.compact-timing-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:12px; }
+.compact-timing-table th { text-align:left; color:#7f8794; font:600 10px 'JetBrains Mono',monospace; padding:8px 3px; border-bottom:1px solid #ffffff17; }
+.compact-timing-table th:nth-child(1) { width:27px; } .compact-timing-table th:nth-child(3) { width:37px; text-align:center; } .compact-timing-table th:nth-child(4) { width:68px; text-align:right; }
+.compact-timing-table td { height:33px; padding:4px 3px; border-bottom:1px solid #ffffff0b; color:#d9dce2; }
+.compact-timing-table td:first-child { font:600 11px 'JetBrains Mono',monospace; color:#9299a5; }
+.compact-timing-driver { display:flex; align-items:center; gap:6px; min-width:0; border-left:3px solid var(--team-color,#888); padding-left:6px; }
+.compact-timing-driver img { width:22px; height:22px; object-fit:contain; flex:none; }
+.compact-timing-driver span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:700; }
+.compact-timing-tyre-cell { text-align:center; } .compact-timing-tyre { display:inline-grid; place-items:center; width:21px; height:21px; border:2px solid #aeb4bd; border-radius:50%; color:#fff; font:700 10px 'JetBrains Mono',monospace; }
+.compact-timing-tyre[data-tyre="S"] { border-color:#e63338; } .compact-timing-tyre[data-tyre="M"] { border-color:#f3cf38; } .compact-timing-tyre[data-tyre="H"] { border-color:#eee; } .compact-timing-tyre[data-tyre="I"] { border-color:#38c77c; } .compact-timing-tyre[data-tyre="W"] { border-color:#4aa8f2; }
+.compact-timing-gap { text-align:right; font:600 11px 'JetBrains Mono',monospace; white-space:nowrap; }
+.compact-timing-more { display:block; margin-top:13px; color:#b7bdc7; font-size:11px; text-decoration:none; } .compact-timing-more:hover { color:white; }
+body.theater #compactTimingToggle { display:none; }
+body.theater .compact-timing { display:none; }
+@media(max-width: 1100px) { .compact-timing { grid-column:1; position:static; } .compact-timing-scroll { max-height:500px; } }

@@ -29,6 +29,7 @@ export type TimingRow = {
   fullName: string;
   driverHref: string;
   teamColor: string;
+  teamName?: string;
   isOut: boolean;
   /** 7 numeric columns:
       Race/Sprint:    [Gap, Interval, Last lap, Best lap, S1, S2, S3]
@@ -355,6 +356,7 @@ export function snapshotFromF1State(state: Record<string, any>, now: number = Da
       fullName: full,
       driverHref: first && last ? `/drivers/${slugify(`${first} ${last}`)}/` : '/drivers',
       teamColor: normalizeHex(drv.TeamColour, drv.TeamName),
+      teamName: String(drv.TeamName || ''),
       isOut,
       cells: [c0, c1, c2, c3, sectorCell(0), sectorCell(1), sectorCell(2)],
       tyre,
@@ -737,6 +739,7 @@ export function snapshotFromOpenF1(bundle: OpenF1Bundle, now: number = Date.now(
       fullName: full,
       driverHref: first && last ? `/drivers/${slugify(`${first} ${last}`)}/` : '/drivers',
       teamColor: normalizeHex(drv.team_colour, drv.team_name),
+      teamName: String(drv.team_name || ''),
       isOut: entry.isOut,
       cells: [c0, c1, c2, c3, s1Cell, s2Cell, s3Cell],
       tyre,
@@ -902,7 +905,7 @@ export class F1SignalRClient extends EventTarget {
       try { this.ws.close(); } catch { /* ignore */ }
       this.ws = null;
     }
-    if (!pauseOnly) this.wanted = false;
+    if (!pauseOnly) { this.wanted = false; document.removeEventListener('visibilitychange', this.onVisibility); }
   }
 
   private scheduleReconnect(): void {

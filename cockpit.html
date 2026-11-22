@@ -116,6 +116,7 @@
         </div>
         <div class="wplayer-actions-main" id="stageActions">
           <button class="btn sm" id="mvToggle" type="button" title="Watch multiple live feeds at once" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Multiview</span></button>
+          <button class="btn sm" id="compactTimingToggle" type="button" aria-pressed="false" aria-controls="compactTimingPanel">Live Timing</button>
           <button class="btn sm" id="theaterBtn" type="button" title="Fill the window with the stream" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4"/></svg><span>Theater</span></button>
           <button class="btn sm" id="sourcesToggle" type="button" title="Show or hide the stream sources in theater" aria-pressed="true" hidden>Sources</button>
           <span class="btn sm theater-online mono" id="theaterOnline" role="status" aria-live="polite" hidden><i aria-hidden="true"></i><b id="theaterOnlineCount">—</b> online</span>
@@ -137,7 +138,14 @@
 
     </div>
 
-    <aside class="watch-side" aria-label="Session info">
+    <aside class="compact-timing" id="compactTimingPanel" aria-label="Live timing" hidden>
+      <div class="compact-timing-head"><div><span class="compact-timing-kicker">RACE CONTROL</span><h2>Live Timing</h2></div><button type="button" id="compactTimingClose" aria-label="Close live timing">×</button></div>
+      <div class="compact-timing-status" id="compactTimingStatus" role="status">Connecting to timing…</div>
+      <div class="compact-timing-scroll"><table class="compact-timing-table"><thead><tr><th scope="col">Pos</th><th scope="col">Driver</th><th scope="col">Tyre</th><th scope="col">Gap</th></tr></thead><tbody id="compactTimingRows"></tbody></table></div>
+      <a class="compact-timing-more" href="/live-timing">Full live timing <span aria-hidden="true">↗</span></a>
+    </aside>
+
+    <aside class="watch-side" id="watchSide" aria-label="Session info">
       <div class="side-card" id="nowPlayingCard" hidden>
         <p class="side-h">Now playing</p>
         <p class="side-now" id="sourceLabel">Sky HD</p>
