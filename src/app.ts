@@ -1979,6 +1979,8 @@ function hideNoStream() {
 
 function setStreamOnScreen(on) {
   document.body.classList.toggle('has-stream', on);
+  const card = $('nowPlayingCard');
+  if (card) card.hidden = !on || !stageBox?.querySelector('iframe, video');
   // keep screen awake only while a stream is actually on-screen
   if(on) requestScreenWakeLock().catch(()=>{});
   else syncScreenWakeLock();
@@ -2201,6 +2203,8 @@ function attemptSource(token, order, idx, startedAt, linkIdx = 0, triedDynamic =
 }
 
 function load() {
+  const card = $('nowPlayingCard');
+  if (card) card.hidden = true;
   const token = ++playerLoadToken;
   loaderEl?.classList.remove("hidden");
   hideNoStream();

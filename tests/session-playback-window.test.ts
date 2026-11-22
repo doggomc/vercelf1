@@ -2,6 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 const app = readFileSync(new URL('../src/app.ts', import.meta.url), 'utf8');
 describe('cockpit session playback window', () => {
+  it('hides Now playing until a stream is mounted and whenever playback is blocked', () => {
+    const html = readFileSync(new URL('../cockpit.html', import.meta.url), 'utf8');
+    expect(html).toMatch(/id="nowPlayingCard" hidden/);
+    const onScreen = app.slice(app.indexOf('function setStreamOnScreen('), app.indexOf('function setStreamOnScreen(') + 600);
+    expect(onScreen).toContain("card.hidden = !on || !stageBox?.querySelector('iframe, video')");
+    const noStream = app.slice(app.indexOf('function showNoStream('), app.indexOf('function hideNoStream('));
+    expect(noStream).toContain('setStreamOnScreen(false)');
+    const load = app.slice(app.indexOf('function load()'), app.indexOf('let streamOverride ='));
+    expect(load).toContain('if (card) card.hidden = true;');
+  });
   it('gates every ordinary source after the explicit stream override and before loading any provider', () => {
     const load = app.slice(app.indexOf('function load()'), app.indexOf('let streamOverride ='));
     expect(load.indexOf('if (streamOverride.active && streamOverride.url)')).toBeLessThan(load.indexOf('if (!isStreamAvailable(currentSession))'));
