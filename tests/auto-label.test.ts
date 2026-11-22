@@ -20,6 +20,7 @@ describe('cockpit source chip presentation', () => {
     expect(auto('embdlol', 'F1 Apple TV', 'EMB').title).toBe('Apple TV');
     expect(auto('embdlol', 'Sky F1 UHD', 'EMB').is4k).toBe(true);
     expect(auto('bintv', 'Sky Sports F1 · 4K HEVC', 'BinTV').is4k).toBe(true);
+    expect(auto('bintv', 'Apple TV', '4K')).toEqual({provider:'BINTV',title:'Apple TV',quality:'',is4k:true});
     expect(auto('bintv', 'Sky Sports F1 · English', 'BinTV').title).toBe('Sky Sports F1 · English');
   });
   it('labels manual and custom sources without inventing a quality', async () => {

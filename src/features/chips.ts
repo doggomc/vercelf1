@@ -51,6 +51,7 @@ export function applySourceConfig(payload: any, host: {
     const original: StreamSource = {
     id: item.id, label: item.label, lang: item.tab === 'other' ? 'other' : 'en',
     managedAuto: true, autoProvider: item.provider, autoTag: item.tag,
+    eventSession: item.provider === 'bintv' && typeof item.eventSession === 'string' ? item.eventSession.slice(0,120) : undefined,
     weelo: item.provider === 'weelo' ? new URL(item.url).searchParams.get('stream') || undefined : undefined,
     special: ['onboard', 'data', 'feed'].includes(item.special) ? item.special : undefined,
     links: [{ provider: 'custom', quality: 0, url: item.url }]

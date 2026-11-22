@@ -48,3 +48,8 @@ describe('automatic PPV session visibility', () => {
     expect(autoPpvMatchesSession('F1 Sky Sports','https://taifood-blog.asia/embed/sky-f1','fp1')).toBe(false);
   });
 });
+
+it('accepts a BinTV race event only for the matching session', () => {
+  expect(autoPpvMatchesSession('Heineken Las Vegas Grand Prix - Race', '', 'race')).toBe(true);
+  expect(autoPpvMatchesSession('Heineken Las Vegas Grand Prix - Race', '', 'fp1')).toBe(false);
+});
