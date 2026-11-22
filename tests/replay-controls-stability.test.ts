@@ -39,13 +39,14 @@ describe('replay controls stability', () => {
     const controls=$('replayControls'), stage=$('stageBox');
     const context:any={event:e,session:s1,weekends:[weekend],sourceIndex:0,helpTimer:0,sessionControlsSignature:'',feedControlsSignature:'',feedButtons:null,
       sourceJellyModule:Promise.resolve({animateSourceJelly:()=>{}}), seriesNames:{f1:'F1'}, weekendTitle:()=> 'Grand Prix', safeSource:(v:string)=>v,
-      setCounterContext:()=>{}, $, document:{getElementById:()=>null,createElement:(tag:string)=>new Element(tag)},
+      setCounterContext:()=>{}, clearRacingLapIntro:()=>{}, playRacingLapIntro:()=>{}, isRacingLapReplay:()=>true, $, document:{getElementById:()=>null,createElement:(tag:string)=>new Element(tag)},
       window:{clearTimeout:()=>{},setTimeout:()=>1}, history:{replaceState:()=>{}}, URL, URLSearchParams };
     runInNewContext(ts.transpile(code,{target:ts.ScriptTarget.ES2022})+'\nglobalThis.display=display;',context);
     context.display();
     const sessions=controls.querySelectorAll('button[data-replay-session]');
     const feeds=controls.querySelectorAll('button[data-replay-feed]');
     const firstFrame=stage.querySelector('iframe');
+    expect((firstFrame as any).src).toBe('https://weellz.live/replay?id=one');
     feeds[1].onclick({detail:1});
     expect(controls.querySelectorAll('button[data-replay-session]')[0]).toBe(sessions[0]);
     expect(controls.querySelectorAll('button[data-replay-feed]')[1]).toBe(feeds[1]);

@@ -28,6 +28,7 @@ import {
   parsePpvStreams,
   parsePrivateCockpitParams,
   parseWeeloEvents,
+  parseRacingLapOther,
 } from '../src/lib/other-streams';
 
 describe('Other streams non-F1 filtering & private cockpit resolution', () => {
@@ -408,7 +409,7 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
     expect(liveGame.embedUrl).toBe('https://taifood-blog.asia/embed/nfl/2026-11-09/buf-min');
   });
 
-  it('returns only live non-F1 Weelo streams and excludes F1, F1 Academy, and F1 weekend shows', () => {
+  it('returns live non-F1 Weelo streams, including F1 shows', () => {
     const parsed = parseWeeloEvents(
       {
         events: [
@@ -457,11 +458,11 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
       },
     );
 
-    expect(parsed.map((item) => item.id)).toEqual(['f2worldfeed99', 'f2espfeed8888']);
-    expect(parsed[0]?.embedUrl).toBe(
+    expect(parsed.map((item) => item.id)).toEqual(['showstream12', 'f2worldfeed99', 'f2espfeed8888']);
+    expect(parsed[1]?.embedUrl).toBe(
       'https://weellz.live/beta?stream=f2worldfeed99',
     );
-    expect(parsed[0]?.fallbackUrl).toBe('https://weellz.live/beta?stream=f2worldfeed99');
+    expect(parsed[1]?.fallbackUrl).toBe('https://weellz.live/beta?stream=f2worldfeed99');
   });
 
   it('round-trips private cockpit URLs safely and blocks F1 or untrusted hosts', () => {
@@ -547,4 +548,19 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
     expect(res.counts.ppv).toBe(1);
     expect(res.counts.all).toBe(1);
   });
+});
+
+it('discovers live RacingLap non-F1 series and shows, preserves player URL and excludes upcoming/F1', () => {
+  const event=(key:string, name:string, state='live')=>({id:key,series:{key,name},session:key==='show'?'F1 Pre-Race Show':'Race',weekend:'Las Vegas',state,channels:[{name:'World Feed',language:'en',embed:'https://weellz.live/beta?stream=abcdef123'}]});
+  const result=parseRacingLapOther({api:'racinglap',version:1,events:[event('f1','Formula 1'),event('f2','Formula 2'),event('f1a','F1 Academy'),event('show','Show'),event('indycar','IndyCar','upcoming'),{...event('evil','Other'),channels:[{name:'bad',embed:'https://weellz.live.evil.test/beta?stream=abcd'}]}]});
+  expect(result.map(i=>i.category)).toEqual(['Formula 2','F1 Academy','Shows']);
+  expect(result.every(i=>i.embedUrl==='https://weellz.live/beta?stream=abcdef123')).toBe(true);
+  for (const item of result) expect(parsePrivateCockpitParams(new URL(buildPrivateCockpitHref(item),'https://example.test').search)?.embedUrl).toBe(item.embedUrl);
+  expect(()=>parseRacingLapOther({events:[]})).toThrow();
+});
+it('uses one RacingLap API request and falls back to old sources only on failure', async () => {
+  const requests:string[]=[];
+  const make=async (fail:boolean)=>fetchAllOtherStreams({fetchImpl:async input=>{const u=String(input);requests.push(u);if(u.includes('/api/v1/streams.json') && u.includes('racinglap.net')) {if(fail) throw Error('offline');return new Response(JSON.stringify({api:'racinglap',version:1,events:[]}));} if(u.includes('weelo.live/players/events.json'))return new Response(JSON.stringify({events:[]}));throw Error('offline');}});
+  let result=await make(false);expect(result.providerOk.weelo).toBe(true);expect(requests.filter(u=>u.includes('racinglap.net/api/v1/streams')).length).toBe(1);expect(requests.some(u=>u.includes('weelo.live/players/events'))).toBe(false);expect(requests.some(u=>u.includes('racinglap.net/api/status'))).toBe(false);
+  requests.length=0;result=await make(true);expect(result.providerOk.weelo).toBe(true);expect(requests.some(u=>u.includes('weelo.live/players/events'))).toBe(true);
 });

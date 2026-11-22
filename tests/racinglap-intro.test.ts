@@ -1,6 +1,6 @@
 import {describe,it,expect} from 'vitest';
 import {readFileSync} from 'node:fs';
-import {isRacingLapDirect} from '../src/features/racinglap-intro';
+import {isRacingLapDirect, isRacingLapReplay} from '../src/features/racinglap-intro';
 const app=readFileSync(new URL('../src/app.ts',import.meta.url),'utf8');
 const css=readFileSync(new URL('../src/styles/app.css',import.meta.url),'utf8');
 describe('RacingLap stream intro',()=>{
@@ -11,6 +11,11 @@ describe('RacingLap stream intro',()=>{
     expect(isRacingLapDirect({autoProvider:'ppv'},'https://weellz.live/beta?stream=abc')).toBe(false);
     expect(isRacingLapDirect({autoProvider:'weelo'},'https://weellz.live.evil.test/beta?stream=abc')).toBe(false);
     expect(isRacingLapDirect({autoProvider:'weelo'},'https://f1admin.onrender.com/api/stream/weellz-embed?stream=abc')).toBe(false);
+  });
+  it('recognises direct RacingLap replays only',()=>{
+    expect(isRacingLapReplay('https://weellz.live/replay?id=abc')).toBe(true);
+    expect(isRacingLapReplay('https://ok.ru/videoembed/123')).toBe(false);
+    expect(isRacingLapReplay('https://weellz.live.evil.test/replay?id=abc')).toBe(false);
   });
   it('preserves the player and clears the intro on new loads and errors',()=>{
     const attempt=app.slice(app.indexOf('function attemptSource('),app.indexOf('function load()'));

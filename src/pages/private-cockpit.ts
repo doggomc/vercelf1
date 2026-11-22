@@ -1,3 +1,4 @@
+import { isRacingLapDirect, clearRacingLapIntro, playRacingLapIntro } from '../features/racinglap-intro';
 import '../interaction-guard';
 import { initShell } from '../ui/shell';
 import { initPageGate } from '../features/page-gate';
@@ -61,6 +62,7 @@ let activeToken = 0;
 
 function clearFrames(): void {
   if (!stageBox) return;
+  clearRacingLapIntro(stageBox);
   stageBox.querySelectorAll('iframe, video').forEach((node) => node.remove());
 }
 
@@ -152,11 +154,13 @@ async function mountStream(useFallback = false): Promise<void> {
       return;
     }
     settled = true;
+    clearRacingLapIntro(stageBox);
     loaderEl?.classList.add('hidden');
     noStreamEl?.classList.add('visible');
   });
 
   stageBox.appendChild(frame);
+  if (isRacingLapDirect({autoProvider:resolved.provider},targetUrl)) playRacingLapIntro(stageBox);
 }
 
 if (!resolved) {

@@ -59,6 +59,7 @@ const WEELO_PLAYERS_URLS = [
   'https://weelo.live/players/events.json',
   'https://v.weellz.live/players/events.json',
 ];
+const RACINGLAP_STREAMS_URL = 'https://racinglap.net/api/v1/streams.json';
 const WEELO_FEED_URL = 'https://weelo.live/feed/events.json';
 const RACINGLAP_STATUS_URL = 'https://racinglap.net/api/status.json';
 const PPV_STRIPPED_HOST = 'taifood-blog.asia';
@@ -198,9 +199,9 @@ export function buildEmbdlolUrls(rawId: string, backend = DEFAULT_BACKEND): { em
 
 export function buildWeeloUrls(rawStreamId: string, backend = DEFAULT_BACKEND): { embedUrl: string; fallbackUrl: string } | null {
   const clean = String(rawStreamId || '').trim();
-  const match = clean.match(/[?&]stream=([A-Za-z0-9_-]{4,80})(?:[&#]|$)/i);
+  const match = clean.match(/[?&]stream=([A-Za-z0-9_-]{4,180})(?:[&#]|$)/i);
   const id = match ? match[1] : clean;
-  if (!/^[A-Za-z0-9_-]{4,80}$/.test(id)) return null;
+  if (!/^[A-Za-z0-9_-]{4,180}$/.test(id)) return null;
   const direct = `https://weellz.live/beta?stream=${encodeURIComponent(id)}`;
   return { embedUrl: direct, fallbackUrl: direct };
 }
@@ -460,8 +461,10 @@ export function parsePpvStreams(
 export function isWeeloF1Event(ev: Record<string, unknown>): boolean {
   const seriesKey = String(ev.series_key || '').trim().toLowerCase();
   const series = String(ev.series || '').trim().toLowerCase();
-  if (seriesKey === 'f1' || seriesKey === 'f1a' || seriesKey === 'show') return true;
-  if (series === 'f1' || series === 'formula 1' || series === 'f1 academy' || series === 'show') return true;
+  if (seriesKey === 'f1') return true;
+  if (seriesKey === 'f1a' || seriesKey === 'show') return false;
+  if (series === 'f1' || series === 'formula 1') return true;
+  if (series === 'f1 academy' || series === 'show') return false;
   const text = `${ev.series || ''} ${ev.series_key || ''} ${ev.name || ''} ${ev.title || ''} ${ev.weekend || ''}`;
   return isFormula1Text(text);
 }
@@ -519,7 +522,7 @@ export function parseWeeloEvents(
       const streamId = String(ch.stream || '').trim();
       const chName = String(ch.name || 'Main Feed').trim();
       const lang = String(ch.lang || '').trim();
-      if (!streamId || isFormula1Text(`${sessionName} ${chName}`)) continue;
+      if (!streamId || (isWeeloF1Event(ev))) continue;
 
       const urls = buildWeeloUrls(streamId, backend);
       if (!urls || seenStreams.has(streamId)) continue;
@@ -572,7 +575,7 @@ export function parseWeeloEvents(
       if (!streamId || seenStreams.has(streamId)) continue;
       const label = String(st.label || 'Feed').trim();
       const language = String(st.language || '').trim();
-      if (isFormula1Text(`${eventTitle} ${label}`)) continue;
+      if (isWeeloF1Event(ev)) continue;
       seenStreams.add(streamId);
 
       const title = streams.length > 1 && label ? `${eventTitle} · ${label}` : eventTitle;
@@ -597,6 +600,37 @@ export function parseWeeloEvents(
   }
 
   return out;
+}
+
+/** RacingLap API: only currently live non-F1 sessions, including F1 Academy and shows. */
+export function parseRacingLapOther(payload: unknown, now = Date.now()): OtherStreamItem[] {
+  const data=payload as {api?:string;version?:number;events?:unknown[]};
+  if (!data || data.api !== 'racinglap' || data.version !== 1 || !Array.isArray(data.events)) throw new Error('Invalid RacingLap catalogue');
+  const result:OtherStreamItem[]=[]; const seen=new Set<string>();
+  for (const raw of data.events) {
+    if (!raw || typeof raw !== 'object') continue;
+    const e=raw as Record<string,any>, series=e.series;
+    if (!series || typeof series !== 'object' || typeof series.key !== 'string' || !series.key || (series.key.toLowerCase()==='f1' || /^(?:f1|formula\s*1)$/i.test(String(series.name || '').trim())) || e.state!=='live' || !Array.isArray(e.channels)) continue;
+    const seriesName=String(series.name || series.key).trim().slice(0,80) || 'Motorsport';
+    const category=series.key.toLowerCase()==='show'?'Shows':series.key.toLowerCase()==='f1a'?'F1 Academy':seriesName;
+    const session=String(e.session || 'Live Session').trim().slice(0,100);
+    const weekend=String(e.weekend || '').trim().slice(0,100);
+    for (const ch of e.channels) {
+      if (!ch || typeof ch !== 'object' || typeof ch.embed !== 'string') continue;
+      if (ch.opens && Number.isFinite(Date.parse(ch.opens)) && Date.parse(ch.opens)>now) continue;
+      const name=String(ch.name || 'Main Feed').trim().slice(0,80); if (isLowResStream(name)) continue;
+      let url:URL; try { url=new URL(ch.embed); } catch { continue; }
+      const id=url.searchParams.get('stream') || '';
+      const urls=buildWeeloUrls(id);
+      // Ensure the direct embed is byte-for-byte the API address, without added parameters.
+      if (!urls || ch.embed!==urls.embedUrl || url.hash || url.searchParams.getAll('stream').length!==1 || [...url.searchParams.keys()].some(k=>k!=='stream')) continue;
+      const dedupe=`${String(e.id || '')}:${id}:${name}`;if (seen.has(dedupe)) continue;seen.add(dedupe);
+      const title=e.channels.length>1?`${session} · ${name}`:session;
+      const lang=typeof ch.language==='string'?ch.language.toUpperCase().slice(0,8):'';
+      result.push({key:`weelo:${dedupe}`,provider:'weelo',id,title,category,subtitle:[category,weekend,lang].filter(Boolean).join(' · '),tag:lang||'Live',viewers:0,alwaysLive:false,status:'live',embedUrl:ch.embed,fallbackUrl:ch.embed,color:pickStreamColor('weelo',category)});
+    }
+  }
+  return result;
 }
 
 /** TimStreams publishes naive event times in America/New_York. Convert to UTC
@@ -1035,7 +1069,7 @@ export function parsePrivateCockpitParams(
   const subtitle = String(params.get('sub') || '').trim().slice(0, 180) || `${category} · Live`;
   const alwaysLive = params.get('al') === '1';
 
-  if (isFormula1Text(`${title} ${category} ${cleanId}`)) return null;
+  if (provider === 'weelo' ? /^(?:f1|formula\s*1)$/i.test(category) : isFormula1Text(`${title} ${category} ${cleanId}`)) return null;
 
   return {
     provider,
@@ -1133,12 +1167,24 @@ export async function fetchAllOtherStreams(options: {
     throw lastError || new Error('Weelo unavailable');
   };
 
-  const [embRes, ppvRes, weeloPlayersRes, statusRes, weeloFeedRes, streamfreeRes, timstreamsRes, zliveRes, auraRes, bintvRes, ntvRes, matchoraRes, live24Res] = await Promise.allSettled([
+  // One public RacingLap request normally; the old discovery sources are only a failure fallback.
+  const fetchRacingLap = async (): Promise<OtherStreamItem[]> => {
+    try {
+      return parseRacingLapOther(await fetchJsonWithTimeout(RACINGLAP_STREAMS_URL, {}, 6500, fetchImpl));
+    } catch {
+      const [players, status, feed] = await Promise.allSettled([
+        fetchWeeloPlayers(),
+        fetchJsonWithTimeout(RACINGLAP_STATUS_URL, {referrerPolicy:'no-referrer'},6500,fetchImpl),
+        fetchJsonWithTimeout(WEELO_FEED_URL, {referrerPolicy:'no-referrer'},6500,fetchImpl),
+      ]);
+      if (players.status !== 'fulfilled' && feed.status !== 'fulfilled') throw new Error('RacingLap unavailable');
+      return parseWeeloEvents(players.status==='fulfilled'?players.value:null,status.status==='fulfilled'?status.value:null,feed.status==='fulfilled'?feed.value:null,backend);
+    }
+  };
+  const [embRes, ppvRes, weeloRes, streamfreeRes, timstreamsRes, zliveRes, auraRes, bintvRes, ntvRes, matchoraRes, live24Res] = await Promise.allSettled([
     fetchJsonWithTimeout(EMBDLOL_STRUCT_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(PPV_STREAMS_URL, {}, 8500, fetchImpl),
-    fetchWeeloPlayers(),
-    fetchJsonWithTimeout(RACINGLAP_STATUS_URL, { referrerPolicy: 'no-referrer' }, 6500, fetchImpl),
-    fetchJsonWithTimeout(WEELO_FEED_URL, { referrerPolicy: 'no-referrer' }, 6500, fetchImpl),
+    fetchRacingLap(),
     fetchStreamfree(fetchImpl, !options.fetchImpl),
     fetchJsonWithTimeout(TIMSTREAMS_EVENTS_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(ZLIVE_MANIFEST_URL, {}, 8500, fetchImpl),
@@ -1151,15 +1197,8 @@ export async function fetchAllOtherStreams(options: {
 
   const embItems = embRes.status === 'fulfilled' ? parseEmbdlolStruct(embRes.value, backend) : [];
   const ppvItems = ppvRes.status === 'fulfilled' ? parsePpvStreams(ppvRes.value, backend) : [];
-  const weeloOk = weeloPlayersRes.status === 'fulfilled' || weeloFeedRes.status === 'fulfilled';
-  const weeloItems = weeloOk
-    ? parseWeeloEvents(
-        weeloPlayersRes.status === 'fulfilled' ? weeloPlayersRes.value : null,
-        statusRes.status === 'fulfilled' ? statusRes.value : null,
-        weeloFeedRes.status === 'fulfilled' ? weeloFeedRes.value : null,
-        backend,
-      )
-    : [];
+  const weeloOk = weeloRes.status === 'fulfilled';
+  const weeloItems = weeloRes.status === 'fulfilled' ? weeloRes.value : [];
 
   const streamfreeItems = streamfreeRes.status === 'fulfilled' ? parseStreamfreeStreams(streamfreeRes.value) : [];
   const timstreamsItems = timstreamsRes.status === 'fulfilled' ? parseTimstreamsEvents(timstreamsRes.value) : [];
