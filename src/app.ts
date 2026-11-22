@@ -1,4 +1,4 @@
-import { sourceChipDisplay } from './features/auto-label';
+import { sourceChipDisplay, sourceSpecialBadge } from './features/auto-label';
 import { syncSourceSelection } from './features/source-selection';
 import { setCounterContext } from './features/counter-context';
 import { applyFailover } from './features/failover';
@@ -1711,10 +1711,11 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     providerTag.className = 'src-pill-tag auto-provider-tag';
     providerTag.textContent = display.provider;
     b.appendChild(providerTag);
-    if (s.special) {
+    const specialBadge = sourceSpecialBadge(s);
+    if (specialBadge) {
       const specialTag = document.createElement('span');
-      specialTag.className = `src-pill-tag src-pill-special is-${s.special}`;
-      specialTag.textContent = s.special === 'data' ? 'DATA' : s.special === 'feed' ? 'FEED' : 'ONBD';
+      specialTag.className = `src-pill-tag src-pill-special is-${specialBadge}`;
+      specialTag.textContent = specialBadge === 'data' ? 'DATA' : specialBadge === 'feed' ? 'FEED' : 'ONBD';
       b.appendChild(specialTag);
     }
     const titleSpan = document.createElement('span');

@@ -34,3 +34,15 @@ it('retains the event label for session matching', () => {
   expect(autoPpvMatchesSession('Las Vegas Grand Prix - Practice 3', 'https://taifood-blog.asia/embed/test', 'fp3')).toBe(true);
   expect(autoPpvMatchesSession('Las Vegas Grand Prix - Practice 3', 'https://taifood-blog.asia/embed/test', 'fp2')).toBe(false);
 });
+
+it('formats new EMB feeds and tags only onboard and timing channels', async () => {
+  const { sourceChipDisplay, sourceSpecialBadge } = await import('../src/features/auto-label');
+  const row = (label:string) => ({id:'auto-emb',label,managedAuto:true,autoProvider:'embdlol',links:[]});
+  const expected = [['f1drivertracker','Driver Tracker',''],['f1pitlane','Pit Lane',''],['f1lewis','Lewis Hamilton','onboard'],['f1kimi','Kimi Antonelli','onboard'],['f1mixedonboard','Mixed Onboard','onboard'],['f1timingchannel','Data Channel','data'],['f1stroll','Lance Stroll','onboard']];
+  for (const [raw,title,badge] of expected) {
+    expect(sourceChipDisplay(row(raw)).title).toBe(title);
+    expect(sourceSpecialBadge(row(raw))).toBe(badge);
+    expect(sourceSpecialBadge(row(title))).toBe(badge);
+  }
+  expect(sourceSpecialBadge({id:'auto-weelo',label:'Driver Tracker',managedAuto:true,autoProvider:'weelo',links:[]})).toBe('');
+});
