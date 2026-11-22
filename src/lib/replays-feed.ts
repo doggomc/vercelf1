@@ -77,11 +77,39 @@ export function fullRacesEvents(items: FullRacesItem[]): Event[] {
   for (const event of events.values()) event.sessions.sort((a,b) => rank.indexOf(a.key)-rank.indexOf(b.key));
   return [...events.values()];
 }
+type RacingLapItem = {season:number; round:number; key:string; id:string; sources:{label:string;url:string}[]};
+/** Merge Weellz feeds into matching FullRaces sessions, without changing existing event links. */
+export function mergeRacingLap(events: Event[], items: RacingLapItem[]): Event[] {
+  const result = events.map(e => ({...e, sessions:e.sessions.map(s => ({...s, replay:{...s.replay, sources:[...s.replay.sources]}}))}));
+  const names: Record<string, string> = {fp1:'Practice 1',fp2:'Practice 2',fp3:'Practice 3',race:'Race',qualifying:'Qualifying',sprint:'Sprint','sprint-qualifying':'Sprint Qualifying'};
+  for (const item of items) {
+    if (item.season !== 2026 || !Number.isInteger(item.round) || !names[item.key] || !/^[\w-]+$/.test(item.id) || !Array.isArray(item.sources)) continue;
+    const scheduled = schedule.find(s => s.round === item.round);
+    if (!scheduled) continue;
+    const sources = item.sources.flatMap(s => { const url = safeSource(s?.url); return url && new URL(url).hostname === 'weellz.live' ? [{label:String(s.label || 'Weellz').slice(0,80),url}] : []; });
+    if (!sources.length) continue;
+    let event = result.find(e => e.season === item.season && e.round === item.round && e.series === 'f1');
+    if (!event) {
+      event = {id:`fullraces-${item.season}-${item.round}`, title:scheduled.name, series:'f1',season:item.season,round:item.round,circuit:scheduled.locality,country:scheduled.country === 'USA' ? 'United States' : scheduled.country === 'UK' ? 'United Kingdom' : scheduled.country === 'UAE' ? 'United Arab Emirates' : scheduled.country,sessions:[]};
+      result.push(event);
+    }
+    let session = event.sessions.find(s => s.key === item.key);
+    if (!session) {
+      const date = scheduled.sessions.find(s => s.slug === item.key)?.start || '';
+      session = {key:item.key,name:names[item.key],startsAt:date,replay:{id:item.id,publishedAt:date,sources:[]}};
+      event.sessions.push(session);
+    }
+    for (const source of sources.slice().reverse()) if (!session.replay.sources.some(s => s.url === source.url)) session.replay.sources.unshift(source);
+  }
+  const rank = ['fp1','fp2','fp3','sprint-qualifying','sprint','qualifying','race'];
+  for (const event of result) event.sessions.sort((a,b) => rank.indexOf(a.key)-rank.indexOf(b.key));
+  return result;
+}
 export async function fetchWeekends(signal?: AbortSignal): Promise<Weekend[]> {
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
   const { default: data } = await import('../data/replays-browser.json');
   if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-  const weekends = groupWeekends(fullRacesEvents(data.items as FullRacesItem[]));
+  const weekends = groupWeekends(mergeRacingLap(fullRacesEvents(data.items as FullRacesItem[]), data.racinglap as RacingLapItem[]));
   if (!weekends.length) throw new Error('FullRaces index unavailable');
   return weekends;
 }

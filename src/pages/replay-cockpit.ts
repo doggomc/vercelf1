@@ -85,7 +85,7 @@ function display(animateGroup?: 'session' | 'feed', restoreFocus = false) {
     feedControlsSignature = feedSignature; feeds.replaceChildren();
     sources.forEach((s, i) => {
       const b = document.createElement('button'); b.type = 'button';
-      b.textContent = /f1\s*tv/i.test(s.label) ? 'F1 TV' : /international feed/i.test(s.label) ? 'International Feed' : s.label?.trim() || `Feed ${i + 1}`;
+      b.textContent = /^Weellz\s*·/i.test(s.label) ? s.label.trim() : /f1\s*tv/i.test(s.label) ? 'F1 TV' : /international feed/i.test(s.label) ? 'International Feed' : s.label?.trim() || `Feed ${i + 1}`;
       b.dataset.replayFeed = String(i);
       b.onclick = (click) => { if (sourceIndex === i) return; sourceIndex = i; display('feed', click.detail === 0); };
       feeds.append(b);

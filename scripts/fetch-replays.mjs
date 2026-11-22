@@ -30,7 +30,9 @@ const OUT = resolve(here, '../src/data/replays.json');
 const BROWSER_OUT = resolve(here, '../src/data/replays-browser.json');
 function writeBrowserIndex(items) {
   const compact = items.filter(i => i.players?.some(p => /^https:\/\/ok\.ru\/videoembed\/\d+/.test(p.url))).map(({slug, season, sessionKey, event, date, players}) => ({slug, season, sessionKey, event, date, players}));
-  writeFileSync(BROWSER_OUT, JSON.stringify({items: compact}));
+  const racinglapPath = resolve(here, '../src/data/racinglap-replays.json');
+  const racinglap = existsSync(racinglapPath) ? JSON.parse(readFileSync(racinglapPath, 'utf8')).items : [];
+  writeFileSync(BROWSER_OUT, JSON.stringify({items: compact, racinglap}));
 }
 
 const SITEMAP = 'https://fullraces.com/sitemap-publ.xml';
