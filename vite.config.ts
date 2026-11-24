@@ -409,6 +409,7 @@ export default defineConfig({
         replays: resolve(ROOT, 'replays.html'),
         replayCockpit: resolve(ROOT, 'replay-cockpit.html'),
         otherStreams: resolve(ROOT, 'other-streams.html'),
+        motorsports: resolve(ROOT, 'motorsports.html'),
         privateCockpit: resolve(ROOT, 'private-cockpit.html'),
         liveTiming: resolve(ROOT, 'live-timing.html'),
         help: resolve(ROOT, 'help.html'),

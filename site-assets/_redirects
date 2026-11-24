@@ -28,6 +28,9 @@
 /maintenance.html /maintenance 301
 /maintenance /maintenance.html 200
 /maintenance/ /maintenance.html 200
+/motorsports.html /motorsports 301
+/motorsports /motorsports.html 200
+/motorsports/ /motorsports.html 200
 /other-streams.html /other-streams 301
 /other-streams /other-streams.html 200
 /other-streams/ /other-streams.html 200

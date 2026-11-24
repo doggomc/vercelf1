@@ -15,7 +15,7 @@ function crossPageHref(target: EventTarget | null): string | null {
 
 /** Map standalone detail routes to their parent navigation section. */
 export function navigationPath(pathname: string): string {
-  return pathKey(pathname).replace(/^\/grand-prix(?:\/.*)?$/, '/schedule').replace(/^\/(?:replays|other-streams)(?:\/.*)?$/, '/other');
+  return pathKey(pathname).replace(/^\/grand-prix(?:\/.*)?$/, '/schedule').replace(/^\/(?:replays|other-streams|motorsports)(?:\/.*)?$/, '/other');
 }
 
 function markCurrentLink(root: ParentNode): void {

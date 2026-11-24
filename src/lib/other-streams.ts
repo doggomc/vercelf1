@@ -974,8 +974,8 @@ export function buildPrivateCockpitHref(item: OtherStreamItem): string {
   params.set('cat', item.category);
   if (item.subtitle) params.set('sub', item.subtitle);
   if (item.alwaysLive) params.set('al', '1');
-  if ((item.provider === 'timstreams' || item.provider === 'aura' || item.provider === 'bintv' || item.provider === 'ntv') && item.startAt) params.set('start', String(item.startAt));
-  if ((item.provider === 'aura' || item.provider === 'bintv' || item.provider === 'ntv') && item.status === 'scheduled') params.set('scheduled', '1');
+  if ((item.provider === 'timstreams' || item.provider === 'aura' || item.provider === 'bintv' || item.provider === 'ntv' || item.provider === 'weelo') && item.startAt) params.set('start', String(item.startAt));
+  if ((item.provider === 'aura' || item.provider === 'bintv' || item.provider === 'ntv' || item.provider === 'weelo') && item.status === 'scheduled') params.set('scheduled', '1');
   return `/private-cockpit?${params.toString()}`;
 }
 
@@ -1078,8 +1078,8 @@ export function parsePrivateCockpitParams(
     category,
     subtitle,
     alwaysLive,
-    startAt: (provider === 'timstreams' || provider === 'aura' || provider === 'bintv' || provider === 'ntv') && /^\d{13}$/.test(params.get('start') || '') ? Number(params.get('start')) : undefined,
-    status: provider === 'timstreams' || ((provider === 'aura' || provider === 'bintv' || provider === 'ntv') && params.get('scheduled') === '1') ? 'scheduled' : undefined,
+    startAt: (provider === 'timstreams' || provider === 'aura' || provider === 'bintv' || provider === 'ntv' || provider === 'weelo') && /^\d{13}$/.test(params.get('start') || '') ? Number(params.get('start')) : undefined,
+    status: provider === 'timstreams' || ((provider === 'aura' || provider === 'bintv' || provider === 'ntv' || provider === 'weelo') && params.get('scheduled') === '1') ? 'scheduled' : undefined,
     stagePath: `freef1://live/other/${slugifyStreamLabel(title)}`,
     embedUrl,
     fallbackUrl,
