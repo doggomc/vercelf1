@@ -1,1 +1,45 @@
-.ms-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}.ms-refresh{background:#191b20;color:#eeeff2;border:1px solid #ffffff24;border-radius:12px;padding:11px 15px;font:650 12px Inter,system-ui,sans-serif;cursor:pointer;white-space:nowrap}.ms-refresh span{font-size:17px;margin-right:4px}.ms-refresh:hover{border-color:#a67ad4;background:#25212a}.ms-refresh:focus-visible,.ms-feed:focus-visible,.ms-filter:focus-visible,summary:focus-visible{outline:2px solid #c699ef;outline-offset:3px}.ms-refresh:disabled{opacity:.5}.ms-content{padding-bottom:48px}.ms-meta{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;border-bottom:1px solid #ffffff15;padding-bottom:16px}.ms-meta h2{font-size:24px;letter-spacing:-.04em;margin:6px 0 0}.ms-kicker{font:700 10px 'JetBrains Mono',monospace;letter-spacing:.14em;color:#b783ed}.ms-meta [role=status]{font-size:12px;color:#9298a4}.ms-filter-line{display:flex;align-items:center;justify-content:space-between;gap:15px;margin:18px 0 20px}.ms-filters{display:flex;gap:7px;overflow-x:auto;scrollbar-width:thin}.ms-filter{border:1px solid #ffffff12;background:#17191e;color:#a6abb4;padding:9px 13px;border-radius:9px;white-space:nowrap;font:650 12px Inter,system-ui,sans-serif;cursor:pointer}.ms-filter[aria-pressed=true]{background:#f5f4f7;border-color:#f5f4f7;color:#151418}.ms-timezone{font:600 10px 'JetBrains Mono',monospace;color:#9298a4;white-space:nowrap}.ms-day{margin:30px 0 12px;display:flex;align-items:center;gap:12px;font:700 11px 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#a8aab3}.ms-day:after{content:'';height:1px;background:#ffffff12;flex:1}.ms-event{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;background:#18191e;border:1px solid #ffffff12;border-radius:15px;padding:18px 20px;margin-bottom:10px}.ms-event-main{min-width:0}.ms-series{display:inline-flex;align-items:center;gap:7px;color:#c7a3ed;font:700 10px 'JetBrains Mono',monospace;letter-spacing:.08em;text-transform:uppercase}.ms-series:before{content:'';width:6px;height:6px;border-radius:50%;background:#ba7fff}.ms-event h3{font-size:17px;letter-spacing:-.025em;margin:8px 0 5px}.ms-weekend{color:#9ca0ab;font-size:12px;margin:0}.ms-event-time{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:7px;white-space:nowrap}.ms-local{font:700 14px 'JetBrains Mono',monospace;color:#f3f3f6}.ms-state{font:700 10px 'JetBrains Mono',monospace;letter-spacing:.04em;color:#bcb6c9}.ms-state.is-live{color:#55d993}.ms-state.is-finished{color:#858995}.ms-feed-area{grid-column:1/-1;border-top:1px solid #ffffff0d;padding-top:12px}.ms-feed-area summary{display:inline-block;list-style:none;cursor:pointer;color:#e8d6f8;font-size:12px;font-weight:700}.ms-feed-area summary::-webkit-details-marker{display:none}.ms-feed-area summary:after{content:' +';color:#b783ed}.ms-feed-area[open] summary:after{content:' −'}.ms-feeds{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.ms-feed{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:#eee9f4;background:#28212e;border:1px solid #ab75d536;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:700}.ms-feed:hover{background:#382943}.ms-feed small{color:#b1a6b9;font-size:10px;font-weight:500}.ms-no-feeds{grid-column:1/-1;border-top:1px solid #ffffff0d;padding-top:11px;color:#858995;font-size:11px}.ms-message{padding:20px;border:1px solid #ffffff16;border-radius:14px;background:#18191e;color:#c8c7ce;font-size:13px}.ms-note{font-size:11px;color:#80848e;line-height:1.6;margin-top:24px}@media(max-width:650px){.ms-head{align-items:flex-start}.ms-meta{align-items:flex-start;flex-direction:column}.ms-filter-line{align-items:flex-start;flex-direction:column}.ms-event{padding:16px;gap:14px 8px}.ms-event h3{font-size:15px}.ms-event-time{gap:5px}.ms-local{font-size:12px}.ms-state{font-size:9px}.ms-refresh{padding:9px 11px}.ms-timezone{white-space:normal}}
+/* Match the shared FreeF1 Other Streams and Replays components. */
+.ms-filter-line { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:0 0 26px; }
+.ms-filters { display:flex; gap:4px; padding:3px; max-width:100%; overflow-x:auto; border:1px solid var(--line); border-radius:999px; background:var(--card); scrollbar-width:thin; }
+.ms-filter { border:0; border-radius:999px; background:transparent; color:var(--fg-3); padding:10px 15px; white-space:nowrap; font:650 12px/1 var(--font-body); cursor:pointer; transition:color .18s var(--ease),background .18s var(--ease); }
+.ms-filter:hover { color:var(--white); }
+.ms-filter[aria-pressed=true] { color:var(--white); background:var(--card-3); }
+.ms-timezone { color:var(--fg-4); font-size:11px; font-weight:650; white-space:nowrap; }
+.ms-day { display:flex; align-items:center; gap:12px; margin:30px 0 12px; color:var(--fg-3); font-size:11px; font-weight:750; letter-spacing:.08em; text-transform:uppercase; }
+.ms-day:after { content:''; height:1px; background:var(--line); flex:1; }
+.ms-event { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:16px 20px; padding:20px; margin-bottom:12px; background:var(--card); border:1px solid var(--line); border-radius:16px; transition:border-color .2s; }
+.ms-event:hover { border-color:var(--line-2); }
+.ms-event-main { min-width:0; }
+.ms-series { display:inline-flex; align-items:center; gap:7px; color:var(--fg-3); font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.ms-series:before { content:''; width:6px; height:6px; border-radius:50%; background:var(--accent); }
+.ms-event h3 { margin:8px 0 5px; color:var(--white); font-family:var(--font-display); font-size:19px; line-height:1.2; }
+.ms-weekend { color:var(--fg-3); font-size:12px; }
+.ms-event-time { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:7px; white-space:nowrap; }
+.ms-local { color:var(--white); font-size:14px; font-weight:750; font-variant-numeric:tabular-nums; }
+.ms-state { color:var(--fg-3); font-size:10px; font-weight:750; letter-spacing:.04em; font-variant-numeric:tabular-nums; }
+.ms-state.is-live { color:#3ddc84; }
+.ms-state.is-finished { color:var(--fg-4); }
+.ms-feed-area, .ms-no-feeds { grid-column:1/-1; border-top:1px solid var(--line); padding-top:14px; }
+.ms-feed-area summary { display:inline-block; list-style:none; cursor:pointer; color:var(--fg-2); font-size:12px; font-weight:700; }
+.ms-feed-area summary:hover { color:var(--white); }
+.ms-feed-area summary::-webkit-details-marker { display:none; }
+.ms-feed-area summary:after { content:' +'; color:var(--fg-3); }
+.ms-feed-area[open] summary:after { content:' −'; }
+.ms-feeds { display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
+.ms-feed { display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(255,255,255,.09); border-radius:8px; padding:8px 10px; color:var(--fg-2); background:rgba(255,255,255,.04); font-size:12px; text-decoration:none; transition:background .2s,color .2s,border-color .2s; }
+.ms-feed:hover { color:#111; background:#fff; border-color:#fff; }
+.ms-feed small { font-size:10px; opacity:.75; }
+.ms-no-feeds { color:var(--fg-4); font-size:11px; }
+.ms-message { padding:20px; border:1px solid var(--line); border-radius:16px; background:var(--card); color:var(--fg-2); font-size:13px; }
+.ms-note { margin-top:24px; color:var(--fg-4); font-size:11px; line-height:1.6; }
+.ms-filter:focus-visible,.ms-feed:focus-visible,.ms-feed-area summary:focus-visible { outline:2px solid #fff; outline-offset:3px; }
+@media(max-width:650px) {
+  .ms-filter-line { align-items:flex-start; flex-direction:column; }
+  .ms-filters { width:100%; }
+  .ms-event { padding:16px; gap:14px 8px; }
+  .ms-event h3 { font-size:16px; }
+  .ms-local { font-size:12px; }
+  .ms-state { font-size:9px; }
+  .ms-timezone { white-space:normal; }
+}
+@media(prefers-reduced-motion:reduce) { .ms-filter,.ms-event,.ms-feed { transition:none; } }

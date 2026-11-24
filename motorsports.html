@@ -21,6 +21,8 @@
 <link rel="preload" as="font" type="font/woff2" href="/assets/fonts/Archivo-latin.woff2" crossorigin>
 <link rel="stylesheet" href="/fonts.css">
 <link rel="stylesheet" href="/src/styles/layout.css">
+<link rel="stylesheet" href="/src/styles/other-streams.css">
+<link rel="stylesheet" href="/src/styles/replays.css">
 <link rel="stylesheet" href="/src/styles/motorsports.css">
 </head>
 <body data-page="motorsports">
@@ -57,11 +59,11 @@
 <main id="main">
   <div class="wrap page-head rise">
     <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="sep" aria-hidden="true">›</span><a href="/other">Other</a><span class="sep" aria-hidden="true">›</span><span aria-current="page">Motorsports</span></nav>
-    <span class="eyebrow"><span class="swatch" aria-hidden="true"></span>BEYOND FORMULA 1</span>
-    <div class="ms-head"><div><h1 class="page-title">Motorsports</h1><p class="page-lede">Your guide to the rest of the racing world. All session times are in your local timezone.</p></div><button class="ms-refresh" id="msRefresh" type="button" aria-label="Refresh motorsports schedule"><span aria-hidden="true">↻</span> Refresh</button></div>
+    <div class="os-head-row"><div class="os-head-copy"><span class="eyebrow"><span class="swatch" aria-hidden="true"></span>BEYOND FORMULA 1</span><h1 class="page-title">Motorsports</h1><p class="page-lede">Your guide to the rest of the racing world. All session times are in your local timezone.</p></div>
+      <div class="os-head-actions"><div class="os-status-pill" id="msSummary" role="status" aria-live="polite">Loading schedule…</div><button class="os-refresh" id="msRefresh" type="button" aria-label="Refresh motorsports schedule"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg> Refresh</button></div></div>
   </div>
-  <section class="wrap ms-content" aria-label="Motorsports schedule">
-    <div class="ms-meta"><div><span class="ms-kicker">THE CALENDAR</span><h2>On the schedule</h2></div><div id="msSummary" role="status" aria-live="polite">Loading schedule…</div></div>
+  <section class="wrap section rise rise-1 ms-content" aria-label="Motorsports schedule">
+    <div class="rp-section-heading"><div><span class="eyebrow">THE CALENDAR</span><h2>On the schedule</h2></div><span>Choose a session to watch</span></div>
     <div class="ms-filter-line"><div class="ms-filters" id="msFilters" aria-label="Filter by series"></div><div class="ms-timezone" id="msTimezone"></div></div>
     <div id="msMessage" class="ms-message" role="status" hidden></div>
     <div id="msSchedule" class="ms-schedule"></div>

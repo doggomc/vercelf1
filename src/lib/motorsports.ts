@@ -30,7 +30,7 @@ export function parseMotorsports(schedule:unknown, streams:unknown): MotorEvent[
         urls.add(ch.embed);
         const name=str(ch.name,80)||'Main feed', lang=str(ch.language,8).toUpperCase();
         const opensAt=Date.parse(ch.opens); const opens=Number.isFinite(opensAt)?opensAt:null;
-        const item:OtherStreamItem={key:`weelo:${id}:${streamId}`,provider:'weelo',id:streamId,title:`${session} · ${name}`,category:series,subtitle:[series,weekend,lang].filter(Boolean).join(' · '),tag:lang||'RacingLap',viewers:0,alwaysLive:false,startAt:start,status:e.state==='live'?'live':'scheduled',embedUrl:ch.embed,fallbackUrl:ch.embed,color:'#b66bff'};
+        const item:OtherStreamItem={key:`weelo:${id}:${streamId}`,provider:'weelo',id:streamId,title:`${session} · ${name}`,category:series,subtitle:[series,weekend,lang].filter(Boolean).join(' · '),tag:lang||'RacingLap',viewers:0,alwaysLive:false,startAt:start,status:e.state==='live'?'live':'scheduled',embedUrl:ch.embed,fallbackUrl:ch.embed,color:'#E10600'};
         feeds.push({name,language:lang,opens,href:buildPrivateCockpitHref(item),url:ch.embed});
       }
     }
