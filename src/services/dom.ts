@@ -23,7 +23,6 @@ export interface ElementIdMap {
   'watchSessionState': HTMLElement;
   'watchSessionDot': HTMLElement;
   'watchSessionBadge': HTMLElement;
-  'watchSessionSep': HTMLElement;
   'watchSessionCountdown': HTMLElement;
   'watchSessionTitle': HTMLElement;
   'watchSessionMeta': HTMLElement;

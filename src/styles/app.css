@@ -6988,3 +6988,20 @@ body.theater .compact-timing { display:none; }
 @keyframes racinglap-intro-sweep { to { transform:translateX(80%); } }
 @keyframes racinglap-intro-out { 0% { opacity:1; visibility:visible; } 99% { opacity:0; visibility:visible; } 100% { opacity:0; visibility:hidden; } }
 @media (prefers-reduced-motion:reduce) { .racinglap-intro { animation:racinglap-intro-out .01s linear 1.2s both; } .racinglap-intro-brand { animation:none; opacity:1; transform:none; } .racinglap-intro::after { animation:none; display:none; } }
+
+/* Cockpit session timer lives in the player chrome, never on top of video. */
+body[data-page="cockpit"] #watch .wplayer-countdown {
+  display: inline-flex; align-items:center; gap:6px; flex:none;
+  padding: 3px 8px; border:1px solid #ffffff1c; border-radius:6px;
+  background:#ffffff09; color:#dedee5; white-space:nowrap;
+}
+body[data-page="cockpit"] #watch .wplayer-countdown svg { width:13px; height:13px; flex:none; color:#f4bd69; }
+body[data-page="cockpit"] #watch .wplayer-countdown #watchSessionCountdown { color:inherit; font-size:10.5px; }
+body[data-page="cockpit"] #watch .watch-session-info { gap:5px; }
+body[data-page="cockpit"] #watch .watch-session-line { gap:4px 9px; }
+body[data-page="cockpit"] #watch .wplayer-actions-main { justify-content:flex-start; }
+@media (max-width: 600px) {
+  body[data-page="cockpit"] #watch .wplayer-bar { gap:6px; padding-inline:8px; }
+  body[data-page="cockpit"] #watch .wplayer-live { min-width:0; max-width:38%; overflow:hidden; text-overflow:ellipsis; display:block; line-height:20px; }
+  body[data-page="cockpit"] #watch .wplayer-countdown { padding-inline:6px; }
+}

@@ -1300,7 +1300,6 @@ function setTextIfChanged(el: HTMLElement | null, value: string): void {
 function updateWatchSessionState() {
   const dot = $('watchSessionDot');
   const badge = $('watchSessionBadge');
-  const sep = $('watchSessionSep');
   const timer = $('watchSessionCountdown');
   const title = $('watchSessionTitle');
   const meta = $('watchSessionMeta');
@@ -1318,7 +1317,6 @@ function updateWatchSessionState() {
   if (isLive) {
     if (dot) dot.className = 'watch-session-dot is-live';
     setTextIfChanged(badge, `Live now · R${currentEvent.round}`);
-    if (sep) sep.hidden = false;
     setTextIfChanged(timer, streamOverride.active ? 'Override' : 'On air');
     setTextIfChanged(title, `${currentEvent.name} · ${currentSession.name}`);
     setTextIfChanged(meta, `${currentEvent.locality}, ${currentEvent.country}`);
@@ -1334,7 +1332,6 @@ function updateWatchSessionState() {
     const pad = (v: number) => String(v).padStart(2, '0');
     if (dot) dot.className = 'watch-session-dot is-next';
     setTextIfChanged(badge, `Up next · R${currentEvent.round}`);
-    if (sep) sep.hidden = false;
     setTextIfChanged(timer, `in ${d > 0 ? `${d}d ` : ''}${pad(h)}:${pad(m)}:${pad(s)}`);
     setTextIfChanged(title, `${currentEvent.name} · ${currentSession.name}`);
     setTextIfChanged(meta, `${currentEvent.locality}, ${currentEvent.country} · ${watchStartFmt.format(currentSession.ts)}`);
@@ -1344,7 +1341,6 @@ function updateWatchSessionState() {
   if (!isSessionEnded(currentSession)) {
     if (dot) dot.className = 'watch-session-dot is-live';
     setTextIfChanged(badge, `Active · R${currentEvent.round}`);
-    if (sep) sep.hidden = false;
     setTextIfChanged(timer, 'In progress');
     setTextIfChanged(title, `${currentEvent.name} · ${currentSession.name}`);
     setTextIfChanged(meta, `${currentEvent.locality}, ${currentEvent.country}`);
@@ -1353,7 +1349,6 @@ function updateWatchSessionState() {
 
   if (dot) dot.className = 'watch-session-dot';
   setTextIfChanged(badge, 'Season complete');
-  if (sep) sep.hidden = false;
   setTextIfChanged(timer, String(SITE_SEASON));
   setTextIfChanged(title, `${currentEvent.name} · ${currentSession.name}`);
   setTextIfChanged(meta, `${currentEvent.locality}, ${currentEvent.country}`);
