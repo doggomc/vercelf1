@@ -40,7 +40,7 @@ function renderEvents() {
     const countdown=element('span',`ms-state${event.state==='live'?' is-live':event.state==='finished'?' is-finished':''}`,countdownText(event,Date.now()));countdown.dataset.id=event.id;
     right.append(date,countdown);card.append(main,right);
     if(event.feeds.length) {
-      const detail=element('details','ms-feed-area'), heading=element('summary','',`Cockpit · ${event.feeds.length} ${event.feeds.length===1?'feed':'feeds'}`), feeds=element('div','ms-feeds');
+      const detail=element('div','ms-feed-area'), heading=element('div','ms-feed-heading','Available sources'), feeds=element('div','ms-feeds');
       for (const feed of event.feeds) {
         const link=element('a','ms-feed') as HTMLAnchorElement;link.href=feed.href;
         const icon=document.createElement('img');icon.src=RACINGLAP_ICON;icon.alt='';icon.className='ms-racinglap-icon';

@@ -20,11 +20,7 @@
 .ms-state.is-live { color:#3ddc84; }
 .ms-state.is-finished { color:var(--fg-4); }
 .ms-feed-area, .ms-no-feeds { grid-column:1/-1; border-top:1px solid var(--line); padding-top:14px; }
-.ms-feed-area summary { display:inline-block; list-style:none; cursor:pointer; color:var(--fg-2); font-size:12px; font-weight:700; }
-.ms-feed-area summary:hover { color:var(--white); }
-.ms-feed-area summary::-webkit-details-marker { display:none; }
-.ms-feed-area summary:after { content:' +'; color:var(--fg-3); }
-.ms-feed-area[open] summary:after { content:' −'; }
+.ms-feed-heading { color:var(--fg-2); font-size:12px; font-weight:700; }
 .ms-feeds { display:flex; flex-wrap:wrap; gap:7px; margin-top:12px; }
 .ms-feed { display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(255,255,255,.09); border-radius:8px; padding:8px 10px; color:var(--fg-2); background:rgba(255,255,255,.04); font-size:12px; text-decoration:none; transition:background .2s,color .2s,border-color .2s; }
 .ms-feed:hover { color:#111; background:#fff; border-color:#fff; }
@@ -32,7 +28,7 @@
 .ms-no-feeds { color:var(--fg-4); font-size:11px; }
 .ms-message { padding:20px; border:1px solid var(--line); border-radius:16px; background:var(--card); color:var(--fg-2); font-size:13px; }
 .ms-note { margin-top:24px; color:var(--fg-4); font-size:11px; line-height:1.6; }
-.ms-filter:focus-visible,.ms-feed:focus-visible,.ms-feed-area summary:focus-visible { outline:2px solid #fff; outline-offset:3px; }
+.ms-filter:focus-visible,.ms-feed:focus-visible { outline:2px solid #fff; outline-offset:3px; }
 @media(max-width:650px) {
   .ms-filter-line { align-items:flex-start; flex-direction:column; }
   .ms-filters { width:100%; }
