@@ -98,80 +98,54 @@ function createStreamCard(item: OtherStreamItem, index: number): HTMLAnchorEleme
   card.style.setProperty('--tc', item.color);
   card.style.setProperty('--stagger', `${Math.min(index * 20, 220)}ms`);
 
-  const head = document.createElement('div');
-  head.className = 'os-card-head';
+  // A typographic channel mark keeps this directory distinctive without fetching
+  // third-party logos or pretending the directory has artwork for every feed.
+  const mark = document.createElement('span');
+  mark.className = 'os-channel-mark';
+  mark.setAttribute('aria-hidden', 'true');
+  const words = item.title.match(/[\p{L}\p{N}]+/gu) || [];
+  mark.textContent = (words.length > 1 ? words[0][0] + words[1][0] : (words[0] || 'TV').slice(0, 2)).toUpperCase();
 
-  const idGroup = document.createElement('div');
-  idGroup.className = 'os-card-id';
+  const body = document.createElement('div');
+  body.className = 'os-card-body';
+  const provider = document.createElement('span');
+  provider.className = 'os-card-provider';
+  const providerName = PROVIDER_LABELS[item.provider];
+  provider.textContent = item.tag && !item.tag.toLowerCase().includes(providerName.toLowerCase()) ? `${providerName} · ${item.tag}` : item.tag || providerName;
+  const name = document.createElement('div');
+  name.className = 't-name';
+  name.textContent = item.title;
+  const cat = document.createElement('span');
+  cat.className = 'os-card-cat';
+  cat.textContent = item.category;
+  body.append(provider, name, cat);
 
-  const bar = document.createElement('span');
-  bar.className = 't-bar';
-  bar.setAttribute('aria-hidden', 'true');
-  idGroup.appendChild(bar);
-
-  const badges = document.createElement('div');
-  badges.className = 'os-card-badges';
-
-  const liveBadge = document.createElement('span');
+  const foot = document.createElement('div');
+  foot.className = 'os-card-foot';
   const scheduled = item.status === 'scheduled';
-  const upcoming = scheduled && item.startAt != null && item.startAt > Date.now();
-  liveBadge.className = `os-badge ${scheduled ? 'os-badge-scheduled' : item.alwaysLive ? 'os-badge-247' : 'os-badge-live'}`;
+  const badge = document.createElement('span');
+  badge.className = `os-badge ${scheduled ? 'os-badge-scheduled' : item.alwaysLive ? 'os-badge-247' : 'os-badge-live'}`;
   const dot = document.createElement('span');
   dot.className = 'os-live-dot';
   dot.setAttribute('aria-hidden', 'true');
-  liveBadge.appendChild(dot);
-  liveBadge.appendChild(document.createTextNode(scheduled ? (upcoming ? 'Upcoming' : 'Scheduled') : item.alwaysLive ? '24/7' : 'Live'));
-  badges.appendChild(liveBadge);
-  idGroup.appendChild(badges);
-
+  badge.append(dot, document.createTextNode(scheduled ? 'Scheduled' : item.alwaysLive ? '24/7' : 'Live'));
+  foot.appendChild(badge);
+  if (scheduled && item.startAt) {
+    const time = document.createElement('time');
+    time.dateTime = new Date(item.startAt).toISOString();
+    time.textContent = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(item.startAt);
+    foot.appendChild(time);
+  } else if (item.viewers > 0) {
+    const viewers = document.createElement('span');
+    viewers.className = 'os-foot-viewers';
+    viewers.textContent = `${item.viewers} watching`;
+    foot.appendChild(viewers);
+  }
   const launch = document.createElement('span');
   launch.className = 'os-launch-ico';
   launch.setAttribute('aria-hidden', 'true');
   launch.innerHTML = LAUNCH_ARROW_SVG;
-
-  head.appendChild(idGroup);
-  head.appendChild(launch);
-
-  const body = document.createElement('div');
-  body.className = 'os-card-body';
-
-  const cat = document.createElement('span');
-  cat.className = 'os-card-cat';
-  cat.textContent = item.category;
-
-  const name = document.createElement('div');
-  name.className = 't-name';
-  name.textContent = item.title;
-
-  body.appendChild(cat);
-  body.appendChild(name);
-
-  const foot = document.createElement('div');
-  foot.className = 'os-card-foot';
-
-  const footTag = document.createElement('span');
-  footTag.className = 'os-foot-tag';
-  const providerName = PROVIDER_LABELS[item.provider];
-  footTag.textContent = item.tag && !item.tag.toLowerCase().includes(providerName.toLowerCase()) ? `${providerName} · ${item.tag}` : item.tag || providerName;
-  foot.appendChild(footTag);
-
-  if (item.viewers > 0) {
-    const viewers = document.createElement('span');
-    viewers.className = 'os-foot-viewers';
-    const vDot = document.createElement('i');
-    vDot.setAttribute('aria-hidden', 'true');
-    viewers.appendChild(vDot);
-    viewers.appendChild(document.createTextNode(`${item.viewers} watching`));
-    foot.appendChild(viewers);
-  } else {
-    const ready = document.createElement('span');
-    ready.textContent = scheduled && item.startAt ? new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(item.startAt) : 'Theater HD';
-    foot.appendChild(ready);
-  }
-
-  card.appendChild(head);
-  card.appendChild(body);
-  card.appendChild(foot);
+  card.append(mark, body, foot, launch);
   return card;
 }
 
