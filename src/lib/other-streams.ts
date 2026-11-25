@@ -723,13 +723,15 @@ export function parseZliveSports(payload: unknown): OtherStreamItem[] {
     const channel = value as Record<string, unknown>;
     const id = String(channel.id || '').trim();
     const title = String(channel.name || '').trim().slice(0, 140);
-    if (String(channel.sport || '').trim().toLowerCase() !== 'sports' || channel.live !== true || !title || isFormula1Text(`${title} ${id}`) || isLowResStream(`${title} ${channel.quality || ''}`) || seen.has(id)) continue;
+    const group = String(channel.sport || '').trim();
+    if (channel.live !== true || !title || isFormula1Text(`${title} ${id} ${group}`) || isLowResStream(`${title} ${channel.quality || ''}`) || seen.has(id)) continue;
+    const category = /^sports?$/i.test(group) ? 'Sports' : group === 'Kids' ? 'Kids' : '24/7 Channels';
     const urls = buildZliveUrls(id);
     if (!urls) continue;
     seen.add(id);
     const region = String(channel.region || '').trim().slice(0, 40);
     const quality = String(channel.quality || '').trim().slice(0, 20);
-    items.push({ key: `zlive:${id}`, provider: 'zlive', id, title, category: 'Sports', subtitle: ['Sports', region, 'ZLive'].filter(Boolean).join(' · '), tag: ['ZLive', quality].filter(Boolean).join(' · '), viewers: 0, alwaysLive: false, ...urls, color: pickStreamColor('zlive', 'Sports') });
+    items.push({ key: `zlive:${id}`, provider: 'zlive', id, title, category, subtitle: [category, region, 'ZLive'].filter(Boolean).join(' · '), tag: ['ZLive', quality].filter(Boolean).join(' · '), viewers: 0, alwaysLive: true, ...urls, color: pickStreamColor('zlive', category) });
   }
   return items;
 }
@@ -784,9 +786,6 @@ export function parseBintvStreams(payload: unknown): OtherStreamItem[] {
   if (!payload || typeof payload !== 'object') return [];
   const data = payload as Record<string, unknown>;
   const out: OtherStreamItem[] = [], seen = new Set<string>();
-  // The 24/7 directory has no sport metadata. Only include channels whose names
-  // clearly identify them as sports, rather than guessing for general TV.
-  const sportsChannel = /\b(?:sports?|sport\d*|espn\w*|dazn|tsn\d*|bein|nfl|nba|nhl|mlb|ufc|wwe|golf|tennis|cricket|rugby|racing|motogp|motorsport|laliga|premier league|football|footy|cycling|rally|fight|racer|dirtvision|big ten|acc network|sec network|tnt sports|willow)\b/i;
   for (const section of ['Live Events', 'Upcoming Events', '24/7 Channels']) {
     const rows = data[section]; if (!Array.isArray(rows)) continue;
     for (const raw of rows) {
@@ -794,7 +793,7 @@ export function parseBintvStreams(payload: unknown): OtherStreamItem[] {
       const e = raw as Record<string, unknown>;
       const name = String(e.Name || '').trim().slice(0, 140), category = String(e.Category || '').trim().slice(0, 80);
       const alwaysLive = section === '24/7 Channels';
-      if (!name || (alwaysLive && !sportsChannel.test(name)) || isFormula1Text(`${name} ${category} ${e.ID || ''}`)) continue;
+      if (!name || isFormula1Text(`${name} ${category} ${e.ID || ''}`)) continue;
       const starts = String(e.Date || '').trim();
       const date = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC$/.test(starts) ? Date.parse(starts.replace(' ', 'T').replace(' UTC', ':00Z')) : NaN;
       const sources = Array.isArray(e.Streams) ? e.Streams : [];
@@ -811,7 +810,8 @@ export function parseBintvStreams(payload: unknown): OtherStreamItem[] {
         seen.add(key);
         const display = sources.length > 1 && label ? `${name} · ${label}` : name;
         const startAt = Number.isFinite(date) ? date : undefined;
-        out.push({ key: `bintv:${key}`, provider: 'bintv', id, title: display, category: category || 'Sports', subtitle: [category || 'Sports', label, 'BinTV'].filter(Boolean).join(' · '), tag: label ? `BinTV · ${label}` : 'BinTV', viewers: Math.max(0, Math.min(Number(e.Viewers) || 0, 100000000)), alwaysLive, startAt, status: section === 'Upcoming Events' ? 'scheduled' : 'live', ...urls, color: pickStreamColor('bintv', category) });
+        const displayCategory = category || (alwaysLive ? '24/7 Channels' : 'Sports');
+        out.push({ key: `bintv:${key}`, provider: 'bintv', id, title: display, category: displayCategory, subtitle: [displayCategory, label, 'BinTV'].filter(Boolean).join(' · '), tag: label ? `BinTV · ${label}` : 'BinTV', viewers: Math.max(0, Math.min(Number(e.Viewers) || 0, 100000000)), alwaysLive, startAt, status: section === 'Upcoming Events' ? 'scheduled' : 'live', ...urls, color: pickStreamColor('bintv', category) });
       }
     }
   }
@@ -831,7 +831,6 @@ export function parseNtvRaptor(payload: unknown, now = Date.now()): OtherStreamI
   const data = payload as { success?: unknown; all?: unknown } | null;
   if (data?.success !== true || !Array.isArray(data.all)) return [];
   const out: OtherStreamItem[] = [], seen = new Set<string>();
-  const sportsChannel = /\b(?:sports?|rally|racing|football|footy|cricket|nfl|nba|nhl|mlb|tennis|golf|rugby|motorsport|ufc|wwe|espn|dazn)\b/i;
   for (const raw of data.all) {
     if (!raw || typeof raw !== 'object') continue;
     const event = raw as Record<string, unknown>;
@@ -840,7 +839,7 @@ export function parseNtvRaptor(payload: unknown, now = Date.now()): OtherStreamI
     const alwaysLive = /24\/7/i.test(String(event.tournament || ''));
     const live = event.live === true || String(event.status || '').toLowerCase() === 'live';
     const startAt = Number(event.date);
-    if (!name || !category || isFormula1Text(`${name} ${category} ${eventId}`) || (category === '24/7 Streams' && !sportsChannel.test(name))) continue;
+    if (!name || !category || isFormula1Text(`${name} ${category} ${eventId}`)) continue;
     if (!live && (!Number.isFinite(startAt) || startAt <= now || startAt > 4e12)) continue;
     const sources = Array.isArray(event.sources) ? event.sources : [];
     for (const source of sources) {

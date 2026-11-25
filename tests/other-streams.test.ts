@@ -72,7 +72,7 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
       {id:'ppv-4',title:'Formula 1 Grand Prix',category:'Motorsport',live:true,sources:[{url:'https://taifood-blog.asia/embed/f1'}]},
       {id:'ppv-5',title:'Bad',category:'Football',live:true,sources:[{url:'https://evil.example/embed/test'}]},
     ]},now);
-    expect(items.map(i=>i.title)).toEqual(['NFL Network','Team A vs Team B']);
+    expect(items.map(i=>i.title)).toEqual(['NFL Network','Team A vs Team B','Cartoon Channel']);
     expect(items[0].alwaysLive).toBe(true);
     expect(items[1].status).toBe('scheduled');
     const resolved = parsePrivateCockpitParams(new URL(buildPrivateCockpitHref(items[1]), 'https://freef1-live.vercel.app').search);
@@ -94,7 +94,7 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
     expect(result.items.filter(i=>i.embedUrl==='https://taifood-blog.asia/embed/nfl-network')).toHaveLength(1);
   });
 
-  it('adds BinTV sports events and sports channels with validated player-only URLs', () => {
+  it('adds BinTV events and 24/7 channels with validated player-only URLs', () => {
     const encode = (url: string) => btoa(url).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
     const id = encode('https://ehgembxe.cfd/bintv/test-123');
     const wrapper = `https://bintv-sources.pages.dev/?id=${id}`;
@@ -108,7 +108,7 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
         {ID:'ch4',Name:'Bad Sport',Streams:[{Name:'Bad',Iframe:`https://bintv-sources.pages.dev/?id=${encode('https://evil.example/abc')}`}]},
       ],
     });
-    expect(events.map(e => e.title)).toEqual(['Teams', 'Teams tomorrow', 'ESPN']);
+    expect(events.map(e => e.title)).toEqual(['Teams', 'Teams tomorrow', 'ESPN', 'Cartoon Network']);
     expect(events[0].embedUrl).toBe(wrapper);
     expect(events[1].startAt).toBe(Date.parse('2026-11-15T18:00:00Z'));
     expect(events[2].alwaysLive).toBe(true);
@@ -164,7 +164,7 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
     expect(result.counts.aura).toBe(1);
   });
 
-  it('includes only live ZLive sports and uses the provider player-only embed', () => {
+  it('includes live ZLive channels and uses the provider player-only embed', () => {
     const items = parseZliveSports({ channels: [
       { id: 'TSN4', name: 'TSN 4', sport: 'Sports', live: true, quality: 'FHD', region: 'CA', url: 'https://evil.example/should-not-be-used' },
       { id: 'adult-swim', name: 'Adult Swim', sport: 'Kids', live: true },
@@ -173,7 +173,8 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
       { id: 'offline', name: 'Offline channel', sport: 'Sports', live: false },
       { id: '../bad', name: 'Bad path', sport: 'Sports', live: true },
     ] });
-    expect(items).toHaveLength(1);
+    expect(items.map(item => item.title)).toEqual(['TSN 4', 'Adult Swim', 'Movie channel']);
+    expect(items[1].alwaysLive).toBe(true);
     expect(items[0].embedUrl).toBe('https://zlive.st/embed/TSN4');
     expect(parsePrivateCockpitParams(new URL(buildPrivateCockpitHref(items[0]), 'https://freef1-live.vercel.app').search)?.embedUrl).toBe(items[0].embedUrl);
     expect(buildZliveUrls('../bad')).toBeNull();

@@ -3,7 +3,7 @@ import {channelLogo} from '../src/lib/channel-logos';
 import {otherStreamSection} from '../src/lib/stream-order';
 describe('channel directory',()=>{
   it('recognises sports networks in titles and uses bundled marks only',()=>{
-    for(const title of ['SuperSport Motorsport','Sky Sports Cricket','ESPN 2','DAZN 1','TNT Sports 1','beIN Sports','MotoGP Channel']) expect(channelLogo(title)).toMatch(/^data:image\//);
+    for(const title of ['SuperSport Motorsport','Sky Sports Cricket','ESPN 2','DAZN 1','TNT Sports 1','beIN Sports','MotoGP Channel','S*perSport Premier League','Fox Sports 1','BBC News','CNN','TSN4','ESPN2','CANAL+ Sport','NBC Sports Boston','Sony Sports 5']) expect(channelLogo(title)).toMatch(/^data:image\//);
     expect(channelLogo('SpongeBob')).toBeNull();
   });
   it('keeps sports ahead of entertainment and unknown round-the-clock channels',()=>{
