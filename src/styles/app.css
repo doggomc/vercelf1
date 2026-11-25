@@ -7002,3 +7002,12 @@ body[data-page="cockpit"] #watch .wplayer-actions-main { justify-content:flex-st
   body[data-page="cockpit"] #watch .standby-countdown { margin-top:10px; }
   body[data-page="cockpit"] #watch .standby-countdown #watchSessionCountdown { font-size:clamp(17px,4vw,22px); }
 }
+
+/* The timing rail card offers both the full page and an in-cockpit toggle. */
+body[data-page="cockpit"] #watch .side-timing-card { gap:12px; }
+body[data-page="cockpit"] #watch .side-timing-link { color:inherit; text-decoration:none; min-width:0; }
+body[data-page="cockpit"] #watch .side-timing-link:hover { background:transparent; transform:none; }
+body[data-page="cockpit"] #watch .side-timing-enable { justify-self:start; border:1px solid #ffffff2a; border-radius:8px; padding:6px 10px; background:#ffffff0d; color:#eeeef2; font-family:inherit; font-size:11px; font-weight:600; line-height:1.2; cursor:pointer; transition:background .2s,border-color .2s; }
+body[data-page="cockpit"] #watch .side-timing-enable:hover { background:#ffffff19; border-color:#ffffff54; }
+body[data-page="cockpit"] #watch .side-timing-enable:focus-visible { outline:2px solid white; outline-offset:3px; }
+@media (prefers-reduced-motion:reduce) { body[data-page="cockpit"] #watch .side-timing-enable { transition:none; } }

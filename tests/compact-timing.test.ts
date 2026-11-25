@@ -27,6 +27,9 @@ describe('cockpit compact timing',()=>{
    expect(html).toContain('aria-controls="compactTimingPanel"');
    expect(app).toContain("import('./features/compact-timing')");
    expect(app).toContain('compactTimingController?.close()');
+   expect(html).toContain('id="sideTimingEnable"');
+   expect(html).toContain('Enable it here');
+   expect(app).toContain("document.getElementById('sideTimingEnable')?.addEventListener('click', () => { void setCompactTiming(true); })");
    expect(css).toContain('.compact-timing { grid-column:2;');
    expect(css).toContain('@media(max-width: 1100px) { .compact-timing { grid-column:1;');
  });

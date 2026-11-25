@@ -1848,6 +1848,7 @@ async function setCompactTiming(open: boolean) {
   }
 }
 compactTimingToggle?.addEventListener('click', () => { void setCompactTiming(!compactTimingWanted); });
+document.getElementById('sideTimingEnable')?.addEventListener('click', () => { void setCompactTiming(true); });
 $('compactTimingClose')?.addEventListener('click', () => { void setCompactTiming(false); compactTimingToggle?.focus(); });
 
 const theaterBtn = $('theaterBtn');

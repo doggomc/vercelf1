@@ -149,10 +149,13 @@
         <p class="side-h">Now playing</p>
         <p class="side-now" id="sourceLabel">Sky HD</p>
       </div>
-      <a class="side-card side-link" href="/live-timing">
-        <span><b>Live timing</b><small>Tower, sectors, race control &amp; radio</small></span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
-      </a>
+      <div class="side-card side-timing-card">
+        <a class="side-link side-timing-link" href="/live-timing">
+          <span><b>Live timing</b><small>Tower, sectors, race control &amp; radio</small></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+        </a>
+        <button class="side-timing-enable" id="sideTimingEnable" type="button" aria-controls="compactTimingPanel">Enable it here</button>
+      </div>
       <a class="side-card side-link" href="/standings">
         <span><b>Championship</b><small>Standings and points</small></span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
