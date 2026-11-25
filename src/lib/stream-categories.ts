@@ -25,3 +25,10 @@ export function streamCategory(category: string, title: string): string {
   if (!group || /^(?:other|sports?|live sport|live channel|general|other sports|other live|others? \/ uncategorized)$/.test(group)) return 'Sports';
   return category.trim() || 'Sports';
 }
+
+/** Keep the motorsport shortcut prominent and children's channels last;
+ * preserve the existing popularity order for everything in between. */
+export function compareStreamCategories(a: [string, number], b: [string, number]): number {
+  const rank = (name: string) => /^(?:motorsports?)$/i.test(name.trim()) ? 0 : /^kids$/i.test(name.trim()) ? 2 : 1;
+  return rank(a[0]) - rank(b[0]) || b[1] - a[1] || a[0].localeCompare(b[0]);
+}

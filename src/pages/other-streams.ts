@@ -1,6 +1,6 @@
 import { initShell } from '../ui/shell';
 import '../viewer-counter';
-import { streamCategory } from '../lib/stream-categories';
+import { compareStreamCategories, streamCategory } from '../lib/stream-categories';
 import { channelLogo } from '../lib/channel-logos';
 import { channelSpriteIndex } from '../lib/channel-sprite';
 import { otherStreamSection, compareOtherStreams } from '../lib/stream-order';
@@ -204,10 +204,7 @@ function renderFilters(immediateGlider = false): void {
     activeCategory = 'all';
   }
 
-  const sortedCategories = [...categoryMap.entries()].sort((a, b) => {
-    if (b[1] !== a[1]) return b[1] - a[1];
-    return a[0].localeCompare(b[0]);
-  });
+  const sortedCategories = [...categoryMap.entries()].sort(compareStreamCategories);
 
   const nodes: Node[] = [];
   if (gliderEl) nodes.push(gliderEl);

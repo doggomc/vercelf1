@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { streamCategory } from '../src/lib/stream-categories';
+import { compareStreamCategories, streamCategory } from '../src/lib/stream-categories';
 
 describe('stream categories', () => {
   it('combines provider league labels into clear sport categories', () => {
@@ -15,5 +15,16 @@ describe('stream categories', () => {
     expect(streamCategory('Sports', 'Sky Sports Cricket')).toBe('Cricket');
     expect(streamCategory('Sports', 'TSN 4')).toBe('Sports');
     expect(streamCategory('Sports', 'Sky Sports Racing')).toBe('Sports');
+  });
+});
+
+describe('category chip order', () => {
+  it('keeps Motorsport first and Kids last regardless of counts', () => {
+    const entries: Array<[string,number]> = [['Kids',999],['Sports',12],['Football',30],['Motorsport',1],['Hockey',12]];
+    expect(entries.sort(compareStreamCategories).map(([name]) => name)).toEqual(['Motorsport','Football','Hockey','Sports','Kids']);
+  });
+  it('keeps the order sensible when either special category is absent', () => {
+    const entries: Array<[string,number]> = [['Kids',10],['Sports',1]];
+    expect(entries.sort(compareStreamCategories).map(([name]) => name)).toEqual(['Sports','Kids']);
   });
 });
