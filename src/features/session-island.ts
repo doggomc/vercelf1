@@ -1,5 +1,6 @@
 import '../interaction-guard';
 import { bindIslandHover } from './island-hover';
+import { islandRelativeTime } from './island-countdown';
 import { findLiveSession, findNextSession, sessionShortName } from '../services/weekend';
 
 /** Schedule status, not a claim that a stream is live or available. */
@@ -29,7 +30,7 @@ export function initSessionIsland(): void {
     }
     const total = Math.max(0, Math.ceil((info.session.ts - now) / 1000));
     const days = Math.floor(total / 86400), hours = Math.floor(total / 3600) % 24, minutes = Math.floor(total / 60) % 60, seconds = total % 60;
-    const relative = live ? 'Scheduled' : days ? `in ${days} ${days === 1 ? 'day' : 'days'}` : total >= 3600 ? `in ${Math.ceil(total / 3600)} hr` : `in ${Math.ceil(total / 60)} min`;
+    const relative = live ? 'Scheduled' : islandRelativeTime(total);
     const time = live ? 'Scheduled' : `${days ? `${days}d ` : ''}${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
     const gp = info.event.name.replace(' Grand Prix', ' GP');
     el('.si-name').textContent = sessionShortName(info.session.name); el('.si-relative').textContent = relative;
