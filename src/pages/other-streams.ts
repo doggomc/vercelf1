@@ -2,6 +2,7 @@ import { initShell } from '../ui/shell';
 import '../viewer-counter';
 import { streamCategory } from '../lib/stream-categories';
 import { channelLogo } from '../lib/channel-logos';
+import { channelSpriteIndex } from '../lib/channel-sprite';
 import { otherStreamSection, compareOtherStreams } from '../lib/stream-order';
 import {
   buildPrivateCockpitHref,
@@ -107,8 +108,19 @@ function createStreamCard(item: OtherStreamItem, index: number): HTMLAnchorEleme
   mark.setAttribute('aria-hidden', 'true');
   const words = item.title.match(/[\p{L}\p{N}]+/gu) || [];
   mark.textContent = (words.length > 1 ? words[0][0] + words[1][0] : (words[0] || 'TV').slice(0, 2)).toUpperCase();
-  const logo = channelLogo(item.title);
-  if (logo) {
+  const spriteIndex = channelSpriteIndex(item.title, item.subtitle);
+  const logo = spriteIndex === null ? channelLogo(item.title) : null;
+  if (spriteIndex !== null) {
+    mark.classList.add('has-sprite');
+    const image = document.createElement('img');
+    image.src = '/assets/channel-logos/channels.webp';
+    image.alt = '';
+    image.loading = 'lazy';
+    image.style.left = `-${(spriteIndex % 10) * 68}px`;
+    image.style.top = `-${Math.floor(spriteIndex / 10) * 48}px`;
+    image.addEventListener('error', () => { image.remove(); mark.classList.remove('has-sprite'); }, { once:true });
+    mark.appendChild(image);
+  } else if (logo) {
     const image = document.createElement('img');
     image.src = logo;
     image.alt = '';

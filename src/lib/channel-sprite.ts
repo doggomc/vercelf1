@@ -1,0 +1,15 @@
+// Channel logo atlas indices; images are served as a single static Cloudflare asset.
+const channels:Record<string,number> = {"abc":81,"accnetwork":74,"bbcamerica":113,"bbcnews":28,"bbctwo":125,"beinsports2":104,"boing":94,"bravo":119,"canalplusextra1":127,"canalplusextra2":117,"canalplussport":58,"canalplussport2":54,"canalplussport3":72,"canalplussport4":56,"canalplussport5":50,"canalplussport6":91,"cartoonnetwork":0,"cbc":108,"cnn":116,"dazn1":43,"dazn2":70,"daznf1":109,"daznlaliga":112,"discoveryfamily":35,"discoveryturbo":24,"disneychannel":1,"elevensports1":52,"elevensports2":70,"elevensports3":44,"elevensports4":92,"espn":115,"espn2":38,"espndeportes":114,"espnews":126,"espnu":62,"fox":118,"foxsports1":69,"foxsports2":33,"foxsports501":78,"foxsports503":96,"foxsports505":101,"foxsports506":101,"foxsportsnews":59,"freeform":37,"fxm":7,"go3sport1":40,"go3sport2":89,"go3sport3":77,"golfchannel":64,"hbodrama":122,"hbolatino":34,"hbomovies":121,"hgtv":79,"lequipe":102,"mlbnetwork":100,"movistardeportes":82,"movistarplus":110,"nbatv":2,"nbc":55,"nbcsportsbayarea":65,"nbcsportsphiladelphia":124,"nflnetwork":3,"nhlnetwork":75,"nickelodeon":57,"nickjr":4,"nicktoons":36,"pbskids":87,"polsat":107,"polsatsportfight":51,"showtime":71,"showtimeextreme":84,"showtimefamilyzone":99,"showtimenext":42,"skyarts":21,"skyatlantic":20,"skycrime":23,"skydocumentaries":83,"skykids":9,"skynature":10,"skynews":19,"skyscifi":8,"skysportbundesliga":76,"skysportsaction":17,"skysportscricket":12,"skysportsf1":14,"skysportsfootball":25,"skysportsgolf":16,"skysportsmainevent":11,"skysportsmix":27,"skysportsnews":15,"skysportsplus":26,"skysportspremierleague":13,"skysportsracing":18,"skysportstennis":111,"skywitness":22,"sportdigitalfussball":67,"sportsnet":5,"sporttv1":80,"sporttv2":41,"sporttv3":49,"sporttv4":93,"sporttv5":46,"starz":66,"starzcinema":88,"starzcomedy":63,"supersportcricket":39,"supersportfootball":61,"supersportgrandstand":85,"supersportlaliga":98,"supersportmotorsport":73,"supersportpremierleague":106,"supersportrugby":105,"syfy":45,"tbs":120,"telemundo":128,"tennischannel":103,"theweatherchannel":48,"tntsports1":29,"tntsports2":30,"tntsports3":31,"tntsports4":32,"tsn1":86,"tsn3":53,"tsn4":97,"tsn5":60,"tudn":95,"ufcfightpass247":6,"unimas":90,"univision":68,"usanetwork":123,"wapadeportes":47};
+const NFL=3, UFC=6, SPORTSNET=5;
+/** Resolve known broadcaster names; unknown and newly added channels use initials. */
+export function channelSpriteIndex(title:string, subtitle=''):number|null {
+  const source=title.split(' · ')[0].normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\*/g,'u').replace(/\+/g,' plus ')
+    .replace(/\s*\[[^\]]*\]/g,' ').replace(/\s*\([^)]*\)/g,' ')
+    .replace(/\b(?:backup|test|fhd|uhd|hevc|hd|sd|4k|720p|1080p|1440p|live)\b/g,' ')
+    .replace(/\b(?:uk|us|usa|ca|au|fr|dk|pl|italy|italia|germany|canada|spain)\b\s*$/g,' ')
+    .replace(/[^a-z0-9]+/g,'');
+  if (Object.hasOwn(channels,source)) return channels[source];
+  if (/\bufc\b/i.test(`${title} ${subtitle}`)) return UFC;
+  if (/\bnfl\b/i.test(`${title} ${subtitle}`)) return NFL;
+  return null;
+}

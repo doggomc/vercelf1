@@ -669,3 +669,13 @@ body[data-page="other-streams"] .os-stream-card { grid-template-columns:68px min
 body[data-page="other-streams"] .os-channel-mark { width:68px; height:48px; }
 body[data-page="other-streams"] .os-channel-mark.has-logo { background:#f1f2f4; border-color:rgba(255,255,255,.2); }
 body[data-page="other-streams"] .os-channel-mark img { padding:4px; }
+
+/* A single image atlas replaces hundreds of individual logo requests. */
+body[data-page="other-streams"] .os-channel-mark.has-sprite {
+  color:transparent;
+  background-color:#f1f2f4;
+  border-color:rgba(255,255,255,.2);
+}
+
+body[data-page="other-streams"] .os-channel-mark.has-sprite { overflow:hidden; }
+body[data-page="other-streams"] .os-channel-mark.has-sprite img { inset:auto; width:680px; height:auto; max-width:none; padding:0; object-fit:initial; }
