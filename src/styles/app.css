@@ -1,3 +1,4 @@
+@import './scrollbars.css';
 @import './button-motion.css';
 @import './source-jelly.css';
 @import './interaction-guard.css';
@@ -6958,6 +6959,7 @@ body[data-page="cockpit"].theater #watch .src-pill-sub {
 .compact-timing-head button:hover { background:#ffffff1a; color:white; }
 .compact-timing-status { font-size:11px; color:#9ba1ac; margin:12px 0 9px; }
 .compact-timing-scroll { max-height:calc(100vh - 250px); min-height:120px; overflow:auto; }
+.compact-timing-scroll:focus-visible { outline:2px solid #ddd; outline-offset:3px; border-radius:4px; }
 .compact-timing-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:12px; }
 .compact-timing-table th { text-align:left; color:#7f8794; font:600 10px 'JetBrains Mono',monospace; padding:8px 3px; border-bottom:1px solid #ffffff17; }
 .compact-timing-table th:nth-child(1) { width:27px; } .compact-timing-table th:nth-child(3) { width:37px; text-align:center; } .compact-timing-table th:nth-child(4) { width:68px; text-align:right; }
