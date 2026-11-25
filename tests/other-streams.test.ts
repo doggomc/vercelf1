@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   buildPrivateCockpitHref,
   compareStreamProviders,
@@ -132,6 +132,23 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
     const result = await fetchAllOtherStreams({fetchImpl:mockFetch});
     expect(result.providerOk.bintv).toBe(true);
     expect(result.counts.bintv).toBe(1);
+  });
+
+  it('allows BinTV to respond after the normal provider timeout', async () => {
+    vi.useFakeTimers();
+    try {
+      const mockFetch: typeof fetch = (input, init) => {
+        if (!String(input).includes('api.bintv.link')) return Promise.reject(new Error('offline'));
+        return new Promise<Response>((resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+          setTimeout(() => resolve(new Response(JSON.stringify({'Live Events': []}), {status:200})), 9500);
+        });
+      };
+      const pending = fetchAllOtherStreams({fetchImpl:mockFetch, skipRacingLap:true});
+      await vi.advanceTimersByTimeAsync(9500);
+      const result = await pending;
+      expect(result.providerOk.bintv).toBe(true);
+    } finally { vi.useRealTimers(); }
   });
 
   it('adds live and scheduled Aura Sports events via the player-only embed', () => {

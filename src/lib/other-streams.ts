@@ -1174,7 +1174,9 @@ async function fetchBintv(fetchImpl: typeof fetch, useCache: boolean): Promise<u
       if (cached && Date.now() - cached.at >= 0 && Date.now() - cached.at < 60_000 && Array.isArray(cached.data?.['Live Events'])) return cached.data;
     } catch { /* Storage is optional. */ }
   }
-  const data = await fetchJsonWithTimeout(BINTV_EVENTS_URL, {}, 8500, fetchImpl);
+  // BinTV can take longer than the other catalogues; allow one slow response
+  // without extra requests or relaying video through our servers.
+  const data = await fetchJsonWithTimeout(BINTV_EVENTS_URL, {}, 20000, fetchImpl);
   if (!Array.isArray((data as Record<string, unknown> | null)?.['Live Events'])) throw new Error('Invalid BinTV response');
   if (useCache) { try { localStorage.setItem(BINTV_CACHE_KEY, JSON.stringify({at: Date.now(), data})); } catch { /* Optional. */ } }
   return data;

@@ -235,7 +235,7 @@ async function loadStreams(initial = false): Promise<void> {
     const failed = (Object.keys(result.providerOk) as OtherStreamProvider[]).filter(provider => !result.providerOk[provider]);
     const old = allItems.filter(item => failed.includes(item.provider));
     allItems = retainFailedProviderFeeds(result.items.filter(isDirectoryLive).map(item => ({ ...item, category: streamCategory(item.category, item.title) })), allItems, failed);
-    setWarning(failed.length ? `Unavailable: ${failed.map(p => PROVIDER_LABELS[p]).join(', ')}.${old.length ? ' Showing previously loaded feeds for affected providers; they may be out of date.' : ' Some feeds may be missing.'}` : '');
+    setWarning(failed.length ? `Could not load: ${failed.map(p => PROVIDER_LABELS[p]).join(', ')}.${old.length ? ' Showing previously loaded feeds for affected providers; they may be out of date.' : ' Some feeds may be missing.'}` : '');
     if (providerFilter) {
       const providers = [...new Set(allItems.map(item => item.provider))].sort((a, b) => compareStreamProviders(a, b, PROVIDER_LABELS));
       if (activeProvider !== 'all' && !providers.includes(activeProvider as OtherStreamItem['provider'])) activeProvider = 'all';
