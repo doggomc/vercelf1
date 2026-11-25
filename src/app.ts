@@ -1334,7 +1334,7 @@ function updateWatchSessionState() {
     const pad = (v: number) => String(v).padStart(2, '0');
     if (dot) dot.className = 'watch-session-dot is-next';
     setTextIfChanged(badge, `Up next · R${currentEvent.round}`);
-    setTextIfChanged(timer, `${d > 0 ? `${d}d ` : ''}${pad(h)}:${pad(m)}:${pad(s)}`);
+    setTextIfChanged(timer, `${d > 0 ? `${pad(d)}:` : ''}${pad(h)}:${pad(m)}:${pad(s)}`);
     setTextIfChanged(title, `${currentEvent.name} · ${currentSession.name}`);
     setTextIfChanged(meta, `${currentEvent.locality}, ${currentEvent.country} · ${watchStartFmt.format(currentSession.ts)}`);
     return;
