@@ -58,7 +58,7 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
   });
 
   it('orders PPV, EMB and StreamFree first, with the remaining providers alphabetically', () => {
-    const labels = {matchora:'Matchora', live24:'Live24', ppv:'PPV', embdlol:'EMB', strmfree:'StreamFree', aura:'Aura Sports', bintv:'BinTV', ntv:'NTV Raptor', timstreams:'TimStreams', weelo:'Weelo', zlive:'ZLive'};
+    const labels = {matchora:'Matchora', live24:'Live24', esportex:'EmbedSportex', ppv:'PPV', embdlol:'EMB', strmfree:'StreamFree', aura:'Aura Sports', bintv:'BinTV', ntv:'NTV Raptor', timstreams:'TimStreams', weelo:'Weelo', zlive:'ZLive'};
     const providers: Array<keyof typeof labels> = ['zlive','embdlol','aura','strmfree','ppv','bintv'];
     expect(providers.sort((a,b)=>compareStreamProviders(a,b,labels))).toEqual(['ppv','embdlol','strmfree','aura','bintv','zlive']);
   });
