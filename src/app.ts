@@ -1800,9 +1800,10 @@ let multiviewer: Promise<any> | undefined;
 /* Lazy: the grid, its button state and its own close control all live in one chunk, downloaded the
    first time somebody opens the grid (or straight away for a ?mv=1 address). */
 function openMultiViewer() {
-  if (!streamOverride.active && !isStreamAvailable(currentSession)) return;
+  // Multiview is an explicit user action, so allow it outside session windows.
+  // The ordinary cockpit player remains subject to its existing playback gate.
   void (multiviewer ??= import('./features/multiviewer').then((m) => (multiViewerControl = m.init(featureContext)))).then((m) => {
-    if (streamOverride.active || isStreamAvailable(currentSession)) m?.show(true);
+    m?.show(true);
   });
 }
 
@@ -3593,7 +3594,6 @@ bootstrapSiteConfig();
 function syncSessionPlaybackWindow() {
   const allowed = streamOverride.active || isStreamAvailable(currentSession);
   if (!allowed) {
-    if (multiViewerControl?.isOpen?.()) multiViewerControl.show(false);
     if (!sessionWindowBlocked || stageBox?.querySelector('iframe, video')) load();
   } else if (sessionWindowBlocked && sourceConfigKnown) {
     sessionWindowBlocked = false;

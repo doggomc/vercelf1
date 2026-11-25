@@ -19,17 +19,17 @@ describe('cockpit session playback window', () => {
     expect(load).toContain('sessionWindowBlocked = true;');
     expect(load).toContain('showNoStream({ blocked: false });');
   });
-  it('reconciles an open player and multiview without pausing discovery, including when hidden', () => {
+  it('reconciles the ordinary player without closing user-opened multiview or pausing discovery', () => {
     const sync = app.slice(app.indexOf('function syncSessionPlaybackWindow()'), app.indexOf('// Background intervals'));
     expect(sync).toContain('streamOverride.active || isStreamAvailable(currentSession)');
-    expect(sync).toContain('multiViewerControl?.isOpen?.()');
+    expect(sync).not.toContain('multiViewerControl.show(false)');
     expect(sync).toContain('sessionWindowBlocked && sourceConfigKnown');
     expect(app).toContain('syncActiveSession();\n  syncSessionPlaybackWindow();\n  if (!document.hidden) updateCurrentStreamButton();');
     expect(app).toContain('if (autoStreamsActive) scheduleAutoCheck();');
   });
-  it('does not let a delayed multiview load open outside the session window', () => {
+  it('allows multiview to open outside a session window', () => {
     const open = app.slice(app.indexOf('function openMultiViewer()'), app.indexOf('function chooseMultiViewer()'));
-    expect(open).toContain('if (!streamOverride.active && !isStreamAvailable(currentSession)) return;');
-    expect(open).toContain('if (streamOverride.active || isStreamAvailable(currentSession)) m?.show(true);');
+    expect(open).not.toContain('if (!streamOverride.active && !isStreamAvailable(currentSession)) return;');
+    expect(open).toContain('m?.show(true)');
   });
 });
