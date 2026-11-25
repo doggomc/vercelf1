@@ -658,3 +658,8 @@ body[data-page="other-streams"] .os-launch-ico { position:relative; z-index:1; g
 body[data-page="other-streams"] .os-launch-ico svg { width:13px; height:13px; }
 @media (max-width:559px) { body[data-page="other-streams"] .os-stream-card { min-height:120px; } }
 @media (prefers-reduced-motion:reduce) { body[data-page="other-streams"] .os-filter { transition:none; } }
+body[data-page="other-streams"] .os-section-heading { grid-column:1/-1; margin:30px 0 4px; color:var(--white); font:700 21px/1.2 var(--font-display); letter-spacing:-.02em; }
+body[data-page="other-streams"] .os-section-heading:first-child { margin-top:0; }
+body[data-page="other-streams"] .os-section-heading + .os-provider-heading { margin-top:6px; }
+.os-channel-mark.has-logo { color:transparent; }
+.os-channel-mark img { position:absolute; inset:0; width:100%; height:100%; padding:6px; object-fit:contain; }

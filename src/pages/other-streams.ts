@@ -1,6 +1,8 @@
 import { initShell } from '../ui/shell';
 import '../viewer-counter';
 import { streamCategory } from '../lib/stream-categories';
+import { channelLogo } from '../lib/channel-logos';
+import { otherStreamSection, compareOtherStreams } from '../lib/stream-order';
 import {
   buildPrivateCockpitHref,
   compareStreamProviders,
@@ -105,6 +107,15 @@ function createStreamCard(item: OtherStreamItem, index: number): HTMLAnchorEleme
   mark.setAttribute('aria-hidden', 'true');
   const words = item.title.match(/[\p{L}\p{N}]+/gu) || [];
   mark.textContent = (words.length > 1 ? words[0][0] + words[1][0] : (words[0] || 'TV').slice(0, 2)).toUpperCase();
+  const logo = channelLogo(item.title);
+  if (logo) {
+    const image = document.createElement('img');
+    image.src = logo;
+    image.alt = '';
+    image.addEventListener('error', () => { image.remove(); mark.classList.remove('has-logo'); }, { once:true });
+    mark.appendChild(image);
+    mark.classList.add('has-logo');
+  }
 
   const body = document.createElement('div');
   body.className = 'os-card-body';
@@ -209,10 +220,20 @@ function renderList(): void {
     return haystack.includes(needle);
   });
 
-  filtered.sort((a, b) => compareStreamProviders(a.provider, b.provider, PROVIDER_LABELS) || a.title.localeCompare(b.title));
+  filtered.sort((a, b) => compareOtherStreams(a, b, PROVIDER_LABELS));
   const nodes: Node[] = [];
   let previousProvider = '';
+  let previousSection = '';
   filtered.forEach((item, idx) => {
+    const section = otherStreamSection(item);
+    if (section !== previousSection) {
+      previousSection = section;
+      previousProvider = '';
+      const heading = document.createElement('h2');
+      heading.className = 'os-section-heading';
+      heading.textContent = section === 'sports' ? 'Sports & motorsport' : 'Entertainment & other channels';
+      nodes.push(heading);
+    }
     if (item.provider !== previousProvider) {
       previousProvider = item.provider;
       const heading = document.createElement('h3');
