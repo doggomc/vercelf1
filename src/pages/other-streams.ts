@@ -3,11 +3,13 @@ import '../viewer-counter';
 import { compareStreamCategories, streamCategory } from '../lib/stream-categories';
 import { createStreamCard, PROVIDER_LABELS } from '../ui/stream-card';
 import { otherStreamSection, compareOtherStreams } from '../lib/stream-order';
+import { groupDirectoryChannels, retainFailedProviderFeeds } from '../lib/directory-reliability';
 import {
   compareStreamProviders,
   isDirectoryLive,
   fetchAllOtherStreams,
   type OtherStreamItem,
+  type OtherStreamProvider,
 } from '../lib/other-streams';
 
 initShell();
@@ -35,10 +37,19 @@ const backendMeta = document.querySelector<HTMLMetaElement>('meta[name="freef1-h
 
 let allItems: OtherStreamItem[] = [];
 let activeCategory = 'all';
-let searchQuery = '';
+let searchQuery = new URLSearchParams(location.search).get('search')?.slice(0, 160) || '';
+if (searchInput && searchQuery) { searchInput.value = searchQuery; if (clearSearchBtn) clearSearchBtn.hidden = false; }
 let loading = false;
 let lastLoadedAt = 0;
 let switchTimer = 0;
+let providerWarning = '';
+const statusEl = document.createElement('div');
+statusEl.className = 'os-provider-status';
+statusEl.setAttribute('role', 'status');
+statusEl.hidden = true;
+gridEl?.before(statusEl);
+function setWarning(text: string) { providerWarning = text; statusEl.textContent = text; statusEl.hidden = !text; }
+
 
 function prefersReducedMotion(): boolean {
   return Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
@@ -148,26 +159,24 @@ function renderList(): void {
 
   filtered.sort((a, b) => compareOtherStreams(a, b, PROVIDER_LABELS));
   const nodes: Node[] = [];
-  let previousProvider = '';
   let previousSection = '';
-  filtered.forEach((item, idx) => {
+  groupDirectoryChannels(filtered).forEach((items, idx) => {
+    const item = items[0];
     const section = otherStreamSection(item);
     if (section !== previousSection) {
       previousSection = section;
-      previousProvider = '';
       const heading = document.createElement('h2');
       heading.className = 'os-section-heading';
       heading.textContent = section === 'sports' ? 'Sports & motorsport' : 'Entertainment & other channels';
       nodes.push(heading);
     }
-    if (item.provider !== previousProvider) {
-      previousProvider = item.provider;
-      const heading = document.createElement('h3');
-      heading.className = 'os-provider-heading';
-      heading.textContent = PROVIDER_LABELS[item.provider];
-      nodes.push(heading);
-    }
-    nodes.push(createStreamCard(item, idx));
+    if (items.length === 1) { nodes.push(createStreamCard(item, idx)); return; }
+    const group = document.createElement('div'); group.className = 'os-channel-group';
+    group.append(createStreamCard(item, idx));
+    const details = document.createElement('details'); details.className = 'os-alternatives';
+    const title = document.createElement('summary'); title.textContent = `${items.length - 1} more ${items.length === 2 ? 'feed' : 'feeds'}`; details.append(title);
+    items.slice(1).forEach((feed, i) => { const card = createStreamCard(feed, i); const link = document.createElement('a'); link.href = card.href; link.textContent = [PROVIDER_LABELS[feed.provider], ...(feed.tag || '').split('·').map(part => part.trim()).filter(part => part && part.toLowerCase() !== PROVIDER_LABELS[feed.provider].toLowerCase())].join(' · '); details.append(link); });
+    group.append(details); nodes.push(group);
   });
   gridEl.replaceChildren(...nodes);
   const isEmpty = filtered.length === 0;
@@ -175,7 +184,10 @@ function renderList(): void {
   emptyEl.hidden = !isEmpty;
 
   if (isEmpty && emptyTitleEl && emptyTextEl) {
-    if (needle) {
+    if (providerWarning && !allItems.length) {
+      emptyTitleEl.textContent = 'Streams unavailable';
+      emptyTextEl.textContent = 'Provider discovery failed. Try Refresh.';
+    } else if (needle) {
       emptyTitleEl.textContent = 'No streams match your filter';
       emptyTextEl.textContent = 'Clear the search field or switch to another category above.';
     } else if (activeCategory !== 'all') {
@@ -220,7 +232,10 @@ async function loadStreams(initial = false): Promise<void> {
 
   try {
     const result = await fetchAllOtherStreams({ backend: backendMeta });
-    allItems = result.items.filter(isDirectoryLive).map(item => ({ ...item, category: streamCategory(item.category, item.title) }));
+    const failed = (Object.keys(result.providerOk) as OtherStreamProvider[]).filter(provider => !result.providerOk[provider]);
+    const old = allItems.filter(item => failed.includes(item.provider));
+    allItems = retainFailedProviderFeeds(result.items.filter(isDirectoryLive).map(item => ({ ...item, category: streamCategory(item.category, item.title) })), allItems, failed);
+    setWarning(failed.length ? `Unavailable: ${failed.map(p => PROVIDER_LABELS[p]).join(', ')}.${old.length ? ' Showing previously loaded feeds for affected providers; they may be out of date.' : ' Some feeds may be missing.'}` : '');
     if (providerFilter) {
       const providers = [...new Set(allItems.map(item => item.provider))].sort((a, b) => compareStreamProviders(a, b, PROVIDER_LABELS));
       if (activeProvider !== 'all' && !providers.includes(activeProvider as OtherStreamItem['provider'])) activeProvider = 'all';
@@ -232,8 +247,8 @@ async function loadStreams(initial = false): Promise<void> {
     renderFilters(initial);
     renderList();
   } catch {
-    allItems = [];
-    if (liveTotalEl) liveTotalEl.textContent = '0';
+    setWarning(allItems.length ? 'Refresh failed. Showing previously loaded feeds; they may be out of date.' : 'Could not load stream providers. Please try Refresh.');
+    if (liveTotalEl) liveTotalEl.textContent = String(allItems.length);
     renderFilters(initial);
     renderList();
   } finally {

@@ -5,6 +5,9 @@ import { RACINGLAP_ICON } from '../lib/racinglap-icon';
 
 export const PROVIDER_LABELS: Record<OtherStreamItem['provider'], string> = { matchora: 'Matchora', live24: 'Live24', esportex: 'EmbedSportex', aura: 'Aura Sports', bintv: 'BinTV', ntv: 'NTV Raptor', embdlol: 'EMB', ppv: 'PPV', strmfree: 'StreamFree', timstreams: 'TimStreams', weelo: 'RacingLap', zlive: 'ZLive' };
 
+// Light artwork needs a dark tile; dark and mixed-colour marks keep a pale tile.
+const LIGHT_SPRITES = new Set([4, 7, 16, 18, 23, 24, 30, 31, 32, 42, 47, 63, 66, 67, 68, 71, 84, 88, 90, 99, 107, 108, 128]);
+
 const LAUNCH_ARROW_SVG =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>';
 
@@ -26,6 +29,7 @@ export function createStreamCard(item: OtherStreamItem, index: number): HTMLAnch
   const logo = item.provider === 'weelo' ? RACINGLAP_ICON : spriteIndex === null ? channelLogo(item.title) : null;
   if (spriteIndex !== null) {
     mark.classList.add('has-sprite');
+    if (LIGHT_SPRITES.has(spriteIndex)) mark.classList.add('is-light-logo');
     const image = document.createElement('img');
     image.src = '/assets/channel-logos/channels.webp';
     image.alt = '';
@@ -48,7 +52,8 @@ export function createStreamCard(item: OtherStreamItem, index: number): HTMLAnch
   const provider = document.createElement('span');
   provider.className = 'os-card-provider';
   const providerName = PROVIDER_LABELS[item.provider];
-  provider.textContent = item.tag && !item.tag.toLowerCase().includes(providerName.toLowerCase()) ? `${providerName} · ${item.tag}` : item.tag || providerName;
+  const details = (item.tag || '').split('·').map(part => part.trim()).filter(part => part && part.toLowerCase() !== providerName.toLowerCase());
+  provider.textContent = [providerName, ...details].join(' · ');
   const name = document.createElement('div');
   name.className = 't-name';
   name.textContent = item.title;

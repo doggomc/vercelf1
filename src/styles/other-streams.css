@@ -679,3 +679,13 @@
 
 :is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-channel-mark.has-sprite { overflow:hidden; }
 :is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-channel-mark.has-sprite img { inset:auto; width:680px; height:auto; max-width:none; padding:0; object-fit:initial; }
+
+.os-provider-status { margin: 0 0 18px; padding: 12px 15px; border: 1px solid rgba(255,183,67,.35); border-radius: 10px; background: rgba(255,183,67,.08); color: var(--fg-2, #e7e7e7); font-size: 13px; line-height: 1.5; }
+.os-provider-status[hidden] { display:none; }
+.os-channel-group { min-width: 0; }
+.os-channel-group .os-stream-card { height: auto; }
+.os-alternatives { margin-top: 6px; padding: 8px 12px; border: 1px solid rgba(255,255,255,.12); border-radius: 9px; background: rgba(255,255,255,.035); font-size: 12px; }
+.os-alternatives summary { cursor:pointer; font-weight:700; }
+.os-alternatives a { display:block; padding:7px 0; color:inherit; }
+
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-channel-mark.has-sprite.is-light-logo { background-color:#20232a; border-color:rgba(255,255,255,.15); }

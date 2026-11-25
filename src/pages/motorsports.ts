@@ -78,10 +78,10 @@ async function load() {
   if(loading)return;loading=true;refresh.disabled=true;summary.textContent='Refreshing…';$('msLiveStatus').textContent='Refreshing live feeds…';
   // Exactly one request to each RacingLap endpoint; other provider catalogues
   // are refreshed only here, never by the one-second local countdown timer.
-  const [schedule,streams,directory]=await Promise.allSettled([
+  const directoryPromise = Promise.allSettled([fetchAllOtherStreams({skipRacingLap:true,forceRefresh:true})]);
+  const [schedule,streams]=await Promise.allSettled([
     get('https://racinglap.net/api/v1/schedule.json'),
     get('https://racinglap.net/api/v1/streams.json'),
-    fetchAllOtherStreams({skipRacingLap:true,forceRefresh:true}),
   ]);
   try {
     if(schedule.status!=='fulfilled')throw Error('Schedule unavailable');
@@ -95,6 +95,7 @@ async function load() {
     if(previouslyLoaded){summary.textContent='Refresh failed · showing last loaded schedule';showMessage('Could not refresh RacingLap. The schedule below may be out of date.');}
     else {summary.textContent='Schedule unavailable';showMessage('Could not load RacingLap’s schedule. Please try Refresh.');}
   }
+  const [directory] = await directoryPromise;
   let rl:OtherStreamItem[]=[];let rlOk=false;
   if(streams.status==='fulfilled')try {rl=parseRacingLapOther(streams.value);rlOk=true;}catch {/* report partial failure */}
   const dirOk=directory.status==='fulfilled';
@@ -102,9 +103,13 @@ async function load() {
   const othersHealthy=dirOk&&Object.entries(directory.value.providerOk).some(([key,ok])=>key!=='weelo'&&ok);
   const partial= !rlOk || !othersHealthy || (dirOk && Object.entries(directory.value.providerOk).some(([key,ok])=>key!=='weelo'&&!ok));
   if (rlOk || othersHealthy) {
-    lastLiveItems=motorsportDirectoryItems([...other,...rl]);livePreviouslyLoaded=true;
+    const failedProviders = dirOk ? Object.entries(directory.value.providerOk).filter(([key,ok])=>key!=='weelo'&&!ok).map(([key])=>key) : [];
+    if (!rlOk) failedProviders.push('weelo');
+    if (!dirOk) failedProviders.push(...lastLiveItems.map(item=>item.provider).filter(p=>p!=='weelo'));
+    const stale = lastLiveItems.filter(item=>failedProviders.includes(item.provider));
+    lastLiveItems=motorsportDirectoryItems([...other,...rl,...stale]);livePreviouslyLoaded=true;
     const count=lastLiveItems.length;
-    renderLive(lastLiveItems,`${count} live ${count===1?'feed':'feeds'}${partial?' · Some providers unavailable; try Refresh.':''}${!count&&!partial?' · Check back when coverage starts.':''}`);
+    renderLive(lastLiveItems,`${count} live ${count===1?'feed':'feeds'}${partial?' · Some providers unavailable; previously loaded feeds may be out of date. Try Refresh.':''}${!count&&!partial?' · Check back when coverage starts.':''}`);
   } else if(livePreviouslyLoaded)renderLive(lastLiveItems,'Refresh failed · showing last loaded feeds, which may be out of date.');
   else renderLive([],'Live feeds unavailable. Please try Refresh.');
   loading=false;refresh.disabled=false;

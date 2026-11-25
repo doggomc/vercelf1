@@ -27,6 +27,8 @@ const categoryEl = document.getElementById('watchSessionCountdown');
 const titleEl = document.getElementById('watchSessionTitle');
 const metaEl = document.getElementById('watchSessionMeta');
 const reloadBtn = document.getElementById('reloadFeedBtn') as HTMLButtonElement | null;
+const alternateBtn = document.getElementById('alternateFeedBtn') as HTMLButtonElement | null;
+const findOtherFeeds = document.getElementById('findOtherFeeds') as HTMLAnchorElement | null;
 const retryBtn = document.getElementById('nsRetryBtn') as HTMLButtonElement | null;
 const backendMeta = document.querySelector<HTMLMetaElement>('meta[name="freef1-help-api"]')?.content;
 
@@ -85,7 +87,7 @@ function showMissingState(): void {
 }
 
 function isLocalDevHost(): boolean {
-  return location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  return location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname.endsWith('.e2b.app');
 }
 
 async function mountStream(useFallback = false): Promise<void> {
@@ -140,8 +142,8 @@ async function mountStream(useFallback = false): Promise<void> {
 
   frame.addEventListener('load', finishLoad, { once: true });
 
-  /* Safety settle: if a cross-origin subresource stalls onload while video is playing,
-     lift the spinner cleanly; if stripped relay completely fails, try fallbackUrl. */
+  /* Cross-origin loads cannot confirm playback. Stop the spinner without claiming success;
+     the viewer can manually try another feed when the player is blocked or blank. */
   setTimeout(() => {
     if (token !== activeToken || settled) return;
     finishLoad();
@@ -177,9 +179,13 @@ if (!resolved) {
   if (categoryEl) categoryEl.textContent = resolved.category;
   if (titleEl) titleEl.textContent = resolved.title;
   if (metaEl) metaEl.textContent = resolved.subtitle;
+  if (findOtherFeeds) findOtherFeeds.href = `/other-streams?search=${encodeURIComponent(resolved.title)}`;
+  if (alternateBtn) alternateBtn.hidden = !resolved.fallbackUrl || resolved.fallbackUrl === resolved.embedUrl || isLocalDevHost();
 
   void initPageGate().then(() => { void mountStream(false); });
 }
 
 reloadBtn?.addEventListener('click', () => { void mountStream(false); });
 retryBtn?.addEventListener('click', () => { void mountStream(false); });
+
+alternateBtn?.addEventListener('click', () => { void mountStream(true); });
