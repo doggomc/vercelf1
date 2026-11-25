@@ -126,7 +126,7 @@ describe('Other streams non-F1 filtering & private cockpit resolution', () => {
   it('fetches BinTV independently from other providers', async () => {
     const id = btoa('https://ehgembxe.cfd/bintv/test-123').replace(/=/g, '');
     const mockFetch: typeof fetch = async input => {
-      if (String(input).includes('api.yosintv.fun')) return new Response(JSON.stringify({'Live Events':[{ID:'ev',Name:'Game',Category:'Soccer',Streams:[{Name:'HD',Iframe:`https://bintv-sources.pages.dev/?id=${id}`}]}]}), {status:200});
+      if (String(input).includes('api.bintv.link')) return new Response(JSON.stringify({'Live Events':[{ID:'ev',Name:'Game',Category:'Soccer',Streams:[{Name:'HD',Iframe:`https://bintv-sources.pages.dev/?id=${id}`}]}]}), {status:200});
       throw new Error('offline');
     };
     const result = await fetchAllOtherStreams({fetchImpl:mockFetch});

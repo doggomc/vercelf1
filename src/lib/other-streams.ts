@@ -46,7 +46,7 @@ const MATCHORA_URL = 'https://matchora.to/api/v1/schedule?watchable=1';
 const LIVE24_URL = 'https://ntv.cx/api/get-matches?server=falcon&type=both';
 const NTV_RAPTOR_URL = 'https://ntv.cx/api/get-matches?server=raptor&type=both';
 const NTV_CACHE_KEY = 'freef1-ntv-raptor-v1';
-const BINTV_EVENTS_URL = 'https://api.yosintv.fun/api/public/bintvjson';
+const BINTV_EVENTS_URL = 'https://api.bintv.link/api/public/bintvjson';
 const BINTV_CACHE_KEY = 'freef1-bintv-v1';
 const AURA_SCHEDULE_URL = 'https://aurasports.cfd/api/schedule';
 const ZLIVE_MANIFEST_URL = 'https://zlive.st/embed/manifest.json';
