@@ -3,7 +3,7 @@
   "version": 2,
   "framework": null,
   "installCommand": "npm ci",
-  "buildCommand": "npm run build && node scripts/static-origin.mjs link",
+  "buildCommand": "npm run build && if [ \"$VERCEL_ENV\" = preview ]; then echo \"Preview uses local assets\"; else node scripts/static-origin.mjs link; fi",
   "outputDirectory": "dist",
   "cleanUrls": true,
   "redirects": [
