@@ -37,6 +37,21 @@ export interface TileBox {
   h: number;
 }
 
+export function emptyMultiviewMessage(configKnown: boolean, autoEnabled: boolean, state: string, start: number | null, now = Date.now()): string {
+  if (!configKnown) return 'Checking Auto-Streams status…';
+  if (!autoEnabled) return 'Auto-Streams is disabled. The restart time is not available.';
+  if (state === 'closed') {
+    if (start && Number.isFinite(start) && start > now) {
+      const date = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }).format(start);
+      return `Auto-Streams is paused. Scheduled to resume ${date}.`;
+    }
+    return 'Auto-Streams is paused. The next start time is not available yet.';
+  }
+  if (state === 'unknown') return 'Checking when Auto-Streams will be available…';
+  if (state === 'unavailable') return 'Auto-Streams is unavailable. The schedule or stream providers could not be loaded.';
+  return 'Auto-Streams is enabled, but no supported Multiview feeds are available right now.';
+}
+
 export const MAX_TILES = 9;
 const GAP = 6;
 const STATE_KEY = 'freef1_mvx_state_v1';
@@ -718,7 +733,8 @@ export function init(ctx: any) {
     });
 
     if (!filtered.length) {
-      listEl.innerHTML = `<p class="mvx-lib-empty">${q ? `Nothing found for “${escapeText(query.trim())}”.` : all.length ? 'No streams available in this category.' : 'No streams found. Weelo feeds will appear here when available.'}</p>`;
+      const text = !all.length ? emptyMultiviewMessage(ctx.sourceConfigKnown, ctx.autoStreamsActive, ctx.autoWindowState, ctx.autoWindowStart) : q ? `Nothing found for “${query.trim()}”.` : 'No streams available in this category.';
+      listEl.innerHTML = `<p class="mvx-lib-empty">${escapeText(text)}</p>`;
       return;
     }
 

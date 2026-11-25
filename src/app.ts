@@ -2578,6 +2578,7 @@ async function refreshAutoStreams() {
     if (epoch !== autoEpoch || !autoStreamsActive) return;
     if (!autoEntries.length) autoWindowState = 'unavailable';
     renderButtons({ quiet: true });
+    multiViewerControl?.sync?.();
     if (!autoEntries.length && !streamOverride.active && !stageBox?.querySelector('iframe, video') && noStreamEl?.classList.contains('visible')) load();
   }
   if (epoch === autoEpoch) scheduleAutoCheck();
@@ -3661,6 +3662,10 @@ export const featureContext = {
   get currentSession() { return currentSession; },
   sources,
   get relaysDisabled() { return relaysDisabled; },
+  get sourceConfigKnown() { return sourceConfigKnown; },
+  get autoStreamsActive() { return autoStreamsActive; },
+  get autoWindowState() { return autoWindowState; },
+  get autoWindowStart() { return autoWindowStart; },
   get currentSource() { return currentSource; },
   get activeView() { return activeView; },
   isStreamAvailable,

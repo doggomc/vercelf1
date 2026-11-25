@@ -1,8 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { MAX_TILES, describeFeed, focusLayout, layout, strippedPlayerUrl, tileUrl } from '../src/features/multiviewer';
+import { MAX_TILES, emptyMultiviewMessage, describeFeed, focusLayout, layout, strippedPlayerUrl, tileUrl } from '../src/features/multiviewer';
 
 describe('multiviewer geometry & feed classification', () => {
+  it('explains the auto-streams state without inventing a restart time', () => {
+    expect(emptyMultiviewMessage(false, false, 'unknown', null)).toContain('Checking');
+    expect(emptyMultiviewMessage(true, false, 'unknown', null)).toContain('disabled');
+    expect(emptyMultiviewMessage(true, true, 'closed', null)).toContain('not available yet');
+    expect(emptyMultiviewMessage(true, true, 'closed', Date.UTC(2030, 0, 2), Date.UTC(2030, 0, 1))).toContain('Scheduled to resume');
+    expect(emptyMultiviewMessage(true, true, 'unavailable', null)).toContain('could not be loaded');
+    expect(emptyMultiviewMessage(true, true, 'active', null)).toContain('no supported Multiview feeds');
+  });
+
   it('builds muted and unmuted weellz.live and stripped relay tile URLs cleanly', () => {
     expect(tileUrl('abc123', false)).toBe('https://weellz.live/beta?stream=abc123&autoplay=1&mute=0');
     expect(tileUrl('abc123', true)).toBe('https://weellz.live/beta?stream=abc123&autoplay=1&mute=1');
@@ -99,7 +108,7 @@ describe('multiviewer geometry & feed classification', () => {
     const source = readFileSync(new URL('../src/features/multiviewer.ts', import.meta.url), 'utf8');
     expect(source).not.toContain('if (on && !available()) return');
     expect(source).not.toContain('b.hidden = !hasFeeds');
-    expect(source).toContain('No streams found. Weelo feeds will appear here when available.');
+    expect(source).toContain('emptyMultiviewMessage(ctx.sourceConfigKnown');
     expect(source).toContain('if (didPark)');
     expect(source).toContain('(s.weelo || s.weellzUrls?.length) && !s.hidden');
   });
