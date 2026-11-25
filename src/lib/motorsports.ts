@@ -1,4 +1,5 @@
-import { buildPrivateCockpitHref, buildWeeloUrls, type OtherStreamItem } from './other-streams';
+import { buildPrivateCockpitHref, buildWeeloUrls, isDirectoryLive, type OtherStreamItem } from './other-streams';
+import { streamCategory } from './stream-categories';
 export type MotorFeed = { name:string; language:string; opens:number|null; href:string; url:string };
 export type MotorEvent = {id:string; series:string; seriesKey:string; weekend:string; session:string; start:number; end:number|null; state:'live'|'upcoming'|'finished'; feeds:MotorFeed[]};
 const str=(v:unknown,max:number)=>typeof v==='string'?v.trim().slice(0,max):'';
@@ -46,4 +47,11 @@ export function countdownText(event:MotorEvent, now:number):string {
   const days=Math.floor(seconds/86400), hours=Math.floor(seconds/3600)%24, minutes=Math.floor(seconds/60)%60, sec=seconds%60;
   const pad=(x:number)=>String(x).padStart(2,'0');
   return `IN ${days ? `${days}D ` : ''}${pad(hours)}:${pad(minutes)}:${pad(sec)}`;
+}
+
+/** Other Streams' Motorsport category, plus all RacingLap live non-F1
+ * offerings (including F1 Academy and shows), without guessing event matches. */
+export function motorsportDirectoryItems(items:OtherStreamItem[]):OtherStreamItem[] {
+  return items.filter(item => isDirectoryLive(item) && (item.provider==='weelo' || streamCategory(item.category,item.title)==='Motorsport'))
+    .map(item => ({...item,category:item.provider==='weelo'?item.category:streamCategory(item.category,item.title)}));
 }

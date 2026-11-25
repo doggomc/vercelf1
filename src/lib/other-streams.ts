@@ -1196,6 +1196,8 @@ async function fetchNtv(fetchImpl: typeof fetch, useCache: boolean): Promise<unk
 export async function fetchAllOtherStreams(options: {
   backend?: string;
   fetchImpl?: typeof fetch;
+  skipRacingLap?: boolean;
+  forceRefresh?: boolean;
 } = {}): Promise<OtherStreamsResult> {
   const backend = resolveBackendOrigin(options.backend);
   const fetchImpl = options.fetchImpl || fetch;
@@ -1229,13 +1231,13 @@ export async function fetchAllOtherStreams(options: {
   const [embRes, ppvRes, weeloRes, streamfreeRes, timstreamsRes, zliveRes, auraRes, bintvRes, ntvRes, matchoraRes, live24Res, esportexRes] = await Promise.allSettled([
     fetchJsonWithTimeout(EMBDLOL_STRUCT_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(PPV_STREAMS_URL, {}, 8500, fetchImpl),
-    fetchRacingLap(),
-    fetchStreamfree(fetchImpl, !options.fetchImpl),
+    options.skipRacingLap ? Promise.resolve([] as OtherStreamItem[]) : fetchRacingLap(),
+    fetchStreamfree(fetchImpl, !options.fetchImpl && !options.forceRefresh),
     fetchJsonWithTimeout(TIMSTREAMS_EVENTS_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(ZLIVE_MANIFEST_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(AURA_SCHEDULE_URL, {}, 8500, fetchImpl),
-    fetchBintv(fetchImpl, !options.fetchImpl),
-    fetchNtv(fetchImpl, !options.fetchImpl),
+    fetchBintv(fetchImpl, !options.fetchImpl && !options.forceRefresh),
+    fetchNtv(fetchImpl, !options.fetchImpl && !options.forceRefresh),
     fetchJsonWithTimeout(MATCHORA_URL, {}, 8500, fetchImpl),
     fetchJsonWithTimeout(LIVE24_URL, {}, 8500, fetchImpl),
     (async () => parseEsportexStreams(await fetchJsonWithTimeout(ESPORTEX_URL, {}, 8500, fetchImpl)))(),

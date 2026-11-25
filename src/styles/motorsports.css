@@ -43,3 +43,15 @@
   .ms-timezone { white-space:normal; }
 }
 @media(prefers-reduced-motion:reduce) { .ms-filter,.ms-event,.ms-feed { transition:none; } }
+.ms-racinglap-icon { width:19px; height:19px; object-fit:contain; border-radius:4px; flex:none; }
+.ms-feed-provider { font-size:10px; font-weight:750; color:#f3c0ba; }
+.ms-live-section { margin-top:64px; }
+.ms-live-intro { max-width:72ch; color:var(--fg-3); font-size:13px; line-height:1.6; margin:-6px 0 18px; }
+.ms-live-status { color:var(--fg-3); font-size:12px; margin:0 0 16px; }
+.ms-live-grid { grid-template-columns:repeat(1,minmax(0,1fr)); gap:10px; }
+.ms-live-grid .os-provider-heading { grid-column:1/-1; display:flex; align-items:center; gap:10px; margin:24px 0 2px; color:var(--white); font:700 16px/1.2 var(--font-display); }
+.ms-live-grid .os-provider-heading:first-child { margin-top:0; }
+.ms-live-grid .os-provider-heading:after { content:''; height:1px; background:var(--line); flex:1; }
+@media(min-width:560px) { .ms-live-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(min-width:920px) { .ms-live-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media(min-width:1220px) { .ms-live-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }

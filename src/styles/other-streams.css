@@ -629,53 +629,53 @@
 
 /* Other Streams directory: individual chips and compact FreeF1 channel cards.
    Scoped to this page so the Replays tabs keep their existing design. */
-body[data-page="other-streams"] .os-tabs-scroll { background:transparent; border:0; border-radius:0; }
-body[data-page="other-streams"] .os-tabs { gap:7px; padding:2px; }
-body[data-page="other-streams"] .os-tabs-glider { display:none; }
-body[data-page="other-streams"] .os-filter { height:36px; padding:0 13px; border:1px solid var(--line); background:var(--card); color:var(--fg-2); transition:color .18s var(--ease),border-color .18s var(--ease),background .18s var(--ease); }
-body[data-page="other-streams"] .os-filter:hover { color:var(--white); border-color:var(--line-2); background:var(--card-2); }
-body[data-page="other-streams"] .os-filter.is-active,
-body[data-page="other-streams"] .os-tabs:not(.has-glider) .os-filter.is-active { color:var(--white); background:rgba(225,6,0,.16); border-color:rgba(225,6,0,.55); }
-body[data-page="other-streams"] .os-filter.is-active .os-filter-count { background:rgba(225,6,0,.24); color:#fff; }
-body[data-page="other-streams"] .os-filter:focus-visible,
-body[data-page="other-streams"] .os-stream-card:focus-visible { outline:2px solid #fff; outline-offset:3px; }
-body[data-page="other-streams"] #streamsGrid { gap:10px; }
-body[data-page="other-streams"] .os-provider-heading { display:flex; align-items:center; gap:10px; margin:24px 0 2px; color:var(--white); font-family:var(--font-display); font-size:16px; }
-body[data-page="other-streams"] .os-provider-heading:first-child { margin-top:0; }
-body[data-page="other-streams"] .os-provider-heading::after { content:''; flex:1; height:1px; background:var(--line); }
-body[data-page="other-streams"] .os-stream-card { display:grid; grid-template-columns:44px minmax(0,1fr) 24px; grid-template-rows:auto auto; align-items:start; column-gap:12px; row-gap:14px; min-height:130px; padding:16px; border-radius:15px; background:var(--card); }
-body[data-page="other-streams"] .os-stream-card::before { background:linear-gradient(115deg,color-mix(in srgb,var(--tc) 9%,transparent),transparent 52%); }
-body[data-page="other-streams"] .os-stream-card::after { background:radial-gradient(85% 90% at 100% 0%,color-mix(in srgb,var(--tc) 12%,transparent),transparent 65%); }
-body[data-page="other-streams"] .os-stream-card:hover { background:var(--card-2); transform:translate3d(0,-2px,0); }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-tabs-scroll { background:transparent; border:0; border-radius:0; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-tabs { gap:7px; padding:2px; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-tabs-glider { display:none; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-filter { height:36px; padding:0 13px; border:1px solid var(--line); background:var(--card); color:var(--fg-2); transition:color .18s var(--ease),border-color .18s var(--ease),background .18s var(--ease); }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-filter:hover { color:var(--white); border-color:var(--line-2); background:var(--card-2); }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-filter.is-active,
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-tabs:not(.has-glider) .os-filter.is-active { color:var(--white); background:rgba(225,6,0,.16); border-color:rgba(225,6,0,.55); }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-filter.is-active .os-filter-count { background:rgba(225,6,0,.24); color:#fff; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-filter:focus-visible,
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-stream-card:focus-visible { outline:2px solid #fff; outline-offset:3px; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) #streamsGrid { gap:10px; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-provider-heading { display:flex; align-items:center; gap:10px; margin:24px 0 2px; color:var(--white); font-family:var(--font-display); font-size:16px; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-provider-heading:first-child { margin-top:0; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-provider-heading::after { content:''; flex:1; height:1px; background:var(--line); }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-stream-card { display:grid; grid-template-columns:44px minmax(0,1fr) 24px; grid-template-rows:auto auto; align-items:start; column-gap:12px; row-gap:14px; min-height:130px; padding:16px; border-radius:15px; background:var(--card); }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-stream-card::before { background:linear-gradient(115deg,color-mix(in srgb,var(--tc) 9%,transparent),transparent 52%); }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-stream-card::after { background:radial-gradient(85% 90% at 100% 0%,color-mix(in srgb,var(--tc) 12%,transparent),transparent 65%); }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-stream-card:hover { background:var(--card-2); transform:translate3d(0,-2px,0); }
 .os-channel-mark { position:relative; z-index:1; width:44px; height:44px; display:grid; place-items:center; border:1px solid color-mix(in srgb,var(--tc) 26%,var(--line)); border-radius:12px; background:color-mix(in srgb,var(--tc) 13%,var(--card-2)); color:var(--white); font:800 13px/1 var(--font-display); letter-spacing:.02em; }
-body[data-page="other-streams"] .os-card-body { grid-column:2; gap:3px; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-card-body { grid-column:2; gap:3px; }
 .os-card-provider { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--fg-3); font-size:10px; font-weight:700; }
-body[data-page="other-streams"] .os-stream-card .t-name { font-size:15px; line-height:1.25; overflow-wrap:anywhere; }
-body[data-page="other-streams"] .os-card-cat { color:var(--fg-4); font-size:11px; font-weight:500; letter-spacing:0; text-transform:none; }
-body[data-page="other-streams"] .os-card-foot { grid-column:1 / -1; justify-content:flex-start; gap:9px; padding-top:10px; font-size:11px; }
-body[data-page="other-streams"] .os-badge { height:21px; padding:0 7px; font-size:10px; }
-body[data-page="other-streams"] .os-launch-ico { position:relative; z-index:1; grid-column:3; grid-row:1; width:24px; height:24px; border:0; background:transparent; }
-body[data-page="other-streams"] .os-launch-ico svg { width:13px; height:13px; }
-@media (max-width:559px) { body[data-page="other-streams"] .os-stream-card { min-height:120px; } }
-@media (prefers-reduced-motion:reduce) { body[data-page="other-streams"] .os-filter { transition:none; } }
-body[data-page="other-streams"] .os-section-heading { grid-column:1/-1; margin:30px 0 4px; color:var(--white); font:700 21px/1.2 var(--font-display); letter-spacing:-.02em; }
-body[data-page="other-streams"] .os-section-heading:first-child { margin-top:0; }
-body[data-page="other-streams"] .os-section-heading + .os-provider-heading { margin-top:6px; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-stream-card .t-name { font-size:15px; line-height:1.25; overflow-wrap:anywhere; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-card-cat { color:var(--fg-4); font-size:11px; font-weight:500; letter-spacing:0; text-transform:none; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-card-foot { grid-column:1 / -1; justify-content:flex-start; gap:9px; padding-top:10px; font-size:11px; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-badge { height:21px; padding:0 7px; font-size:10px; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-launch-ico { position:relative; z-index:1; grid-column:3; grid-row:1; width:24px; height:24px; border:0; background:transparent; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-launch-ico svg { width:13px; height:13px; }
+@media (max-width:559px) { :is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-stream-card { min-height:120px; } }
+@media (prefers-reduced-motion:reduce) { :is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-filter { transition:none; } }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-section-heading { grid-column:1/-1; margin:30px 0 4px; color:var(--white); font:700 21px/1.2 var(--font-display); letter-spacing:-.02em; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-section-heading:first-child { margin-top:0; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-section-heading + .os-provider-heading { margin-top:6px; }
 .os-channel-mark.has-logo { color:transparent; }
 .os-channel-mark img { position:absolute; inset:0; width:100%; height:100%; padding:6px; object-fit:contain; }
 
 /* Wider, higher-contrast logo tiles: horizontal wordmarks remain legible. */
-body[data-page="other-streams"] .os-stream-card { grid-template-columns:68px minmax(0,1fr) 24px; }
-body[data-page="other-streams"] .os-channel-mark { width:68px; height:48px; }
-body[data-page="other-streams"] .os-channel-mark.has-logo { background:#f1f2f4; border-color:rgba(255,255,255,.2); }
-body[data-page="other-streams"] .os-channel-mark img { padding:4px; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-stream-card { grid-template-columns:68px minmax(0,1fr) 24px; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-channel-mark { width:68px; height:48px; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-channel-mark.has-logo { background:#f1f2f4; border-color:rgba(255,255,255,.2); }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-channel-mark img { padding:4px; }
 
 /* A single image atlas replaces hundreds of individual logo requests. */
-body[data-page="other-streams"] .os-channel-mark.has-sprite {
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-channel-mark.has-sprite {
   color:transparent;
   background-color:#f1f2f4;
   border-color:rgba(255,255,255,.2);
 }
 
-body[data-page="other-streams"] .os-channel-mark.has-sprite { overflow:hidden; }
-body[data-page="other-streams"] .os-channel-mark.has-sprite img { inset:auto; width:680px; height:auto; max-width:none; padding:0; object-fit:initial; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-channel-mark.has-sprite { overflow:hidden; }
+:is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-channel-mark.has-sprite img { inset:auto; width:680px; height:auto; max-width:none; padding:0; object-fit:initial; }

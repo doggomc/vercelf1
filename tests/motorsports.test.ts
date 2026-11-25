@@ -23,3 +23,19 @@ describe('motorsports schedule',()=>{
   expect(countdownText(e,e.start-61000)).toBe('IN 00:01:01');expect(countdownText(e,e.start)).toBe('AWAITING LIVE STATUS');expect(countdownText({...e,state:'live'},e.start)).toBe('LIVE NOW');expect(countdownText({...e,state:'finished'},e.start)).toBe('FINISHED');
  });
 });
+
+it('adds Other Streams motorsport and every live non-F1 RacingLap category without mixing their schedules',async()=>{
+ const {motorsportDirectoryItems}=await import('../src/lib/motorsports');
+ const base={key:'a',provider:'ppv' as const,id:'x',title:'Race',category:'Formula 2',subtitle:'',tag:'PPV',viewers:0,alwaysLive:false,embedUrl:'https://example.test',fallbackUrl:'https://example.test',color:'#000',status:'live' as const};
+ const result=motorsportDirectoryItems([base,{...base,key:'b',title:'Football',category:'Football'},{...base,key:'c',provider:'weelo',title:'The F1 Show',category:'Shows'},{...base,key:'d',provider:'weelo',title:'F1 Academy',category:'F1 Academy'},{...base,key:'e',status:'scheduled'}]);
+ expect(result.map(x=>x.key)).toEqual(['a','c','d']);expect(result[0].category).toBe('Motorsport');
+});
+
+it('reuses the RacingLap request and leaves the remaining directory sources independent',async()=>{
+ const {fetchAllOtherStreams}=await import('../src/lib/other-streams');const requests:string[]=[];
+ const fetchImpl:typeof fetch=async input=>{const url=String(input);requests.push(url);if(url.includes('zlive.st/embed/manifest.json'))return new Response(JSON.stringify({channels:[]}));throw Error('offline');};
+ const result=await fetchAllOtherStreams({fetchImpl,skipRacingLap:true,forceRefresh:true});
+ expect(requests.filter(url=>url.includes('racinglap.net')||url.includes('weelo.live'))).toEqual([]);
+ expect(requests.filter(url=>url.includes('zlive.st/embed/manifest.json'))).toHaveLength(1);
+ expect(result.providerOk.zlive).toBe(true);
+});

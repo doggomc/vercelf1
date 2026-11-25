@@ -1,6 +1,9 @@
 import {initShell} from '../ui/shell';
 import '../viewer-counter';
-import {parseMotorsports,countdownText,type MotorEvent} from '../lib/motorsports';
+import {parseMotorsports,countdownText,motorsportDirectoryItems,type MotorEvent} from '../lib/motorsports';
+import {fetchAllOtherStreams,parseRacingLapOther,compareStreamProviders,type OtherStreamItem} from '../lib/other-streams';
+import {createStreamCard,PROVIDER_LABELS} from '../ui/stream-card';
+import {RACINGLAP_ICON} from '../lib/racinglap-icon';
 
 initShell();
 const $=(id:string)=>document.getElementById(id)!;
@@ -40,7 +43,8 @@ function renderEvents() {
       const detail=element('details','ms-feed-area'), heading=element('summary','',`Cockpit · ${event.feeds.length} ${event.feeds.length===1?'feed':'feeds'}`), feeds=element('div','ms-feeds');
       for (const feed of event.feeds) {
         const link=element('a','ms-feed') as HTMLAnchorElement;link.href=feed.href;
-        link.append(document.createTextNode(feed.name));
+        const icon=document.createElement('img');icon.src=RACINGLAP_ICON;icon.alt='';icon.className='ms-racinglap-icon';
+        link.append(icon,element('span','ms-feed-provider','RacingLap'),document.createTextNode(feed.name));
         if(feed.language)link.append(element('small','',feed.language));
         if(feed.opens && feed.opens>Date.now())link.append(element('small','',`opens ${fmtTime.format(feed.opens)}`));
         feeds.append(link);
@@ -59,9 +63,26 @@ async function get(url:string):Promise<unknown> {
   const res=await fetch(url,{signal:AbortSignal.timeout(10000),headers:{Accept:'application/json'}});
   if(!res.ok)throw new Error('RacingLap unavailable');return res.json();
 }
+let lastLiveItems:OtherStreamItem[]=[],livePreviouslyLoaded=false;
+function renderLive(items:OtherStreamItem[], status:string) {
+  const grid=$('msLiveGrid');grid.replaceChildren();
+  const sorted=[...items].sort((a,b)=>compareStreamProviders(a.provider,b.provider,PROVIDER_LABELS)||a.title.localeCompare(b.title));
+  let provider='';
+  sorted.forEach((item,i)=>{
+    if (item.provider!==provider) {provider=item.provider;grid.append(element('h3','os-provider-heading',PROVIDER_LABELS[item.provider]));}
+    grid.append(createStreamCard(item,i));
+  });
+  $('msLiveStatus').textContent=status;
+}
 async function load() {
-  if(loading)return;loading=true;refresh.disabled=true;summary.textContent='Refreshing…';
-  const [schedule,streams]=await Promise.allSettled([get('https://racinglap.net/api/v1/schedule.json'),get('https://racinglap.net/api/v1/streams.json')]);
+  if(loading)return;loading=true;refresh.disabled=true;summary.textContent='Refreshing…';$('msLiveStatus').textContent='Refreshing live feeds…';
+  // Exactly one request to each RacingLap endpoint; other provider catalogues
+  // are refreshed only here, never by the one-second local countdown timer.
+  const [schedule,streams,directory]=await Promise.allSettled([
+    get('https://racinglap.net/api/v1/schedule.json'),
+    get('https://racinglap.net/api/v1/streams.json'),
+    fetchAllOtherStreams({skipRacingLap:true,forceRefresh:true}),
+  ]);
   try {
     if(schedule.status!=='fulfilled')throw Error('Schedule unavailable');
     let result:MotorEvent[];
@@ -73,7 +94,20 @@ async function load() {
   } catch {
     if(previouslyLoaded){summary.textContent='Refresh failed · showing last loaded schedule';showMessage('Could not refresh RacingLap. The schedule below may be out of date.');}
     else {summary.textContent='Schedule unavailable';showMessage('Could not load RacingLap’s schedule. Please try Refresh.');}
-  } finally {loading=false;refresh.disabled=false;}
+  }
+  let rl:OtherStreamItem[]=[];let rlOk=false;
+  if(streams.status==='fulfilled')try {rl=parseRacingLapOther(streams.value);rlOk=true;}catch {/* report partial failure */}
+  const dirOk=directory.status==='fulfilled';
+  const other=dirOk?directory.value.items:[];
+  const othersHealthy=dirOk&&Object.entries(directory.value.providerOk).some(([key,ok])=>key!=='weelo'&&ok);
+  const partial= !rlOk || !othersHealthy || (dirOk && Object.entries(directory.value.providerOk).some(([key,ok])=>key!=='weelo'&&!ok));
+  if (rlOk || othersHealthy) {
+    lastLiveItems=motorsportDirectoryItems([...other,...rl]);livePreviouslyLoaded=true;
+    const count=lastLiveItems.length;
+    renderLive(lastLiveItems,`${count} live ${count===1?'feed':'feeds'}${partial?' · Some providers unavailable; try Refresh.':''}${!count&&!partial?' · Check back when coverage starts.':''}`);
+  } else if(livePreviouslyLoaded)renderLive(lastLiveItems,'Refresh failed · showing last loaded feeds, which may be out of date.');
+  else renderLive([],'Live feeds unavailable. Please try Refresh.');
+  loading=false;refresh.disabled=false;
 }
 refresh.addEventListener('click',()=>void load());
 document.addEventListener('visibilitychange',tick);
