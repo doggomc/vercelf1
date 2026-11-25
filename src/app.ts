@@ -1301,6 +1301,7 @@ function updateWatchSessionState() {
   const dot = $('watchSessionDot');
   const badge = $('watchSessionBadge');
   const timer = $('watchSessionCountdown');
+  const standbyCountdown = document.getElementById('standbyCountdown');
   const title = $('watchSessionTitle');
   const meta = $('watchSessionMeta');
   if (!title || !currentEvent || !currentSession) return;
@@ -1313,6 +1314,7 @@ function updateWatchSessionState() {
   } : null);
   const now = Date.now();
   const diff = currentSession.ts - now;
+  if (standbyCountdown) standbyCountdown.hidden = isLive || diff <= 0;
 
   if (isLive) {
     if (dot) dot.className = 'watch-session-dot is-live';
@@ -1332,7 +1334,7 @@ function updateWatchSessionState() {
     const pad = (v: number) => String(v).padStart(2, '0');
     if (dot) dot.className = 'watch-session-dot is-next';
     setTextIfChanged(badge, `Up next · R${currentEvent.round}`);
-    setTextIfChanged(timer, `in ${d > 0 ? `${d}d ` : ''}${pad(h)}:${pad(m)}:${pad(s)}`);
+    setTextIfChanged(timer, `${d > 0 ? `${d}d ` : ''}${pad(h)}:${pad(m)}:${pad(s)}`);
     setTextIfChanged(title, `${currentEvent.name} · ${currentSession.name}`);
     setTextIfChanged(meta, `${currentEvent.locality}, ${currentEvent.country} · ${watchStartFmt.format(currentSession.ts)}`);
     return;

@@ -85,7 +85,6 @@
         <div class="wplayer-bar">
           <span class="wplayer-dot" aria-hidden="true"><i></i></span>
           <span class="wplayer-path" id="stageLabel">freef1://live</span>
-          <span class="wplayer-countdown" aria-label="Session countdown"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="13" r="7"/><path d="M12 9v4l3 2M10 2h4"/></svg><span class="mono" id="watchSessionCountdown">--:--:--</span></span>
           <span class="wplayer-live" id="overridePill">Stream Override · No Current Live Sessions</span>
         </div>
         <div class="wplayer-stage">
@@ -93,6 +92,7 @@
           <div class="nostream" id="noStream" role="region" aria-label="Stream status" tabindex="0">
             <h3 id="noStreamTitle">Not on air yet</h3>
             <p id="noStreamText">You are early. Live video starts shortly before the session begins.</p>
+            <div class="standby-countdown" id="standbyCountdown" hidden><span class="standby-countdown-label">Next session in</span><span class="standby-countdown-time mono" id="watchSessionCountdown">--:--:--</span></div>
             <div class="ns-actions" id="nsActions" hidden>
               <button class="btn sm" id="nsRetryBtn" type="button">Retry</button>
               <button class="btn sm" id="nsNextBtn" type="button">Try next feed</button>
