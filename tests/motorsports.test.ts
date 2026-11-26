@@ -39,3 +39,10 @@ it('reuses the RacingLap request and leaves the remaining directory sources inde
  expect(requests.filter(url=>url.includes('zlive.st/embed/manifest.json'))).toHaveLength(1);
  expect(result.providerOk.zlive).toBe(true);
 });
+
+it('orders live and upcoming sessions before finished without mutating the source', async () => {
+ const {orderMotorsportEvents}=await import('../src/lib/motorsports');
+ const original=parseMotorsports(wrap('events',[event('finished','f2','Formula 2','finished'),event('upcoming','f2','Formula 2','upcoming'),event('live','f2','Formula 2','live')]),null);
+ expect(orderMotorsportEvents(original).map(e=>e.id)).toEqual(['live','upcoming','finished']);
+ expect(original.map(e=>e.id)).toEqual(['finished','upcoming','live']);
+});

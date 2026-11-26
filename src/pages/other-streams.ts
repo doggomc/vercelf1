@@ -249,6 +249,7 @@ async function loadStreams(initial = false): Promise<void> {
     renderFilters(initial);
     renderList();
   } catch {
+    allItems = allItems.map(item => ({...item, stale:true}));
     setWarning(allItems.length ? 'Refresh failed. Showing previously loaded feeds; they may be out of date.' : 'Could not load stream providers. Please try Refresh.');
     if (liveTotalEl) liveTotalEl.textContent = String(allItems.length);
     renderFilters(initial);

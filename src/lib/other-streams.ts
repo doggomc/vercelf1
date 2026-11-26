@@ -20,6 +20,7 @@ export interface OtherStreamItem {
   tag: string;
   viewers: number;
   alwaysLive: boolean;
+  stale?: boolean;
   startAt?: number;
   status?: 'live' | 'scheduled';
   embedUrl: string;

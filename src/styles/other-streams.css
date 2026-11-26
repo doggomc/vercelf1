@@ -684,3 +684,8 @@
 .os-provider-status[hidden] { display:none; }
 
 :is(body[data-page="other-streams"],body[data-page="motorsports"]) .os-channel-mark.has-sprite.is-light-logo { background-color:#20232a; border-color:rgba(255,255,255,.15); }
+
+@media (max-width:759px), (hover:none) {
+  .os-tabs-navigation .os-tabs-arrow { display:inline-grid; flex-basis:30px; width:30px; height:30px; }
+  .os-tabs-navigation .os-tabs-scroll { flex:1 1 auto; }
+}

@@ -52,7 +52,7 @@ export function createStreamCard(item: OtherStreamItem, index: number): HTMLAnch
   const provider = document.createElement('span');
   provider.className = 'os-card-provider';
   const providerName = PROVIDER_LABELS[item.provider];
-  const details = (item.tag || '').split('·').map(part => part.trim()).filter(part => part && part.toLowerCase() !== providerName.toLowerCase());
+  const details = (item.tag || '').split('·').map(part => part.trim()).filter(part => part && part.toLowerCase() !== providerName.toLowerCase() && part.toLowerCase() !== item.title.toLowerCase());
   provider.textContent = [providerName, ...details].join(' · ');
   const name = document.createElement('div');
   name.className = 't-name';
@@ -66,11 +66,11 @@ export function createStreamCard(item: OtherStreamItem, index: number): HTMLAnch
   foot.className = 'os-card-foot';
   const scheduled = item.status === 'scheduled';
   const badge = document.createElement('span');
-  badge.className = `os-badge ${scheduled ? 'os-badge-scheduled' : item.alwaysLive ? 'os-badge-247' : 'os-badge-live'}`;
+  badge.className = `os-badge ${scheduled || item.stale ? 'os-badge-scheduled' : item.alwaysLive ? 'os-badge-247' : 'os-badge-live'}`;
   const dot = document.createElement('span');
   dot.className = 'os-live-dot';
   dot.setAttribute('aria-hidden', 'true');
-  badge.append(dot, document.createTextNode(scheduled ? 'Scheduled' : item.alwaysLive ? '24/7' : 'Live'));
+  badge.append(dot, document.createTextNode(item.stale ? 'Last loaded' : scheduled ? 'Scheduled' : item.alwaysLive ? '24/7' : 'Live'));
   foot.appendChild(badge);
   if (scheduled && item.startAt) {
     const time = document.createElement('time');

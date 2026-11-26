@@ -7020,3 +7020,10 @@ body[data-page="cockpit"].theater #watch .wplayer { flex:0 0 auto; }
 @media (max-width:1100px) {
   body[data-page="cockpit"].theater #watch .watch-main { min-height:0; }
 }
+
+.standby-details { padding: 15px 17px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color:var(--fg-2); font-size:13px; line-height:1.55; }
+.standby-details[hidden] { display:none; }
+.standby-details p { margin:0 0 9px; }
+.standby-details nav { display:flex; flex-wrap:wrap; gap:6px 18px; }
+.standby-details a { color:var(--white); text-underline-offset:3px; }
+@media(max-width:600px) { .wplayer-actions-main { flex-wrap:wrap; } .watch-session-line { flex-wrap:wrap; } }

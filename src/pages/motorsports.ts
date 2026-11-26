@@ -1,6 +1,6 @@
 import {initShell} from '../ui/shell';
 import '../viewer-counter';
-import {parseMotorsports,countdownText,motorsportDirectoryItems,type MotorEvent} from '../lib/motorsports';
+import {parseMotorsports,countdownText,motorsportDirectoryItems,orderMotorsportEvents,type MotorEvent} from '../lib/motorsports';
 import {fetchAllOtherStreams,parseRacingLapOther,compareStreamProviders,type OtherStreamItem} from '../lib/other-streams';
 import {createStreamCard,PROVIDER_LABELS} from '../ui/stream-card';
 import {RACINGLAP_ICON} from '../lib/racinglap-icon';
@@ -26,11 +26,13 @@ function renderFilters() {
   }
 }
 function renderEvents() {
-  scheduleEl.replaceChildren();const shown=events.filter(e=>filter==='all'||e.seriesKey===filter);
+  scheduleEl.replaceChildren();const shown=orderMotorsportEvents(events.filter(e=>filter==='all'||e.seriesKey===filter));
   if(!shown.length){showMessage(events.length?'No sessions in this series.':'No motorsport sessions listed right now.');return;}
   showMessage(streamsAvailable?'':'Schedule loaded, but cockpit feeds could not be fetched. Press Refresh to try again.');
-  let day='';
+  let day='', section='';
   for(const event of shown) {
+    const nextSection=event.state==='finished'?'finished':event.state==='live'?'live':'upcoming';
+    if(nextSection!==section){section=nextSection;day='';scheduleEl.append(element('h2','ms-group',section==='finished'?'Finished sessions':section==='live'?'Live now':'Coming up'));}
     const dayLabel=fmtDay.format(event.start);
     if(dayLabel!==day){day=dayLabel;scheduleEl.append(element('h3','ms-day',dayLabel));}
     const card=element('article','ms-event');
@@ -40,7 +42,7 @@ function renderEvents() {
     const countdown=element('span',`ms-state${event.state==='live'?' is-live':event.state==='finished'?' is-finished':''}`,countdownText(event,Date.now()));countdown.dataset.id=event.id;
     right.append(date,countdown);card.append(main,right);
     if(event.feeds.length) {
-      const detail=element('div','ms-feed-area'), heading=element('div','ms-feed-heading','Available sources'), feeds=element('div','ms-feeds');
+      const detail=element('div','ms-feed-area'), heading=element('div','ms-feed-heading','Listed sources'), feeds=element('div','ms-feeds');
       for (const feed of event.feeds) {
         const link=element('a','ms-feed') as HTMLAnchorElement;link.href=feed.href;
         const icon=document.createElement('img');icon.src=RACINGLAP_ICON;icon.alt='';icon.className='ms-racinglap-icon';

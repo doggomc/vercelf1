@@ -21,6 +21,7 @@ export function streamCategory(category: string, title: string): string {
     [/\b(?:darts)\b/, 'Darts'],
   ];
   for (const [pattern, name] of rules) if (pattern.test(text)) return name;
+  if (/\b(?:sky sports?|fox sports?|bein\s*sports?|tnt sports?|nbc sports?|supersport|espn|dazn|tsn|eurosport|canal\s*(?:\+|plus)\s*sp?ort|rally tv)\b/.test(text)) return 'Sports';
   if (/24\s*\/\s*7/.test(group)) return '24/7 Channels';
   if (!group || /^(?:other|sports?|live sport|live channel|general|other sports|other live|others? \/ uncategorized)$/.test(group)) return 'Sports';
   return category.trim() || 'Sports';

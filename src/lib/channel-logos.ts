@@ -24,7 +24,7 @@ export function channelLogo(title:string): string | null {
     [/\bsky\s+sports?\b/i, 'skysports'],
     [/\bespn(?:\d+|news|u)?\b/i, 'espn'], [/\bdazn\b/i, 'dazn'],
     [/\btnt\s+sports?\b/i, 'tnt'], [/\bbein\s*sports?\b/i, 'bein'],
-    [/\bfox\s+news\b/i, 'foxnews'], [/\bfox\s+(?:sports?|deportes)\b/i, 'foxsports'],
+    [/\bfox\s+news\b/i, 'foxnews'], [/\bfox\s+(?:sports?|deportes|cricket|footy|league)\b/i, 'foxsports'],
     [/\bbbc\b/i, 'bbc'], [/\bcnn\b/i, 'cnn'], [/\bcanal\s*(?:\+|plus\b)/i, 'canal'],
     [/\btsn\s*\d*\b/i, 'tsn'], [/\bnbc\s+sports?\b/i, 'nbcsports'], [/\bsony\s+sports?\b/i, 'sonysports'],
     [/\bziggo\s*sport\b/i, 'ziggo'], [/\bmoto\s*gp\b/i, 'motogp'],

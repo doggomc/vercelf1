@@ -46,6 +46,8 @@ function display(animateGroup?: 'session' | 'feed', restoreFocus = false) {
   const source=sources[sourceIndex]; const url=source&&safeSource(source.url);
   const weekend=weekends.find(w=>w.events.some(e=>e.id===event!.id));
   setCounterContext({ kind:'replay', key:`${event.season}:${event.round}:${event.series}:${session.key}`.replace(/[^a-zA-Z0-9._:-]/g,'_').slice(0,100), label:`${event.season} ${event.title} · ${session.name}`.replace(/[\x00-\x1f<>]/g,'').slice(0,160) });
+  const back = document.querySelector<HTMLAnchorElement>('#backStreamsBtn');
+  if (back) back.href = `/replays?season=${event.season}#round-${event.season}-${event.round}`;
   $('watchSessionTitle').textContent=`${weekend ? weekendTitle(weekend) : event.title} · ${session.name}`;
   $('watchSessionCountdown').textContent=seriesNames[event.series]; $('watchSessionMeta').textContent=`${event.season} · ${event.circuit}`;
   $('loader').hidden=true; $('noStream').classList.remove('visible');
@@ -88,6 +90,7 @@ function display(animateGroup?: 'session' | 'feed', restoreFocus = false) {
     sources.forEach((s, i) => {
       const b = document.createElement('button'); b.type = 'button';
       b.textContent = /^(?:RacingLap|Weellz)\s*·/i.test(s.label) ? s.label.trim() : /f1\s*tv/i.test(s.label) ? 'F1 TV' : /international feed/i.test(s.label) ? 'International Feed' : s.label?.trim() || `Feed ${i + 1}`;
+      if (new URL(s.url).hostname === 'ok.ru' && sources.some(feed => isRacingLapReplay(feed.url))) b.textContent += ' · Backup';
       b.dataset.replayFeed = String(i);
       b.onclick = (click) => { if (sourceIndex === i) return; sourceIndex = i; display('feed', click.detail === 0); };
       feeds.append(b);

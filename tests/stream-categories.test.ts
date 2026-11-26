@@ -28,3 +28,9 @@ describe('category chip order', () => {
     expect(entries.sort(compareStreamCategories).map(([name]) => name)).toEqual(['Sports','Kids']);
   });
 });
+
+it('recognises common broadcaster names in uncategorised feeds', () => {
+  expect(streamCategory('24/7 Channels', 'Eurosport 1')).toBe('Sports');
+  expect(streamCategory('Other', 'TNT Sports 1')).toBe('Sports');
+  expect(streamCategory('24/7 Channels', 'Cartoon Network')).toBe('24/7 Channels');
+});

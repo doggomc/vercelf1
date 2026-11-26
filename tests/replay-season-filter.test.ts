@@ -8,7 +8,7 @@ describe('replay archive defaults', () => {
     expect(page).toContain('for="seasonFilter"');
     expect(page).toContain('id="seasonFilter"');
     expect(script).toContain("let filter = 'f1'");
-    expect(script).toContain('let season = 2026');
+    expect(script).toContain('? requestedSeason : 2026');
     expect(script).toContain('weekends.filter(w=>w.season===season)');
   });
 });

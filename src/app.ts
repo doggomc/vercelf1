@@ -499,15 +499,12 @@ let catalogues: Catalogues = { embdlol: {}, cdnlive: {}, mirrors: {}, weelo: {},
 /* Until the catalogue has answered once, an EMB chip has NO pool. Treating "not loaded yet" as
    "nothing upstream" is what made every EMB chip look dead on a cold click. */
 let cataloguesReady = false;
-/* Refresh Weelo links from weellz.live every 3 minutes without interrupting active playback. */
-const WEELO_REFRESH_INTERVAL_MS = 3 * 60_000;
-let lastWeeloRefreshAt = 0;
+/* Catalogues load on entry or an explicit source action, not on a recurring timer. */
 
 async function loadCatalogues(): Promise<void> {
   const { loadCatalogues: load } = await import('./features/catalogues');
   catalogues = await load({ fetchWithTimeout, backend: STREAM_API });
   cataloguesReady = true;
-  lastWeeloRefreshAt = Date.now();
   if (!autoStreamsActive) syncWeeloSourcesFromFeed();
 }
 
@@ -1314,6 +1311,7 @@ function updateWatchSessionState() {
   } : null);
   const now = Date.now();
   const diff = currentSession.ts - now;
+  updateStandbyDetails();
   if (standbyCountdown) standbyCountdown.hidden = isLive || diff <= 0;
 
   if (isLive) {
@@ -1898,6 +1896,8 @@ function stopNS() {
     nsTimer = null;
   }
   nsRunning = false;
+  const standbyDetails = document.getElementById('standbyDetails');
+  if (standbyDetails) standbyDetails.hidden = true;
   // A blocked/offline status may replace a cycling message mid-fade.
   // Restore visibility so the new title and explanation cannot stay transparent.
   [noStreamTitleEl, noStreamTextEl].forEach((element) => {
@@ -1905,10 +1905,26 @@ function stopNS() {
   });
 }
 
+function updateStandbyDetails() {
+  const details = document.getElementById('standbyDetails');
+  const info = document.getElementById('standbyInfo');
+  if (!details || !info || !nsRunning) return;
+  details.hidden = false;
+  const next = currentSession && currentEvent && currentSession.ts > Date.now()
+    ? `Next: ${currentEvent.name} · ${currentSession.name}, ${watchStartFmt.format(currentSession.ts)}. ` : 'No upcoming session is confirmed. ';
+  const auto = !autoStreamsActive ? 'Auto-Streams is disabled.'
+    : autoWindowState === 'closed' ? `Auto-Streams is paused outside race weekends.${autoWindowStart ? ` The next window starts ${new Date(autoWindowStart).toLocaleString()}.` : ''} Refresh this page then to check feeds.`
+    : autoWindowState === 'unavailable' ? 'Auto-Streams could not confirm the race schedule. Refresh to try again.'
+    : autoWindowState === 'active' ? 'Auto-Streams is enabled for this race weekend; listed feeds may not yet be available.'
+    : 'Checking the Auto-Streams window…';
+  info.textContent = next + auto;
+}
+
 function startNS() {
   stopNS();
   nsPaused = false;
   nsRunning = true;
+  updateStandbyDetails();
   const t = $("noStreamTitle");
   const x = $("noStreamText");
   const msgs = NO_STREAM_MESSAGES;
@@ -2487,11 +2503,8 @@ let autoConfig: any = null;
 let autoEpoch = 0;
 let autoApplyRevision = 0;
 let relayPlaybackStopped = false;
-let autoRefreshTimer: ReturnType<typeof setTimeout> | undefined;
 let autoNextCheckAt = 0;
 let autoEntries: any[] = [];
-const AUTO_RETRY_MS = 10 * 60_000;
-const AUTO_MAX_WAIT_MS = 12 * 60 * 60_000;
 function paintAutoSourceConfig(startManual = false) {
   const payload = autoConfig;
   const revision = ++autoApplyRevision;
@@ -2518,16 +2531,16 @@ function paintAutoSourceConfig(startManual = false) {
   });
 }
 function scheduleAutoCheck() {
-  if (autoRefreshTimer) clearTimeout(autoRefreshTimer);
-  if (!autoStreamsActive || document.hidden) return;
-  const delay = Math.min(AUTO_MAX_WAIT_MS, Math.max(0, autoNextCheckAt - Date.now()));
-  autoRefreshTimer = setTimeout(() => void refreshAutoStreams(), delay);
+  if (autoStreamsActive && !document.hidden && !autoNextCheckAt) {
+    autoNextCheckAt = Date.now();
+    void refreshAutoStreams();
+  }
 }
 async function refreshAutoStreams() {
   if (!autoStreamsActive || document.hidden) return;
   const epoch = autoEpoch;
   // Also prevents repeated site-configuration updates from multiplying requests while one is pending.
-  autoNextCheckAt = Date.now() + AUTO_RETRY_MS;
+  autoNextCheckAt = Date.now();
   try {
     const response = await fetchWithTimeout(`${STREAM_API}/api/stream/auto`, { headers: { Accept: 'application/json' }, cache: 'default' }, 9000);
     if (!response.ok) throw new Error('Auto-Streams unavailable');
@@ -2537,12 +2550,6 @@ async function refreshAutoStreams() {
     if (!window || typeof window.active !== 'boolean' || !Number.isFinite(window.serverTime) || !Number.isFinite(window.nextCheckAt)) throw new Error('Race schedule unavailable');
     autoWindowState = window.active ? 'active' : window.reason === 'schedule-unavailable' ? 'unavailable' : 'closed';
     autoWindowStart = Number.isFinite(window.start) ? window.start : null;
-    // Prefer the absolute deadline so a cached response does not add a second refresh interval.
-    // Fall back to the server's interval if the viewer's clock is badly out of sync.
-    const now = Date.now();
-    const remaining = Math.abs(now - window.serverTime) < AUTO_MAX_WAIT_MS
-      ? window.nextCheckAt - now : window.nextCheckAt - window.serverTime;
-    autoNextCheckAt = now + Math.min(AUTO_MAX_WAIT_MS, Math.max(1000, remaining));
     if (window.active) {
       const hosts: Record<string, string[]> = { weelo: ['weellz.live'], ppv: ['taifood-blog.asia'], strmfree: ['strmfree.st', 'streamfree.top'], embdlol: ['embdlol.st'], bintv: ['bintv-sources.pages.dev'], cdnlive: ['cdnlivetv.tv'], wikisport: ['siempreon.shop', 'taifood-blog.asia', 'embedsports.me', 'tvpclive.com'] };
       const nextEntries = (Array.isArray(json.streams) ? json.streams : []).slice(0, 200).filter((row: any) => {
@@ -2582,7 +2589,7 @@ async function refreshAutoStreams() {
     multiViewerControl?.sync?.();
     if (!autoEntries.length && !streamOverride.active && !stageBox?.querySelector('iframe, video') && noStreamEl?.classList.contains('visible')) load();
   }
-  if (epoch === autoEpoch) scheduleAutoCheck();
+  updateStandbyDetails();
 }
 function applySourceConfig(payload) {
   const wasActive = autoStreamsActive;
@@ -2606,7 +2613,6 @@ function applySourceConfig(payload) {
   renderButtons({ quiet: true });
   currentSource = previousSelection;
   if (!autoStreamsActive) {
-    if (autoRefreshTimer) clearTimeout(autoRefreshTimer);
     autoEntries = []; autoWindowState = 'unknown'; autoWindowStart = null;
     paintAutoSourceConfig(firstConfig);
     if (wasActive || firstConfig) {
@@ -3514,7 +3520,7 @@ addEventListener('keydown', (e) => {
 // Apply stored team livery
 applyTeamTheme(store.get('freef1_team') || 'default');
 
-/* Fetch fresh Weelo channel links from weellz.live every 3 minutes.
+/* Fetch fresh Weelo channel links when explicitly needed.
    CRITICAL: Never reload, unmount, or touch #player while a stream is actively on stage. */
 async function refreshWeeloFeeds(): Promise<void> {
   if (autoStreamsActive) return;
@@ -3522,7 +3528,6 @@ async function refreshWeeloFeeds(): Promise<void> {
     const { refreshWeeloCatalogues } = await import('./features/catalogues');
     catalogues = await refreshWeeloCatalogues({ fetchWithTimeout, backend: STREAM_API });
     cataloguesReady = true;
-    lastWeeloRefreshAt = Date.now();
     const pillsChanged = !autoStreamsActive && syncWeeloSourcesFromFeed();
     if (pillsChanged) {
       renderButtons({ quiet: true });
@@ -3554,13 +3559,6 @@ window.setTimeout(() => {
     }
   });
 }, 250);
-// Refresh Weelo stream links every 3 minutes only when tab is visible and relevant, without interrupting playback.
-window.setInterval(() => {
-  if (document.hidden || autoStreamsActive || !sourceConfigKnown) return;
-  if (isStreamPlayingOnStage() && !sources[currentSource]?.special) return;
-  void refreshWeeloFeeds();
-}, WEELO_REFRESH_INTERVAL_MS);
-
 window.setTimeout(() => {
   if (!document.hidden && !autoStreamsActive && sourceConfigKnown) void loadProviderHealth();
 }, 1500);
@@ -3621,9 +3619,6 @@ document.addEventListener('visibilitychange', () => {
     updateClocks();
     updateCurrentStreamButton();
     if (autoStreamsActive) scheduleAutoCheck();
-    if (!autoStreamsActive && Date.now() - lastWeeloRefreshAt >= WEELO_REFRESH_INTERVAL_MS) {
-      void refreshWeeloFeeds();
-    }
   }
 }, { passive: true });
 
