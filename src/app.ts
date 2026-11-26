@@ -1311,7 +1311,6 @@ function updateWatchSessionState() {
   } : null);
   const now = Date.now();
   const diff = currentSession.ts - now;
-  updateStandbyDetails();
   if (standbyCountdown) standbyCountdown.hidden = isLive || diff <= 0;
 
   if (isLive) {
@@ -1896,8 +1895,6 @@ function stopNS() {
     nsTimer = null;
   }
   nsRunning = false;
-  const standbyInfo = document.getElementById('standbyInfo');
-  if (standbyInfo) standbyInfo.hidden = true;
   // A blocked/offline status may replace a cycling message mid-fade.
   // Restore visibility so the new title and explanation cannot stay transparent.
   [noStreamTitleEl, noStreamTextEl].forEach((element) => {
@@ -1905,23 +1902,10 @@ function stopNS() {
   });
 }
 
-function updateStandbyDetails() {
-  const info = document.getElementById('standbyInfo');
-  if (!info || !nsRunning) return;
-  info.hidden = false;
-  const auto = !sourceConfigKnown ? 'Checking Auto-Streams…' : !autoStreamsActive ? 'Auto-Streams is disabled.'
-    : autoWindowState === 'closed' ? `Auto-Streams is paused outside race weekends.${autoWindowStart ? ` The next window starts ${new Date(autoWindowStart).toLocaleString()}.` : ''} Refresh this page then to check feeds.`
-    : autoWindowState === 'unavailable' ? 'Auto-Streams could not confirm the race schedule. Refresh to try again.'
-    : autoWindowState === 'active' ? 'Auto-Streams is enabled for this race weekend; listed feeds may not yet be available.'
-    : 'Checking the Auto-Streams window…';
-  if (info.textContent !== auto) info.textContent = auto;
-}
-
 function startNS() {
   stopNS();
   nsPaused = false;
   nsRunning = true;
-  updateStandbyDetails();
   const t = $("noStreamTitle");
   const x = $("noStreamText");
   const msgs = NO_STREAM_MESSAGES;
@@ -2586,7 +2570,6 @@ async function refreshAutoStreams() {
     multiViewerControl?.sync?.();
     if (!autoEntries.length && !streamOverride.active && !stageBox?.querySelector('iframe, video') && noStreamEl?.classList.contains('visible')) load();
   }
-  updateStandbyDetails();
 }
 function applySourceConfig(payload) {
   const wasActive = autoStreamsActive;
