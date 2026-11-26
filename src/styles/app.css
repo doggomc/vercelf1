@@ -7011,3 +7011,12 @@ body[data-page="cockpit"] #watch .side-timing-enable { justify-self:start; borde
 body[data-page="cockpit"] #watch .side-timing-enable:hover { background:#ffffff19; border-color:#ffffff54; }
 body[data-page="cockpit"] #watch .side-timing-enable:focus-visible { outline:2px solid white; outline-offset:3px; }
 @media (prefers-reduced-motion:reduce) { body[data-page="cockpit"] #watch .side-timing-enable { transition:none; } }
+
+/* Preserve full player geometry in theater; scroll on short or zoomed screens
+   instead of flex-shrinking the window and clipping embedded controls. */
+body[data-page="cockpit"].theater #watch .wrap.watch-grid { overflow-y:auto; }
+body[data-page="cockpit"].theater #watch .watch-main { height:auto; min-height:calc(100vh - 24px); }
+body[data-page="cockpit"].theater #watch .wplayer { flex:0 0 auto; }
+@media (max-width:1100px) {
+  body[data-page="cockpit"].theater #watch .watch-main { min-height:0; }
+}
