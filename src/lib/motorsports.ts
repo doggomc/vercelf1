@@ -49,10 +49,10 @@ export function countdownText(event:MotorEvent, now:number):string {
   return `IN ${days ? `${days}D ` : ''}${pad(hours)}:${pad(minutes)}:${pad(sec)}`;
 }
 
-/** Keep verified live and upcoming sessions before the archive, without polling. */
+/** Only show live and upcoming sessions, without polling. */
 export function orderMotorsportEvents(events: MotorEvent[]): MotorEvent[] {
   const rank = (state: MotorEvent['state']) => state === 'live' ? 0 : state === 'upcoming' ? 1 : 2;
-  return [...events].sort((a, b) => rank(a.state) - rank(b.state) || a.start - b.start);
+  return events.filter(event => event.state !== 'finished').sort((a, b) => rank(a.state) - rank(b.state) || a.start - b.start);
 }
 
 /** Other Streams' Motorsport category, plus all RacingLap live non-F1

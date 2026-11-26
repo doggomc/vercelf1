@@ -31,15 +31,15 @@ function renderEvents() {
   showMessage(streamsAvailable?'':'Schedule loaded, but cockpit feeds could not be fetched. Press Refresh to try again.');
   let day='', section='';
   for(const event of shown) {
-    const nextSection=event.state==='finished'?'finished':event.state==='live'?'live':'upcoming';
-    if(nextSection!==section){section=nextSection;day='';scheduleEl.append(element('h2','ms-group',section==='finished'?'Finished sessions':section==='live'?'Live now':'Coming up'));}
+    const nextSection=event.state==='live'?'live':'upcoming';
+    if(nextSection!==section){section=nextSection;day='';scheduleEl.append(element('h2','ms-group',section==='live'?'Live now':'Coming up'));}
     const dayLabel=fmtDay.format(event.start);
     if(dayLabel!==day){day=dayLabel;scheduleEl.append(element('h3','ms-day',dayLabel));}
     const card=element('article','ms-event');
     const main=element('div','ms-event-main');main.append(element('div','ms-series',event.series),element('h3','ms-session',event.session));
     if(event.weekend) main.append(element('p','ms-weekend',event.weekend));
     const right=element('div','ms-event-time');const date=element('time','ms-local',fmtTime.format(event.start)) as HTMLTimeElement;date.dateTime=new Date(event.start).toISOString();
-    const countdown=element('span',`ms-state${event.state==='live'?' is-live':event.state==='finished'?' is-finished':''}`,countdownText(event,Date.now()));countdown.dataset.id=event.id;
+    const countdown=element('span',`ms-state${event.state==='live'?' is-live':''}`,countdownText(event,Date.now()));countdown.dataset.id=event.id;
     right.append(date,countdown);card.append(main,right);
     if(event.feeds.length) {
       const detail=element('div','ms-feed-area'), heading=element('div','ms-feed-heading','Listed sources'), feeds=element('div','ms-feeds');
@@ -52,7 +52,7 @@ function renderEvents() {
         feeds.append(link);
       }
       detail.append(heading,feeds);card.append(detail);
-    } else card.append(element('div','ms-no-feeds',event.state==='finished'?'Session finished':streamsAvailable?'Cockpit not available yet':'Cockpit feeds unavailable'));
+    } else card.append(element('div','ms-no-feeds',streamsAvailable?'Cockpit not available yet':'Cockpit feeds unavailable'));
     scheduleEl.append(card);
   }
 }
@@ -90,7 +90,7 @@ async function load() {
     let result:MotorEvent[];
     try {result=parseMotorsports(schedule.value,streams.status==='fulfilled'?streams.value:null);streamsAvailable=streams.status==='fulfilled';}
     catch {result=parseMotorsports(schedule.value,null);streamsAvailable=false;}
-    events=result;previouslyLoaded=true;
+    events=orderMotorsportEvents(result);previouslyLoaded=true;
     summary.textContent=`${events.length} ${events.length===1?'session':'sessions'} · RacingLap`;
     renderFilters();renderEvents();
   } catch {

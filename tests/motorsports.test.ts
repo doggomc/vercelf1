@@ -1,3 +1,4 @@
+import {readFileSync} from 'node:fs';
 import {describe,it,expect} from 'vitest';
 import {parseMotorsports,countdownText} from '../src/lib/motorsports';
 import {parsePrivateCockpitParams} from '../src/lib/other-streams';
@@ -40,9 +41,15 @@ it('reuses the RacingLap request and leaves the remaining directory sources inde
  expect(result.providerOk.zlive).toBe(true);
 });
 
-it('orders live and upcoming sessions before finished without mutating the source', async () => {
+it('shows live and upcoming sessions and excludes finished without mutating the source', async () => {
  const {orderMotorsportEvents}=await import('../src/lib/motorsports');
  const original=parseMotorsports(wrap('events',[event('finished','f2','Formula 2','finished'),event('upcoming','f2','Formula 2','upcoming'),event('live','f2','Formula 2','live')]),null);
- expect(orderMotorsportEvents(original).map(e=>e.id)).toEqual(['live','upcoming','finished']);
+ expect(orderMotorsportEvents(original).map(e=>e.id)).toEqual(['live','upcoming']);
  expect(original.map(e=>e.id)).toEqual(['finished','upcoming','live']);
+});
+
+it('does not display finished-only series or count finished sessions on the page', () => {
+ const source = readFileSync(new URL('../src/pages/motorsports.ts', import.meta.url), 'utf8');
+ expect(source).toContain('events=orderMotorsportEvents(result)');
+ expect(source).not.toContain('Finished sessions');
 });
