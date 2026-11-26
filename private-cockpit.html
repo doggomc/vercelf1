@@ -35,6 +35,14 @@
   body[data-page="private-cockpit"] button.btn:active {
     transform: translate3d(0, 0, 0) scale(.98);
   }
+  /* Theater's flex layout must not squash the 16:9 stage and clip the
+     provider's own controls. If space is tight, scroll rather than crop. */
+  body[data-page="private-cockpit"].theater .wrap.watch-grid { overflow-y: auto; }
+  body[data-page="private-cockpit"].theater .watch-main {
+    height: auto;
+    min-height: calc(100vh - 24px);
+  }
+  body[data-page="private-cockpit"].theater .wplayer { flex: 0 0 auto; }
   #backStreamsBtn svg { display: block; flex: none; }
   body[data-page="private-cockpit"] .wplayer-stage iframe {
     background: #000;
