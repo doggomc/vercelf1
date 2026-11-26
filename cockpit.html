@@ -112,7 +112,9 @@
             <strong class="watch-session-title" id="watchSessionTitle">Loading session…</strong>
             <span class="watch-session-meta" id="watchSessionMeta"></span>
           </div>
+          <p class="cockpit-auto-status" id="standbyInfo" hidden></p>
         </div>
+        <div class="cockpit-controls-label" aria-hidden="true">Cockpit controls</div>
         <div class="wplayer-actions-main" id="stageActions">
           <button class="btn sm" id="mvToggle" type="button" title="Watch multiple live feeds at once" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>Multiview</span></button>
           <button class="btn sm" id="compactTimingToggle" type="button" aria-pressed="false" aria-controls="compactTimingPanel">Live Timing</button>
@@ -124,10 +126,6 @@
         </div>
       </div>
 
-      <div class="standby-details" id="standbyDetails" hidden>
-        <p id="standbyInfo"></p>
-        <nav aria-label="Watch something else"><a href="/replays">Explore F1 replays</a><a href="/motorsports">Other motorsport</a><a href="/other-streams">Other streams</a></nav>
-      </div>
       <section class="wsources" aria-labelledby="wSourcesHead">
         <div class="wsources-head">
           <div class="wsources-title-wrap">
@@ -168,6 +166,14 @@
         <span><b>Live chat on Discord</b><small>Stream status and race chat</small></span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
       </a>
+      <section class="side-card side-others" aria-labelledby="sideOthersTitle">
+        <div><h2 id="sideOthersTitle">Others</h2><p>More to watch</p></div>
+        <nav class="side-others-links" aria-label="More to watch">
+          <a href="/motorsports">Motorsports <span aria-hidden="true">↗</span></a>
+          <a href="/replays">Replays <span aria-hidden="true">↗</span></a>
+          <a href="/other-streams">Other streams <span aria-hidden="true">↗</span></a>
+        </nav>
+      </section>
     </aside>
   </div>
 </section>

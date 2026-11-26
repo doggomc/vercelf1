@@ -1896,8 +1896,8 @@ function stopNS() {
     nsTimer = null;
   }
   nsRunning = false;
-  const standbyDetails = document.getElementById('standbyDetails');
-  if (standbyDetails) standbyDetails.hidden = true;
+  const standbyInfo = document.getElementById('standbyInfo');
+  if (standbyInfo) standbyInfo.hidden = true;
   // A blocked/offline status may replace a cycling message mid-fade.
   // Restore visibility so the new title and explanation cannot stay transparent.
   [noStreamTitleEl, noStreamTextEl].forEach((element) => {
@@ -1906,18 +1906,15 @@ function stopNS() {
 }
 
 function updateStandbyDetails() {
-  const details = document.getElementById('standbyDetails');
   const info = document.getElementById('standbyInfo');
-  if (!details || !info || !nsRunning) return;
-  details.hidden = false;
-  const next = currentSession && currentEvent && currentSession.ts > Date.now()
-    ? `Next: ${currentEvent.name} · ${currentSession.name}, ${watchStartFmt.format(currentSession.ts)}. ` : 'No upcoming session is confirmed. ';
-  const auto = !autoStreamsActive ? 'Auto-Streams is disabled.'
+  if (!info || !nsRunning) return;
+  info.hidden = false;
+  const auto = !sourceConfigKnown ? 'Checking Auto-Streams…' : !autoStreamsActive ? 'Auto-Streams is disabled.'
     : autoWindowState === 'closed' ? `Auto-Streams is paused outside race weekends.${autoWindowStart ? ` The next window starts ${new Date(autoWindowStart).toLocaleString()}.` : ''} Refresh this page then to check feeds.`
     : autoWindowState === 'unavailable' ? 'Auto-Streams could not confirm the race schedule. Refresh to try again.'
     : autoWindowState === 'active' ? 'Auto-Streams is enabled for this race weekend; listed feeds may not yet be available.'
     : 'Checking the Auto-Streams window…';
-  info.textContent = next + auto;
+  if (info.textContent !== auto) info.textContent = auto;
 }
 
 function startNS() {
