@@ -7033,7 +7033,16 @@ body[data-page="cockpit"] #watch .watch-session-line { display:flex; align-items
 body[data-page="cockpit"] #watch .watch-session-title { font-size:17px; line-height:1.25; letter-spacing:-.02em; overflow-wrap:anywhere; }
 body[data-page="cockpit"] #watch .watch-session-meta { line-height:1.5; }
 body[data-page="cockpit"] #watch .wplayer-actions-main { justify-content:flex-start; padding:12px 20px; gap:7px; min-width:0; border-top:1px solid #ffffff10; }
-body[data-page="cockpit"] #watch .wplayer-actions .btn { border-radius:9px; }
+/* All controls use the same pill; selected toggles follow the chosen livery. */
+body[data-page="cockpit"] #watch .wplayer-actions-main .btn {
+  height:36px; min-height:36px; padding:0 14px; border-radius:999px;
+  font-size:13px; line-height:1.1;
+}
+body[data-page="cockpit"] #watch .wplayer-actions-main .btn[aria-pressed="true"],
+body[data-page="cockpit"] #watch .wplayer-actions-main .btn[aria-pressed="true"]:hover {
+  background:var(--team, #e10600); border-color:var(--team, #e10600);
+  color:var(--team-ink, #fff); box-shadow:none;
+}
 body[data-page="cockpit"] #watch .side-others { gap:14px; }
 body[data-page="cockpit"] #watch .side-others h2 { margin:0; color:#fff; font-size:14px; line-height:1.25; }
 body[data-page="cockpit"] #watch .side-others p { margin:4px 0 0; color:var(--rr-fg-3); font-size:12px; }
