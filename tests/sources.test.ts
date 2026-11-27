@@ -83,7 +83,8 @@ describe('stream source link pools', () => {
   });
 
   it('backs Sky HD with normal direct 1080p strmfree and never 2160p strmfree', () => {
-    const skyHd = block.slice(block.indexOf('{ id: "sky-strmfree"'), block.indexOf('{ id: "emb-uhd"'));
+    const skyHd = block.slice(block.indexOf('{ id: "sky-strmfree"'), block.indexOf('{ id: "sky-strmfree-stripped"'));
+    expect(block).toContain('{ id: "sky-strmfree-stripped"');
     expect(skyHd).toContain('skyf11080p');
     expect(skyHd).not.toContain('stripped: true');
     expect(skyHd).not.toContain('skyf12160p');

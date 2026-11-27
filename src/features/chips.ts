@@ -53,10 +53,10 @@ export function applySourceConfig(payload: any, host: {
   builtins.forEach(source => {
     const override = overrides[source.id];
     // A control-plane override must not turn the direct stripped Sky source into a relay.
-    setChip(source, source.id === 'sky-strmfree' && override?.url && !isDirectStreamfreeSkyUrl(override.url) ? {...override, url: undefined} : override);
+    setChip(source, ['sky-strmfree','sky-strmfree-stripped'].includes(source.id) && override?.url && !isDirectStreamfreeSkyUrl(override.url) ? {...override, url: undefined} : override);
     const relayOverride = source.links.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url));
     source.hidden = payload?.autoStreams === true || disabled.has(source.id) ||
-      (payload?.relaysDisabled === true && ((source.stripped && source.id !== 'sky-strmfree') || relayOverride));
+      (payload?.relaysDisabled === true && ((source.stripped && !source.sandboxDirect) || relayOverride));
   });
   custom.forEach(source => { source.hidden = payload?.autoStreams === true || disabled.has(source.id) || (payload?.relaysDisabled === true && source.links.some(link => isStreamRelayUrl(link.url))); });
   const automatic: StreamSource[] = payload?.autoStreams && Array.isArray(payload?.autoEntries) ? payload.autoEntries.flatMap((item: any) => {
@@ -71,7 +71,7 @@ export function applySourceConfig(payload: any, host: {
     };
     // Keep the direct StreamFree player unsandboxed, without marking it stripped.
     // Keep the original ID so Race Control ordering and disabled settings still apply.
-    if (item.provider === 'strmfree') return [{...original, sandboxDirect: true}];
+    if (item.provider === 'strmfree') return [{...original, sandboxDirect: true}, {...original, id: `${item.id}-sandbox`, sandboxDirect: true, stripped: true}];
     return [original];
   }) : [];
   const combined = [...builtins, ...custom, ...automatic];
@@ -79,7 +79,7 @@ export function applySourceConfig(payload: any, host: {
   const baseline = new Map((defaultOrder.get(host.sources) || []).map((id, index) => [id, index]));
   // The manual Sky StreamFree is the main source, even if an older saved
   // Race Control order predates it. Preserve the order of all other sources.
-  const mainRank = (source: StreamSource) => !payload?.autoStreams && source.id === 'sky-strmfree' ? 0 : 1;
+  const mainRank = (source: StreamSource) => payload?.autoStreams ? (source.autoProvider === 'strmfree' ? (source.stripped ? 1 : 0) : 2) : source.id === 'sky-strmfree' ? 0 : source.id === 'sky-strmfree-stripped' ? 1 : 2;
   combined.sort((a,b) => mainRank(a) - mainRank(b) || (rank.get(a.id) ?? 1e6) - (rank.get(b.id) ?? 1e6) || (baseline.get(a.id) ?? 1e6) - (baseline.get(b.id) ?? 1e6));
   host.sources.splice(0, host.sources.length, ...combined);
   const index = combined.findIndex(source => source.id === previousId);

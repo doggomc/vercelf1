@@ -51,5 +51,9 @@ describe('direct stripped StreamFree Sky', () => {
     expect(frame.src).toBe('https://strmfree.st/embed/racing/skyf1');
     expect(frame.attrs.sandbox).toBeUndefined();
     expect(frame.attrs.scrolling).toBe('no');
+    context.make('https://strmfree.st/embed/racing/skyf1',undefined,true,true);
+    expect(frame.attrs.sandbox).toBe('allow-scripts');
+    expect(frame.attrs.scrolling).toBe('no');
+    expect(app).toContain('Mobile / some devices · not desktop Chrome');
   });
 });

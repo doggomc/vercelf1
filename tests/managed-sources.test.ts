@@ -57,15 +57,17 @@ it('honours disabled and removed WikiSport feeds while keeping enabled and custo
   expect(sources.find(s=>s.id==='wikisport')?.hidden).toBe(false);
 });
 
-it('replaces the automatic StreamFree feed with the direct sandboxed player without duplicating it', () => {
+it('shows normal StreamFree first followed by a direct sandboxed option', () => {
   const sources: StreamSource[] = [];
   let index=-1, reloads=0;
   const host = {sources,current:()=>index,setCurrent:(i:number)=>{index=i},usable:(s:StreamSource|undefined)=>!!s&&!s.hidden,normalize:()=>{index=sources.findIndex(s=>!s.hidden)},render:()=>{},reload:()=>{reloads++}};
   const item={id:'auto-strmfree-0123456789abcdef',label:'Sky Sports F1',provider:'strmfree',tag:'FHD',url:'https://strmfree.st/embed/racing/skyf11080p',tab:'en'};
   const config={autoStreams:true,relaysDisabled:true,disabled:[],autoEntries:[item]};
   applySourceConfig(config,host);
-  expect(sources).toHaveLength(1);
+  expect(sources).toHaveLength(2);
   expect(sources[0]).toMatchObject({id:item.id,managedAuto:true,autoProvider:'strmfree',sandboxDirect:true,links:[{url:item.url}]});
+  expect(sources[0].stripped).not.toBe(true);
+  expect(sources[1]).toMatchObject({id:item.id+'-sandbox',stripped:true,sandboxDirect:true,links:[{url:item.url}]});
   const before=reloads;
   applySourceConfig({...config,order:[item.id]},host);
   expect(sources[index].id).toBe(item.id);

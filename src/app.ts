@@ -624,6 +624,10 @@ const sources: StreamSource[] = [
       { provider: 'strmfree', quality: 1080, url: 'https://strmfree.st/embed/racing/skyf11080p' },
       { provider: 'strmfree', quality: 1080, url: 'https://streamfree.top/embed/racing/skyf11080p' }
   ]},
+  { id: "sky-strmfree-stripped", label: "Sky Sports F1 (StreamFree)", stripped: true, sandboxDirect: true, links: [
+      { provider: 'strmfree', quality: 1080, url: 'https://strmfree.st/embed/racing/skyf11080p' },
+      { provider: 'strmfree', quality: 1080, url: 'https://streamfree.top/embed/racing/skyf11080p' }
+  ]},
   /* embdlol channels. Their ids rotate, so the address is resolved from the catalogue at play
      time and the pool is replaced with every F1 channel it lists (see linkPool). */
   /* embdlol feeds: a chip names the FEED; the catalogue says which channel carries it today. */
@@ -753,7 +757,7 @@ let sourceConfigKnown = false;
 let disabledSourceIds = new Set<string>();
 let autoWindowState: 'unknown' | 'active' | 'closed' | 'unavailable' = 'unknown';
 let autoWindowStart: number | null = null;
-const sourceEnabled = (s) => sourceConfigKnown && Boolean(s) && !disabledSourceIds.has(s.id) && !(s.sandboxDirect && disabledSourceIds.has(s.id.replace(/-sandbox$/, ''))) && !(relaysDisabled && ((s.stripped && !s.sandboxDirect && s.id !== 'sky-strmfree') || s.links?.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url)))) && (autoStreamsActive ? Boolean(s.managedAuto) && (s.autoProvider !== 'ppv' || autoPpvMatchesSession(s.label, s.links?.[0]?.url, currentSession?.slug)) && (s.autoProvider !== 'bintv' || !s.eventSession || autoPpvMatchesSession(s.eventSession, '', currentSession?.slug)) && (s.autoProvider !== 'weelo' || autoRacingLapMatchesSession(s.eventSession, s.eventStart, currentSession?.slug, currentSession?.ts)) : !s.managedAuto && !s.hidden);
+const sourceEnabled = (s) => sourceConfigKnown && Boolean(s) && !disabledSourceIds.has(s.id) && !(s.managedAuto && s.autoProvider === 'strmfree' && disabledSourceIds.has(s.stripped ? 'sky-strmfree-stripped' : 'sky-strmfree')) && !(s.sandboxDirect && disabledSourceIds.has(s.id.replace(/-sandbox$/, ''))) && !(relaysDisabled && ((s.stripped && !s.sandboxDirect && s.id !== 'sky-strmfree') || s.links?.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url)))) && (autoStreamsActive ? Boolean(s.managedAuto) && (s.autoProvider !== 'ppv' || autoPpvMatchesSession(s.label, s.links?.[0]?.url, currentSession?.slug)) && (s.autoProvider !== 'bintv' || !s.eventSession || autoPpvMatchesSession(s.eventSession, '', currentSession?.slug)) && (s.autoProvider !== 'weelo' || autoRacingLapMatchesSession(s.eventSession, s.eventStart, currentSession?.slug, currentSession?.ts)) : !s.managedAuto && !s.hidden);
 
 /* ═══ Session key ═══
    Every source URL is derived from the live event + session, and the key is stamped onto feeds
@@ -779,7 +783,7 @@ function stampSession(url: string, key = sessionKey()): string {
 function preferredSourceIndex() {
   // In Auto-Streams mode built-ins are hidden; prefer the sandboxed Sky F1
   // entry if discovered, without overriding an already-selected usable feed.
-  const automaticSky = sources.findIndex(s => s.managedAuto && s.autoProvider === 'strmfree' && s.sandboxDirect && isDirectStreamfreeSkyUrl(s.links?.[0]?.url) && sourceEnabled(s));
+  const automaticSky = sources.findIndex(s => s.managedAuto && s.autoProvider === 'strmfree' && s.sandboxDirect && !s.stripped && isDirectStreamfreeSkyUrl(s.links?.[0]?.url) && sourceEnabled(s));
   if (automaticSky >= 0) return automaticSky;
   const main = sources.findIndex((s) => s.id === DEFAULT_SOURCE_ID);
   if (main >= 0 && sourceEnabled(sources[main])) return main;
@@ -1060,7 +1064,7 @@ function linkPool(index: number): string[] {
   let links = source.links.slice();
 
   // Use only validated direct 1080p provider URLs for the Sky player.
-  if (source.id === 'sky-strmfree') {
+  if (source.id === 'sky-strmfree' || source.id === 'sky-strmfree-stripped') {
     const direct = mirrorLinks('skyf1', 1080).filter(mirror => isDirectStreamfreeSkyUrl(mirror.url) && /\/skyf11080p\/?$/i.test(new URL(mirror.url).pathname));
     links = [...direct, ...links.filter(link => !direct.some(mirror => mirror.url === link.url))];
   }
@@ -1656,6 +1660,7 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     b.className = "chip src-pill" + (active ? " active" : "") + (s.stripped ? " chip-stripped" : "");
     b.setAttribute("aria-pressed", String(active));
     if (s.gated && !canPlayHevc()) b.title = HEVC_WARNING;
+    if (s.sandboxDirect && s.stripped) b.title = 'Works on mobile and some devices; does not work in Chrome on desktop.';
     /* Specials carry weelo's own state, so a chip that is standing by gets a subtle dim cue. */
     if (s.special) {
       b.className += ` chip-special chip-${s.special}`;
@@ -1692,6 +1697,12 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
       strippedTag.className = 'src-pill-tag is-stripped';
       strippedTag.textContent = 'Stripped';
       b.appendChild(strippedTag);
+      if (s.sandboxDirect) {
+        const notice = document.createElement('span');
+        notice.className = 'src-pill-sub';
+        notice.textContent = 'Mobile / some devices · not desktop Chrome';
+        b.appendChild(notice);
+      }
     }
 
 
@@ -2057,14 +2068,15 @@ function isStrippedEmbed(url: string): boolean {
    sends only our domain — enough to look embedded, and no path or query ever leaves the site.
    Stripped weellz/embdlol embeds run inside an explicit sandbox with no-referrer so popup/navigation
    attempts are browser-blocked and direct HLS segment requests send no Referer. */
-function makeStreamIframe(url, rp, sandboxDirect = false) {
+function makeStreamIframe(url, rp, sandboxDirect = false, directStripped = false) {
   const f = document.createElement("iframe");
   f.src = url;
   f.allow = IFRAME_ALLOW;
   f.setAttribute('allow', IFRAME_ALLOW);
   f.allowFullscreen = true;
   if (sandboxDirect) {
-    // StreamFree rejects sandboxed desktop embeds. Scrolling is independent of sandboxing.
+    // Only the explicitly selected stripped StreamFree variant is sandboxed.
+    if (directStripped) f.setAttribute('sandbox', 'allow-scripts');
     f.setAttribute('scrolling', 'no');
     f.referrerPolicy = 'strict-origin-when-cross-origin';
   } else if (isStrippedEmbed(url)) {
@@ -2117,7 +2129,7 @@ function attemptSource(token, order, idx, startedAt, linkIdx = 0, triedDynamic =
   const targetUrl = pool[linkIdx];
   setLoaderText(!idx && !linkIdx ? "Establishing feed…" : idx === order.length - 1 && linkIdx === pool.length - 1 ? "Every feed is unreachable…" : "Switching link…");
 
-  const f = makeStreamIframe(targetUrl, sources[sourceIndex].rp, Boolean(sources[sourceIndex].sandboxDirect));
+  const f = makeStreamIframe(targetUrl, sources[sourceIndex].rp, Boolean(sources[sourceIndex].sandboxDirect), Boolean(sources[sourceIndex].sandboxDirect && sources[sourceIndex].stripped));
   if (isHakunaCleanPlayer(targetUrl)) f.dataset.hakunaClean = 'true';
   let settled = false;
 
