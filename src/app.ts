@@ -531,11 +531,11 @@ const DEFAULT_SOURCE_ID = "sky-strmfree";
 /* embdlol publishes ONE English F1 channel at a time, and fmexicofullhd1/3 are two names for it, so
    the 'sky' and 'apple' chips could never resolve to anything the other two do not. They were empty
    for their whole life; the ten below are the feeds embdlol actually publishes per language. */
-const EMB_FEEDS = 'fullhd1,fullhd3,dazn,skyit,skyde,world,german,spanish,italian'.split(',');
+const EMB_FEEDS = 'fullhd1,fullhd3,dazn,skyit,skyeventit,skyeventit2,skyde,world,german,spanish,italian'.split(',');
 /* A feed may only fall back to another feed of its own language, never to English Sky. */
-const EMB_LANG: Record<string, string> = { dazn: 'es', spanish: 'es', skyit: 'it', italian: 'it', skyde: 'de', german: 'de' };
+const EMB_LANG: Record<string, string> = { dazn: 'es', spanish: 'es', skyit: 'it', skyeventit: 'it', skyeventit2: 'it', italian: 'it', skyde: 'de', german: 'de' };
 
-const EMB_LABELS: Record<string, string> = { skyit: 'Sky Italia', skyde: 'Sky DE' };
+const EMB_LABELS: Record<string, string> = { skyit: 'Sky Italia', skyeventit: 'Sky Event IT', skyeventit2: 'Sky Event IT 2', skyde: 'Sky DE' };
 
 
 /* ═══ Tabs ═══
@@ -1201,6 +1201,8 @@ const EMB_CLEAN_NAMES: Record<string, string> = {
   dazn: 'DAZN',
   spanish: 'Spanish',
   skyit: 'Sky Italia',
+  skyeventit: 'Sky Event IT',
+  skyeventit2: 'Sky Event IT 2',
   italian: 'Italian',
   skyde: 'Sky DE',
   german: 'German',

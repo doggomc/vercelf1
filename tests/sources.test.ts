@@ -220,6 +220,8 @@ describe('stream source link pools', () => {
     expect(feedKey('daznf1_hd')).toBe('dazn');
     expect(feedKey('skyf1de')).toBe('skyde');
     expect(feedKey('skyf1it')).toBe('skyit');
+    expect(feedKey('skyeventit')).toBe('skyeventit');
+    expect(feedKey('skyeventit2')).toBe('skyeventit2');
     expect(feedKey('skyf1uhd')).toBe('uhd');
     expect(feedKey('ssmotorsport_sd')).toBe('');
     expect(feedKey('Sky Sport Event 1')).toBe('');

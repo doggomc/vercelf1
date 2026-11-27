@@ -17,6 +17,8 @@ describe('cockpit source chip presentation', () => {
     expect(auto('embdlol', 'daznf1', 'EMB').title).toBe('DAZN');
     expect(auto('embdlol', 'skyf1de', 'EMB').title).toBe('Sky DE');
     expect(auto('embdlol', 'skyf1it', 'EMB').title).toBe('Sky Italia');
+    expect(auto('embdlol', 'skyeventit', 'EMB').title).toBe('Sky Event IT');
+    expect(auto('embdlol', 'skyeventit2', 'EMB').title).toBe('Sky Event IT 2');
     expect(auto('embdlol', 'skyf1uhd', 'EMB').is4k).toBe(true);
     expect(sourceChipDisplay({id:'emb-fullhd1',label:'FULLHD1 (EMB)',embdlol:'fullhd1',embDisplayName:'Sky Sports F1',links:[]}).title).toBe('Sky Sports F1');
     expect(sourceChipDisplay({id:'emb-fullhd3',label:'FULLHD3 (EMB)',embdlol:'fullhd3',embDisplayName:'Apple TV',links:[]}).title).toBe('Apple TV');
