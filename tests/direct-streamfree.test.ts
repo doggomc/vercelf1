@@ -41,7 +41,7 @@ describe('direct stripped StreamFree Sky', () => {
     sources[3].hidden=true;
     expect(context.preferred()).toBe(1);
   });
-  it('creates the direct player with the restrictive sandbox and no scrolling', () => {
+  it('creates the direct player without a sandbox and with no scrolling', () => {
     const app=readFileSync(new URL('../src/app.ts',import.meta.url),'utf8');
     const block=app.slice(app.indexOf('function makeStreamIframe('),app.indexOf('function watchFrameNavigation('));
     const frame:any={attrs:{},setAttribute(k:string,v:string){this.attrs[k]=v;}};
@@ -49,7 +49,7 @@ describe('direct stripped StreamFree Sky', () => {
     runInNewContext(ts.transpile(block,{target:ts.ScriptTarget.ES2022})+';globalThis.make=makeStreamIframe;',context);
     context.make('https://strmfree.st/embed/racing/skyf1',undefined,true);
     expect(frame.src).toBe('https://strmfree.st/embed/racing/skyf1');
-    expect(frame.attrs.sandbox).toBe('allow-scripts');
+    expect(frame.attrs.sandbox).toBeUndefined();
     expect(frame.attrs.scrolling).toBe('no');
   });
 });

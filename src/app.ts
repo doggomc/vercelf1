@@ -2063,7 +2063,7 @@ function makeStreamIframe(url, rp, sandboxDirect = false) {
   f.setAttribute('allow', IFRAME_ALLOW);
   f.allowFullscreen = true;
   if (sandboxDirect) {
-    f.setAttribute('sandbox', 'allow-scripts');
+    // StreamFree rejects sandboxed desktop embeds. Scrolling is independent of sandboxing.
     f.setAttribute('scrolling', 'no');
     f.referrerPolicy = 'strict-origin-when-cross-origin';
   } else if (isStrippedEmbed(url)) {
