@@ -14,7 +14,7 @@ const providers: Record<string, string> = {
 export function sourceChipDisplay(source: ChipSource): {provider: string; title: string; quality: string; is4k: boolean} {
   const firstProvider = source.links?.find(link => link.provider)?.provider || '';
   let providerId = source.autoProvider || (source.id.startsWith('emb-') || source.embdlol ? 'embdlol' : source.weelo || source.id.startsWith('weelo-') ? 'weelo' : firstProvider);
-  if (!source.managedAuto && source.id === 'sky-uk') providerId = 'strmfree';
+  if (!source.managedAuto && source.id === 'sky-strmfree') providerId = 'strmfree';
   if (!source.managedAuto && source.id.startsWith('wikisport')) providerId = 'wikisport';
   if (source.managedCustom || (source.custom && !providerId)) providerId = 'custom';
   providerId = providerId.replace(/-stripped$/, '');

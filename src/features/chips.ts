@@ -53,10 +53,10 @@ export function applySourceConfig(payload: any, host: {
   builtins.forEach(source => {
     const override = overrides[source.id];
     // A control-plane override must not turn the direct stripped Sky source into a relay.
-    setChip(source, source.id === 'sky-uk' && override?.url && !isDirectStreamfreeSkyUrl(override.url) ? {...override, url: undefined} : override);
+    setChip(source, source.id === 'sky-strmfree' && override?.url && !isDirectStreamfreeSkyUrl(override.url) ? {...override, url: undefined} : override);
     const relayOverride = source.links.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url));
     source.hidden = payload?.autoStreams === true || disabled.has(source.id) ||
-      (payload?.relaysDisabled === true && ((source.stripped && source.id !== 'sky-uk') || relayOverride));
+      (payload?.relaysDisabled === true && ((source.stripped && source.id !== 'sky-strmfree') || relayOverride));
   });
   custom.forEach(source => { source.hidden = payload?.autoStreams === true || disabled.has(source.id) || (payload?.relaysDisabled === true && source.links.some(link => isStreamRelayUrl(link.url))); });
   const automatic: StreamSource[] = payload?.autoStreams && Array.isArray(payload?.autoEntries) ? payload.autoEntries.flatMap((item: any) => {

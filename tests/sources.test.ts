@@ -73,17 +73,17 @@ describe('stream source link pools', () => {
 
   it('defaults to the sandboxed direct StreamFree Sky source without an ordinary duplicate', () => {
     const order = [...block.matchAll(/\{ id: "(sky-[a-z0-9-]+)"/g)].map((m) => m[1]);
-    expect(order[0]).toBe('sky-uk');
-    expect(order).not.toContain('sky-strmfree');
-    expect(app).toContain('const DEFAULT_SOURCE_ID = "sky-uk"');
+    expect(order[0]).toBe('sky-strmfree');
+    expect(order).not.toContain('sky-uk');
+    expect(app).toContain('const DEFAULT_SOURCE_ID = "sky-strmfree"');
     expect(block).toContain('https://strmfree.st/embed/racing/skyf11080p');
     expect(order).not.toContain('sky-uhd');
-    expect(block).toContain('label: "Sky HD"');
+    expect(block).toContain('label: "Sky Sports F1 (StreamFree)"');
     expect(block).not.toContain('label: "Sky UHD"');
   });
 
   it('backs Sky HD with stripped 1080p strmfree and never 2160p strmfree', () => {
-    const skyHd = block.slice(block.indexOf('{ id: "sky-uk"'), block.indexOf('{ id: "emb-uhd"'));
+    const skyHd = block.slice(block.indexOf('{ id: "sky-strmfree"'), block.indexOf('{ id: "emb-uhd"'));
     expect(skyHd).toContain('skyf11080p');
     expect(skyHd).toContain('stripped: true');
     expect(skyHd).not.toContain('skyf12160p');

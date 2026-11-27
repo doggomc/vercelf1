@@ -525,7 +525,7 @@ function mirrorLinks(key: string, quality: number): StreamLink[] {
 }
 
 /* What plays on load and on "jump to live"; if Race Control disables it, the first enabled source. */
-const DEFAULT_SOURCE_ID = "sky-uk";
+const DEFAULT_SOURCE_ID = "sky-strmfree";
 
 /* The embdlol feeds we draw a chip for; labels and languages are keyed below. */
 /* embdlol publishes ONE English F1 channel at a time, and fmexicofullhd1/3 are two names for it, so
@@ -620,7 +620,7 @@ function toStrippedPpvEmbedUrl(rawUrl: string, apiBase = STREAM_API): string {
 const sources: StreamSource[] = [
   /* The StreamFree Sky player is a direct provider iframe with browser sandboxing.
      It never uses Render. */
-  { id: "sky-uk", label: "Sky HD", stripped: true, sandboxDirect: true, links: [
+  { id: "sky-strmfree", label: "Sky Sports F1 (StreamFree)", stripped: true, sandboxDirect: true, links: [
       { provider: 'strmfree', quality: 1080, url: 'https://strmfree.st/embed/racing/skyf11080p' },
       { provider: 'strmfree', quality: 1080, url: 'https://streamfree.top/embed/racing/skyf11080p' },
       { provider: 'strmfree', quality: 1080, url: 'https://strmfree.st/embed/racing/skyf1' },
@@ -755,7 +755,7 @@ let sourceConfigKnown = false;
 let disabledSourceIds = new Set<string>();
 let autoWindowState: 'unknown' | 'active' | 'closed' | 'unavailable' = 'unknown';
 let autoWindowStart: number | null = null;
-const sourceEnabled = (s) => sourceConfigKnown && Boolean(s) && !disabledSourceIds.has(s.id) && !(s.sandboxDirect && disabledSourceIds.has(s.id.replace(/-sandbox$/, ''))) && !(relaysDisabled && ((s.stripped && !s.sandboxDirect && s.id !== 'sky-uk') || s.links?.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url)))) && (autoStreamsActive ? Boolean(s.managedAuto) && (s.autoProvider !== 'ppv' || autoPpvMatchesSession(s.label, s.links?.[0]?.url, currentSession?.slug)) && (s.autoProvider !== 'bintv' || !s.eventSession || autoPpvMatchesSession(s.eventSession, '', currentSession?.slug)) && (s.autoProvider !== 'weelo' || autoRacingLapMatchesSession(s.eventSession, s.eventStart, currentSession?.slug, currentSession?.ts)) : !s.managedAuto && !s.hidden);
+const sourceEnabled = (s) => sourceConfigKnown && Boolean(s) && !disabledSourceIds.has(s.id) && !(s.sandboxDirect && disabledSourceIds.has(s.id.replace(/-sandbox$/, ''))) && !(relaysDisabled && ((s.stripped && !s.sandboxDirect && s.id !== 'sky-strmfree') || s.links?.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url)))) && (autoStreamsActive ? Boolean(s.managedAuto) && (s.autoProvider !== 'ppv' || autoPpvMatchesSession(s.label, s.links?.[0]?.url, currentSession?.slug)) && (s.autoProvider !== 'bintv' || !s.eventSession || autoPpvMatchesSession(s.eventSession, '', currentSession?.slug)) && (s.autoProvider !== 'weelo' || autoRacingLapMatchesSession(s.eventSession, s.eventStart, currentSession?.slug, currentSession?.ts)) : !s.managedAuto && !s.hidden);
 
 /* ═══ Session key ═══
    Every source URL is derived from the live event + session, and the key is stamped onto feeds
@@ -1062,7 +1062,7 @@ function linkPool(index: number): string[] {
   let links = source.links.slice();
 
   // Use only validated direct provider URLs for the sandboxed Sky player.
-  if (source.id === 'sky-uk') {
+  if (source.id === 'sky-strmfree') {
     const direct = mirrorLinks('skyf1', 1080).filter(mirror => isDirectStreamfreeSkyUrl(mirror.url));
     links = [...direct, ...links.filter(link => !direct.some(mirror => mirror.url === link.url))];
   }
