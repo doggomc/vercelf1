@@ -618,13 +618,11 @@ function toStrippedPpvEmbedUrl(rawUrl: string, apiBase = STREAM_API): string {
    shell, cdnlivetv reports channel status, taifood ids come from the live manifests. Anything
    below 720p (taifood's _540p tier, embdlol's 720p German channel) is deliberately absent. */
 const sources: StreamSource[] = [
-  /* The StreamFree Sky player is a direct provider iframe with browser sandboxing.
+  /* The StreamFree Sky player is a direct provider iframe without sandboxing.
      It never uses Render. */
-  { id: "sky-strmfree", label: "Sky Sports F1 (StreamFree)", stripped: true, sandboxDirect: true, links: [
+  { id: "sky-strmfree", label: "Sky Sports F1 (StreamFree)", sandboxDirect: true, links: [
       { provider: 'strmfree', quality: 1080, url: 'https://strmfree.st/embed/racing/skyf11080p' },
-      { provider: 'strmfree', quality: 1080, url: 'https://streamfree.top/embed/racing/skyf11080p' },
-      { provider: 'strmfree', quality: 1080, url: 'https://strmfree.st/embed/racing/skyf1' },
-      { provider: 'strmfree', quality: 1080, url: 'https://streamfree.top/embed/racing/skyf1' }
+      { provider: 'strmfree', quality: 1080, url: 'https://streamfree.top/embed/racing/skyf11080p' }
   ]},
   /* embdlol channels. Their ids rotate, so the address is resolved from the catalogue at play
      time and the pool is replaced with every F1 channel it lists (see linkPool). */
@@ -1061,9 +1059,9 @@ function linkPool(index: number): string[] {
   const key = sessionKey();
   let links = source.links.slice();
 
-  // Use only validated direct provider URLs for the sandboxed Sky player.
+  // Use only validated direct 1080p provider URLs for the Sky player.
   if (source.id === 'sky-strmfree') {
-    const direct = mirrorLinks('skyf1', 1080).filter(mirror => isDirectStreamfreeSkyUrl(mirror.url));
+    const direct = mirrorLinks('skyf1', 1080).filter(mirror => isDirectStreamfreeSkyUrl(mirror.url) && /\/skyf11080p\/?$/i.test(new URL(mirror.url).pathname));
     links = [...direct, ...links.filter(link => !direct.some(mirror => mirror.url === link.url))];
   }
 
@@ -2509,6 +2507,7 @@ async function refreshAutoStreams() {
             const player = new URL(decoded);
             return player.protocol === 'https:' && ['ehgembxe.cfd', 'shoewiki.click'].includes(player.hostname) && !player.username && !player.password && !player.port && !player.search && !player.hash && /^\/bintv\/[a-z0-9-]{1,160}$/i.test(player.pathname);
           }
+          if (row.provider === 'strmfree') return url.href === 'https://strmfree.st/embed/racing/skyf11080p';
           if (row.provider === 'timstreams') return !url.search && !url.hash && /^\/[a-z0-9-]{1,160}$/i.test(url.pathname);
           if (row.provider === 'cdnlive') return url.pathname === '/api/v1/channels/player/' && ['Sky Sports F1 FHD UK', 'DAZN F1 FHD'].includes(url.searchParams.get('name') || '');
           if (row.provider === 'wikisport') return (url.hostname === 'siempreon.shop' && url.pathname === '/fslivepro.php') || (url.hostname === 'taifood-blog.asia' && /^\/embed\/[a-z0-9_/%-]+$/i.test(url.pathname)) || (url.hostname === 'embedsports.me' && /^\/streams\/[a-z0-9_-]+$/i.test(url.pathname)) || (url.hostname === 'tvpclive.com' && /^\/embed\/stream-[0-9]+\.php$/i.test(url.pathname));

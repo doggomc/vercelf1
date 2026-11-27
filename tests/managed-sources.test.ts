@@ -65,7 +65,7 @@ it('replaces the automatic StreamFree feed with the direct sandboxed player with
   const config={autoStreams:true,relaysDisabled:true,disabled:[],autoEntries:[item]};
   applySourceConfig(config,host);
   expect(sources).toHaveLength(1);
-  expect(sources[0]).toMatchObject({id:item.id,managedAuto:true,autoProvider:'strmfree',stripped:true,sandboxDirect:true,links:[{url:item.url}]});
+  expect(sources[0]).toMatchObject({id:item.id,managedAuto:true,autoProvider:'strmfree',sandboxDirect:true,links:[{url:item.url}]});
   const before=reloads;
   applySourceConfig({...config,order:[item.id]},host);
   expect(sources[index].id).toBe(item.id);
@@ -102,4 +102,11 @@ it('pins manual StreamFree first even when an older saved order places it last',
   expect(sources.map(s=>s.id)).toEqual(['sky-strmfree','ppv','emb-one']);
   expect(sources[current].id).toBe('emb-one');
   expect(reloads).toBe(0);
+});
+
+it('places discovered Driver Tracker with onboard and pit-wall feeds', () => {
+  const sources: StreamSource[]=[]; let index=-1;
+  const host={sources,current:()=>index,setCurrent:(i:number)=>{index=i},usable:(s:StreamSource|undefined)=>!!s,normalize:()=>{index=0},render:()=>{},reload:()=>{}};
+  applySourceConfig({autoStreams:true,autoEntries:[{id:'auto-weelo-abc123',provider:'weelo',label:'Driver Tracker',url:'https://weellz.live/beta?stream=tracker',tab:'en'}]},host);
+  expect(sources[0].special).toBe('feed');
 });

@@ -66,12 +66,12 @@ export function applySourceConfig(payload: any, host: {
     eventSession: ['bintv','weelo'].includes(item.provider) && typeof item.eventSession === 'string' ? item.eventSession.slice(0,120) : undefined,
     eventStart: item.provider === 'weelo' && Number.isFinite(item.eventStart) ? item.eventStart : undefined,
     weelo: item.provider === 'weelo' ? new URL(item.url).searchParams.get('stream') || undefined : undefined,
-    special: ['onboard', 'data', 'feed'].includes(item.special) ? item.special : undefined,
+    special: ['weelo','embdlol'].includes(item.provider) && /^(?:f1)?driver[\s_-]*tracker$/i.test(item.label) ? 'feed' : ['onboard', 'data', 'feed'].includes(item.special) ? item.special : undefined,
     links: [{ provider: 'custom', quality: 0, url: item.url }, ...(item.provider === 'weelo' && Array.isArray(item.backups) ? item.backups.filter((url: unknown) => isRacingLapBackup(url)).slice(0,5).map((url: string) => ({ provider: 'custom', quality: 0, url })) : [])]
     };
-    // Replace the ordinary StreamFree player with its sandboxed direct version.
+    // Keep the direct StreamFree player unsandboxed, without marking it stripped.
     // Keep the original ID so Race Control ordering and disabled settings still apply.
-    if (item.provider === 'strmfree') return [{...original, stripped: true, sandboxDirect: true}];
+    if (item.provider === 'strmfree') return [{...original, sandboxDirect: true}];
     return [original];
   }) : [];
   const combined = [...builtins, ...custom, ...automatic];

@@ -82,10 +82,10 @@ describe('stream source link pools', () => {
     expect(block).not.toContain('label: "Sky UHD"');
   });
 
-  it('backs Sky HD with stripped 1080p strmfree and never 2160p strmfree', () => {
+  it('backs Sky HD with normal direct 1080p strmfree and never 2160p strmfree', () => {
     const skyHd = block.slice(block.indexOf('{ id: "sky-strmfree"'), block.indexOf('{ id: "emb-uhd"'));
     expect(skyHd).toContain('skyf11080p');
-    expect(skyHd).toContain('stripped: true');
+    expect(skyHd).not.toContain('stripped: true');
     expect(skyHd).not.toContain('skyf12160p');
     expect(skyHd).toContain('sandboxDirect: true');
     expect(skyHd).not.toContain('/api/stream/strmfree-embed');

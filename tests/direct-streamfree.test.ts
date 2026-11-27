@@ -14,14 +14,14 @@ describe('direct stripped StreamFree Sky', () => {
   });
   it('does not let a Race Control override change the stripped Sky source into a relay', () => {
     const direct='https://strmfree.st/embed/racing/skyf1';
-    const sources: StreamSource[]=[{id:'sky-strmfree',label:'Sky HD',stripped:true,sandboxDirect:true,links:[{provider:'strmfree',url:direct}]}];
+    const sources: StreamSource[]=[{id:'sky-strmfree',label:'Sky HD',sandboxDirect:true,links:[{provider:'strmfree',url:direct}]}];
     let current=0;
     const host={sources,current:()=>current,setCurrent:(i:number)=>{current=i},usable:(s:StreamSource|undefined)=>!!s&&!s.hidden,normalize:()=>{current=0},render:()=>{},reload:()=>{}};
     applySourceConfig({overrides:{'sky-strmfree':{url:'https://f1admin.onrender.com/api/stream/strmfree-embed?variant=skyf1'}},relaysDisabled:false},host);
     expect(sources[0].links[0].url).toBe(direct);
     expect(sources[0].hidden).toBe(false);
     applySourceConfig({autoStreams:false,relaysDisabled:true,disabled:[]},host);
-    expect(sources[0]).toMatchObject({id:'sky-strmfree',stripped:true,sandboxDirect:true,hidden:false});
+    expect(sources[0]).toMatchObject({id:'sky-strmfree',sandboxDirect:true,hidden:false});
     expect(sources[0].links[0].url).toBe(direct);
     applySourceConfig({autoStreams:false,relaysDisabled:true,disabled:['sky-strmfree']},host);
     expect(sources[0].hidden).toBe(true);
