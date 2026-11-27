@@ -7,7 +7,7 @@ type ChipSource = {
 };
 const providers: Record<string, string> = {
   weelo: 'RACINGLAP', ppv: 'PPV', strmfree: 'STREAMFREE', embdlol: 'EMB',
-  bintv: 'BINTV', cdnlive: 'CDNLIVE', cdnlivetv: 'CDNLIVE', wikisport: 'WIKISPORT',
+  bintv: 'BINTV', timstreams: 'TIMSTREAMS', cdnlive: 'CDNLIVE', cdnlivetv: 'CDNLIVE', wikisport: 'WIKISPORT',
   ehgembxe: 'EHG', hakunamatata: 'HAKUNA', custom: 'CUSTOM',
 };
 /** Used only for the visual source pills; the original source remains unchanged. */
