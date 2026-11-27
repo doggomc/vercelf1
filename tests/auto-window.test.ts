@@ -6,7 +6,9 @@ const app=readFileSync(new URL('../src/app.ts',import.meta.url),'utf8');
 const mv=readFileSync(new URL('../src/features/multiviewer.ts',import.meta.url),'utf8');
 describe('auto discovery schedule',()=>{
   it('uses the backend schedule and does not poll legacy providers in auto mode',()=>{
-    expect(app).toContain('autoStreamsActive && !document.hidden && !autoNextCheckAt');
+    expect(app).toContain('autoStreamsActive && !document.hidden && Date.now() >= autoNextCheckAt');
+    expect(app).toContain('window.nextCheckAt - window.serverTime');
+    expect(app).toContain('autoNextCheckAt = Date.now() + 60_000');
     expect(app).not.toContain('setTimeout(() => void refreshAutoStreams()');
     expect(app).not.toContain('}, WEELO_REFRESH_INTERVAL_MS)');
     expect(app).toContain("window.reason === 'schedule-unavailable'");

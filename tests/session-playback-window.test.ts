@@ -24,7 +24,7 @@ describe('cockpit session playback window', () => {
     expect(sync).toContain('streamOverride.active || isStreamAvailable(currentSession)');
     expect(sync).not.toContain('multiViewerControl.show(false)');
     expect(sync).toContain('sessionWindowBlocked && sourceConfigKnown');
-    expect(app).toContain('syncActiveSession();\n  syncSessionPlaybackWindow();\n  if (!document.hidden) updateCurrentStreamButton();');
+    expect(app).toContain('syncActiveSession();\n  syncSessionPlaybackWindow();\n  if (!document.hidden) {');
     expect(app).toContain('if (autoStreamsActive) scheduleAutoCheck();');
   });
   it('allows multiview to open outside a session window', () => {

@@ -2473,8 +2473,8 @@ function paintAutoSourceConfig(startManual = false) {
   });
 }
 function scheduleAutoCheck() {
-  if (autoStreamsActive && !document.hidden && !autoNextCheckAt) {
-    autoNextCheckAt = Date.now();
+  if (autoStreamsActive && !document.hidden && Date.now() >= autoNextCheckAt) {
+    autoNextCheckAt = Infinity;
     void refreshAutoStreams();
   }
 }
@@ -2482,14 +2482,15 @@ async function refreshAutoStreams() {
   if (!autoStreamsActive || document.hidden) return;
   const epoch = autoEpoch;
   // Also prevents repeated site-configuration updates from multiplying requests while one is pending.
-  autoNextCheckAt = Date.now();
+  autoNextCheckAt = Infinity;
   try {
-    const response = await fetchWithTimeout(`${STREAM_API}/api/stream/auto`, { headers: { Accept: 'application/json' }, cache: 'default' }, 9000);
+    const response = await fetchWithTimeout(`${STREAM_API}/api/stream/auto`, { headers: { Accept: 'application/json' }, cache: 'default' }, 25000);
     if (!response.ok) throw new Error('Auto-Streams unavailable');
     const json = await response.json();
     if (epoch !== autoEpoch || !autoStreamsActive) return;
     const window = json.window;
     if (!window || typeof window.active !== 'boolean' || !Number.isFinite(window.serverTime) || !Number.isFinite(window.nextCheckAt)) throw new Error('Race schedule unavailable');
+    autoNextCheckAt = Date.now() + Math.max(10000, Math.min(12 * 60 * 60_000, window.nextCheckAt - window.serverTime));
     autoWindowState = window.active ? 'active' : window.reason === 'schedule-unavailable' ? 'unavailable' : 'closed';
     autoWindowStart = Number.isFinite(window.start) ? window.start : null;
     if (window.active) {
@@ -2527,6 +2528,7 @@ async function refreshAutoStreams() {
     if (!autoEntries.length && !streamOverride.active && !stageBox?.querySelector('iframe, video') && noStreamEl?.classList.contains('visible')) load();
   } catch {
     if (epoch !== autoEpoch || !autoStreamsActive) return;
+    autoNextCheckAt = Date.now() + 60_000;
     if (!autoEntries.length) autoWindowState = 'unavailable';
     renderButtons({ quiet: true });
     multiViewerControl?.sync?.();
@@ -3551,7 +3553,10 @@ window.setInterval(() => {
 window.setInterval(() => {
   syncActiveSession();
   syncSessionPlaybackWindow();
-  if (!document.hidden) updateCurrentStreamButton();
+  if (!document.hidden) {
+    updateCurrentStreamButton();
+    if (autoStreamsActive) scheduleAutoCheck();
+  }
 }, 30000);
 
 document.addEventListener('visibilitychange', () => {
