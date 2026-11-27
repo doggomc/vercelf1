@@ -618,17 +618,13 @@ function toStrippedPpvEmbedUrl(rawUrl: string, apiBase = STREAM_API): string {
    shell, cdnlivetv reports channel status, taifood ids come from the live manifests. Anything
    below 720p (taifood's _540p tier, embdlol's 720p German channel) is deliberately absent. */
 const sources: StreamSource[] = [
-  /* The default stripped player is a direct provider iframe with browser sandboxing.
-     It never uses Render; keep the ordinary unsandboxed player as a separate fallback. */
+  /* The StreamFree Sky player is a direct provider iframe with browser sandboxing.
+     It never uses Render. */
   { id: "sky-uk", label: "Sky HD", stripped: true, sandboxDirect: true, links: [
       { provider: 'strmfree', quality: 1080, url: 'https://strmfree.st/embed/racing/skyf11080p' },
       { provider: 'strmfree', quality: 1080, url: 'https://streamfree.top/embed/racing/skyf11080p' },
       { provider: 'strmfree', quality: 1080, url: 'https://strmfree.st/embed/racing/skyf1' },
       { provider: 'strmfree', quality: 1080, url: 'https://streamfree.top/embed/racing/skyf1' }
-  ]},
-  { id: "sky-strmfree", label: "Sky Sports F1 (StreamFree)", links: [
-      { provider: 'strmfree', quality: 1080, url: 'https://strmfree.st/embed/racing/skyf11080p' },
-      { provider: 'strmfree', quality: 1080, url: 'https://streamfree.top/embed/racing/skyf11080p' }
   ]},
   /* embdlol channels. Their ids rotate, so the address is resolved from the catalogue at play
      time and the pool is replaced with every F1 channel it lists (see linkPool). */
@@ -1065,9 +1061,8 @@ function linkPool(index: number): string[] {
   const key = sessionKey();
   let links = source.links.slice();
 
-  // Both Sky variants use only validated direct provider URLs; sandboxing is
-  // attached to the stripped source when its iframe is created.
-  if (source.id === 'sky-strmfree' || source.id === 'sky-uk') {
+  // Use only validated direct provider URLs for the sandboxed Sky player.
+  if (source.id === 'sky-uk') {
     const direct = mirrorLinks('skyf1', 1080).filter(mirror => isDirectStreamfreeSkyUrl(mirror.url));
     links = [...direct, ...links.filter(link => !direct.some(mirror => mirror.url === link.url))];
   }

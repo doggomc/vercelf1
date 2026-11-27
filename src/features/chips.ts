@@ -69,8 +69,9 @@ export function applySourceConfig(payload: any, host: {
     special: ['onboard', 'data', 'feed'].includes(item.special) ? item.special : undefined,
     links: [{ provider: 'custom', quality: 0, url: item.url }, ...(item.provider === 'weelo' && Array.isArray(item.backups) ? item.backups.filter((url: unknown) => isRacingLapBackup(url)).slice(0,5).map((url: string) => ({ provider: 'custom', quality: 0, url })) : [])]
     };
-    // Reuse the validated auto URL; no second discovery or relay request.
-    if (item.provider === 'strmfree') return [original, {...original, id: `${item.id}-sandbox`, stripped: true, sandboxDirect: true}];
+    // Replace the ordinary StreamFree player with its sandboxed direct version.
+    // Keep the original ID so Race Control ordering and disabled settings still apply.
+    if (item.provider === 'strmfree') return [{...original, stripped: true, sandboxDirect: true}];
     return [original];
   }) : [];
   const combined = [...builtins, ...custom, ...automatic];

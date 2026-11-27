@@ -71,10 +71,10 @@ describe('stream source link pools', () => {
     }
   });
 
-  it('defaults to sandboxed direct StreamFree Sky and retains the ordinary source', () => {
+  it('defaults to the sandboxed direct StreamFree Sky source without an ordinary duplicate', () => {
     const order = [...block.matchAll(/\{ id: "(sky-[a-z0-9-]+)"/g)].map((m) => m[1]);
     expect(order[0]).toBe('sky-uk');
-    expect(order[1]).toBe('sky-strmfree');
+    expect(order).not.toContain('sky-strmfree');
     expect(app).toContain('const DEFAULT_SOURCE_ID = "sky-uk"');
     expect(block).toContain('https://strmfree.st/embed/racing/skyf11080p');
     expect(order).not.toContain('sky-uhd');
