@@ -29,6 +29,19 @@ describe('auto discovery schedule',()=>{
     expect(ctx.accepted).toHaveLength(1);
     expect(ctx.accepted[0].label).toBe('Sky Sports F1');
   });
+  it('accepts only valid ZLive embed URLs in Auto-Streams',()=>{
+    const start=app.indexOf('      const hosts: Record<string, string[]> =',app.indexOf('async function refreshAutoStreams()'));
+    const end=app.indexOf('      // Do not unmount',start);
+    const rows=[
+      {id:'auto-zlive-0123456789abcdef',provider:'zlive',label:'SuperSport Motorsport',url:'https://zlive.st/embed/auto-supersport-motorsport'},
+      {id:'auto-zlive-0123456789abcdef',provider:'zlive',label:'bad',url:'https://zlive.st.evil.test/embed/auto-supersport-motorsport'},
+      {id:'auto-zlive-0123456789abcdef',provider:'zlive',label:'bad',url:'https://zlive.st/embed/a?extra=1'},
+    ];
+    const ctx:any={json:{streams:rows},URL};
+    runInNewContext(ts.transpile(app.slice(start,end)+';globalThis.accepted=nextEntries;', {target:ts.ScriptTarget.ES2022}),ctx);
+    expect(ctx.accepted).toHaveLength(1);
+    expect(ctx.accepted[0].label).toBe('SuperSport Motorsport');
+  });
   it('shows RacingLap team-radio onboards in both language tabs without changing their metadata',()=>{
     const start=app.indexOf('const inTab = (s: StreamSource');
     const end=app.indexOf('\n',app.indexOf("(s.lang || 'en') ===",start));
