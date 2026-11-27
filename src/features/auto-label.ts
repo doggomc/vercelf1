@@ -29,7 +29,7 @@ export function sourceChipDisplay(source: ChipSource): {provider: string; title:
     }
   }
   if (providerId === 'embdlol') {
-    const names: Record<string, string> = {skyf1uk:'Sky Sports F1', skyf1:'Sky Sports F1', skyf1en:'Sky Sports F1', f1atvp:'Apple TV', f1atpv:'Apple TV', f1appletv:'Apple TV', daznf1:'DAZN', daznf1hd:'DAZN', skyf1de:'Sky DE', skyf1it:'Sky Italia', skyf1uhd:'Sky Sports F1 UHD', f1sd:'F1 SD', f1drivertracker:'Driver Tracker', f1pitlane:'Pit Lane', f1lewis:'Lewis Hamilton', f1kimi:'Kimi Antonelli', f1mixedonboard:'Mixed Onboard', f1timingchannel:'Data Channel', f1stroll:'Lance Stroll'};
+    const names: Record<string, string> = {skyf1uk:'Sky Sports F1', skyf1:'Sky Sports F1', skyf1en:'Sky Sports F1', f1atvp:'Apple TV', f1atv:'Apple TV', f1atpv:'Apple TV', f1appletv:'Apple TV', daznf1:'DAZN', daznf1hd:'DAZN', skyf1de:'Sky DE', skyf1it:'Sky Italia', skyf1uhd:'Sky Sports F1 UHD', f1uhd:'F1 UHD', f1506:'Fox Sports 506', f1sd:'F1 SD', f1drivertracker:'Driver Tracker', f1pitlane:'Pit Lane', f1lewis:'Lewis Hamilton', f1kimi:'Kimi Antonelli', f1mixedonboard:'Mixed Onboard', f1timingchannel:'Data Channel', f1stroll:'Lance Stroll'};
     const key = title.replace(/[\s_-]+/g, '').toLowerCase();
     if (names[key]) title = names[key];
   }
