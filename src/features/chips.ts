@@ -3,6 +3,7 @@
    nothing: most visitors never see a snapshot field they would use. */
 import type { StreamSource } from './chip-types';
 import { isStreamRelayUrl } from '../lib/stream-relays';
+import { isDirectStreamfreeSkyUrl } from '../lib/direct-streamfree';
 
 export interface ChipOverrides { [id: string]: { label?: string; url?: string } }
 let previousSignature = '';
@@ -50,7 +51,9 @@ export function applySourceConfig(payload: any, host: {
   const disabled = new Set<string>(Array.isArray(payload?.disabled) ? payload.disabled : []);
   const overrides: ChipOverrides = payload?.overrides || {};
   builtins.forEach(source => {
-    setChip(source, overrides[source.id]);
+    const override = overrides[source.id];
+    // A control-plane override must not turn the direct stripped Sky source into a relay.
+    setChip(source, source.id === 'sky-uk' && override?.url && !isDirectStreamfreeSkyUrl(override.url) ? {...override, url: undefined} : override);
     const relayOverride = source.links.some(link => link.provider === 'custom' && isStreamRelayUrl(link.url));
     source.hidden = payload?.autoStreams === true || disabled.has(source.id) ||
       (payload?.relaysDisabled === true && ((source.stripped && source.id !== 'sky-uk') || relayOverride));

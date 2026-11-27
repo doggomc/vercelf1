@@ -71,11 +71,11 @@ describe('stream source link pools', () => {
     }
   });
 
-  it('puts direct StreamFree Sky first and retains stripped Sky HD', () => {
+  it('defaults to sandboxed direct StreamFree Sky and retains the ordinary source', () => {
     const order = [...block.matchAll(/\{ id: "(sky-[a-z0-9-]+)"/g)].map((m) => m[1]);
-    expect(order[0]).toBe('sky-strmfree');
-    expect(order[1]).toBe('sky-uk');
-    expect(app).toContain('const DEFAULT_SOURCE_ID = "sky-strmfree"');
+    expect(order[0]).toBe('sky-uk');
+    expect(order[1]).toBe('sky-strmfree');
+    expect(app).toContain('const DEFAULT_SOURCE_ID = "sky-uk"');
     expect(block).toContain('https://strmfree.st/embed/racing/skyf11080p');
     expect(order).not.toContain('sky-uhd');
     expect(block).toContain('label: "Sky HD"');
@@ -87,7 +87,8 @@ describe('stream source link pools', () => {
     expect(skyHd).toContain('skyf11080p');
     expect(skyHd).toContain('stripped: true');
     expect(skyHd).not.toContain('skyf12160p');
-    expect(app).toContain('/api/stream/strmfree-embed?variant=');
+    expect(skyHd).toContain('sandboxDirect: true');
+    expect(skyHd).not.toContain('/api/stream/strmfree-embed');
     expect(app).toContain("url.includes('/api/stream/strmfree-embed')");
   });
 

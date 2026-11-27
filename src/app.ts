@@ -1,3 +1,4 @@
+import { isDirectStreamfreeSkyUrl } from './lib/direct-streamfree';
 import { isRacingLapDirect, clearRacingLapIntro, playRacingLapIntro } from './features/racinglap-intro';
 import { sourceChipDisplay, sourceSpecialBadge } from './features/auto-label';
 import { syncSourceSelection } from './features/source-selection';
@@ -524,7 +525,7 @@ function mirrorLinks(key: string, quality: number): StreamLink[] {
 }
 
 /* What plays on load and on "jump to live"; if Race Control disables it, the first enabled source. */
-const DEFAULT_SOURCE_ID = "sky-strmfree";
+const DEFAULT_SOURCE_ID = "sky-uk";
 
 /* The embdlol feeds we draw a chip for; labels and languages are keyed below. */
 /* embdlol publishes ONE English F1 channel at a time, and fmexicofullhd1/3 are two names for it, so
@@ -590,15 +591,6 @@ const STRIPPED_SPECIAL_SOURCES: StreamSource[] = SPECIALS.map(([label, weelo, sp
   links: [],
 }));
 
-function strmfreeStrippedEmbedUrl(
-  variant: 'skyf11080p' | 'skyf1',
-  host: 'strmfree.st' | 'streamfree.top' = 'strmfree.st',
-  apiBase = STREAM_API,
-): string {
-  const base = String(apiBase || '').replace(/\/+$/, '');
-  return `${base}/api/stream/strmfree-embed?variant=${encodeURIComponent(variant)}&host=${encodeURIComponent(host)}`;
-}
-
 function ppvStrippedEmbedUrl(slug: string, host = 'taifood-blog.asia', apiBase = STREAM_API): string {
   const cleanSlug = String(slug || '').trim().replace(/^\/+|\/+$/g, '');
   if (!cleanSlug || /540p/i.test(cleanSlug) || !/^[A-Za-z0-9/_-]{3,160}$/.test(cleanSlug)) return '';
@@ -621,37 +613,22 @@ function toStrippedPpvEmbedUrl(rawUrl: string, apiBase = STREAM_API): string {
   }
 }
 
-function toStrippedStrmfreeLinkUrl(rawUrl: string): string {
-  try {
-    const parsed = new URL(String(rawUrl || '').trim());
-    const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
-    if (host !== 'strmfree.st' && host !== 'streamfree.top') return '';
-    const slug = (parsed.pathname.split('/').filter(Boolean).pop() || '').toLowerCase();
-    if (/2160p|540p/.test(slug)) return '';
-    const variant: 'skyf11080p' | 'skyf1' = slug === 'skyf1' ? 'skyf1' : 'skyf11080p';
-    return strmfreeStrippedEmbedUrl(variant, host);
-  } catch {
-    return '';
-  }
-}
-
 /* ═══ The source list ═══
    Every link here was verified by probe: strmfree/streamfree pages answer 200 with a live player
    shell, cdnlivetv reports channel status, taifood ids come from the live manifests. Anything
    below 720p (taifood's _540p tier, embdlol's 720p German channel) is deliberately absent. */
 const sources: StreamSource[] = [
-  /* Direct StreamFree Sky F1 is the default; retain the separate stripped chip below. */
+  /* The default stripped player is a direct provider iframe with browser sandboxing.
+     It never uses Render; keep the ordinary unsandboxed player as a separate fallback. */
+  { id: "sky-uk", label: "Sky HD", stripped: true, sandboxDirect: true, links: [
+      { provider: 'strmfree', quality: 1080, url: 'https://strmfree.st/embed/racing/skyf11080p' },
+      { provider: 'strmfree', quality: 1080, url: 'https://streamfree.top/embed/racing/skyf11080p' },
+      { provider: 'strmfree', quality: 1080, url: 'https://strmfree.st/embed/racing/skyf1' },
+      { provider: 'strmfree', quality: 1080, url: 'https://streamfree.top/embed/racing/skyf1' }
+  ]},
   { id: "sky-strmfree", label: "Sky Sports F1 (StreamFree)", links: [
       { provider: 'strmfree', quality: 1080, url: 'https://strmfree.st/embed/racing/skyf11080p' },
       { provider: 'strmfree', quality: 1080, url: 'https://streamfree.top/embed/racing/skyf11080p' }
-  ]},
-  /* Main channel: stripped 1080p strmfree across both mirror domains, with automatic server-side
-     ad/popunder removal and lightweight playlist token relay. */
-  { id: "sky-uk", label: "Sky HD", stripped: true, links: [
-      { provider: 'strmfree', quality: 1080, url: strmfreeStrippedEmbedUrl('skyf11080p', 'strmfree.st') },
-      { provider: 'strmfree', quality: 1080, url: strmfreeStrippedEmbedUrl('skyf11080p', 'streamfree.top') },
-      { provider: 'strmfree', quality: 1080, url: strmfreeStrippedEmbedUrl('skyf1', 'strmfree.st') },
-      { provider: 'strmfree', quality: 1080, url: strmfreeStrippedEmbedUrl('skyf1', 'streamfree.top') }
   ]},
   /* embdlol channels. Their ids rotate, so the address is resolved from the catalogue at play
      time and the pool is replaced with every F1 channel it lists (see linkPool). */
@@ -806,6 +783,10 @@ function stampSession(url: string, key = sessionKey()): string {
 
 /* The main source, unless Race Control has switched it off - then the first enabled one. */
 function preferredSourceIndex() {
+  // In Auto-Streams mode built-ins are hidden; prefer the sandboxed Sky F1
+  // entry if discovered, without overriding an already-selected usable feed.
+  const automaticSky = sources.findIndex(s => s.managedAuto && s.autoProvider === 'strmfree' && s.sandboxDirect && isDirectStreamfreeSkyUrl(s.links?.[0]?.url) && sourceEnabled(s));
+  if (automaticSky >= 0) return automaticSky;
   const main = sources.findIndex((s) => s.id === DEFAULT_SOURCE_ID);
   if (main >= 0 && sourceEnabled(sources[main])) return main;
   return Math.max(0, sources.findIndex(sourceEnabled));
@@ -1084,28 +1065,11 @@ function linkPool(index: number): string[] {
   const key = sessionKey();
   let links = source.links.slice();
 
-  // Use the provider's direct published 1080p mirrors before the known direct fallback.
-  if (source.id === 'sky-strmfree') {
-    const direct = mirrorLinks('skyf1', 1080).filter(mirror => {
-      try { const u = new URL(mirror.url || ''); return u.protocol === 'https:' && !u.username && !u.password && !u.port && ['strmfree.st', 'streamfree.top'].includes(u.hostname) && u.pathname.startsWith('/embed/'); } catch { return false; }
-    });
+  // Both Sky variants use only validated direct provider URLs; sandboxing is
+  // attached to the stripped source when its iframe is created.
+  if (source.id === 'sky-strmfree' || source.id === 'sky-uk') {
+    const direct = mirrorLinks('skyf1', 1080).filter(mirror => isDirectStreamfreeSkyUrl(mirror.url));
     links = [...direct, ...links.filter(link => !direct.some(mirror => mirror.url === link.url))];
-  }
-
-  /* Published mirrors first (they are the addresses the provider itself calls live), mapped through
-     the stripped strmfree relay, then the static stripped list. */
-  if (source.id === 'sky-uk' && relaysDisabled) {
-    return ['https://strmfree.st/embed/racing/skyf11080p', 'https://streamfree.top/embed/racing/skyf11080p'].map(url => stampSession(url, key));
-  }
-  if (source.id === 'sky-uk') {
-    const strippedMirrors: StreamLink[] = [];
-    for (const m of mirrorLinks('skyf1', 1080)) {
-      const strippedUrl = m.url ? toStrippedStrmfreeLinkUrl(m.url) : '';
-      if (strippedUrl && !strippedMirrors.some((x) => x.url === strippedUrl)) {
-        strippedMirrors.push({ provider: 'strmfree', quality: 1080, url: strippedUrl });
-      }
-    }
-    links = [...strippedMirrors, ...links.filter((link) => link.quality === 1080 && !strippedMirrors.some((m) => m.url === link.url))];
   }
 
   /* Weelo links are synced from weellz.live every 3 minutes (primary beta?stream=... plus any
@@ -1405,7 +1369,7 @@ function updateHeader() {
     const display = displaySource(src);
     const parts = [display.title];
     if (display.quality) parts.push(display.quality);
-    if (src.stripped && !(relaysDisabled && src.id === 'sky-uk')) parts.push('Stripped');
+    if (src.stripped) parts.push('Stripped');
     sourceLabel.textContent = parts.join(' · ');
   }
   if (badgeEl) badgeEl.style.display = isStreamAvailable(currentSession) ? "inline-flex" : "none";
@@ -1727,7 +1691,7 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
       tag.textContent = '4K';
       b.appendChild(tag);
     }
-    if (s.stripped && !(relaysDisabled && s.id === 'sky-uk')) {
+    if (s.stripped) {
       const strippedTag = document.createElement('span');
       strippedTag.className = 'src-pill-tag is-stripped';
       strippedTag.textContent = 'Stripped';
