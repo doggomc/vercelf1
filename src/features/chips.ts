@@ -77,7 +77,10 @@ export function applySourceConfig(payload: any, host: {
   const combined = [...builtins, ...custom, ...automatic];
   const rank = new Map<string, number>((Array.isArray(payload?.order) ? payload.order : []).map((id: string, i: number) => [id, i]));
   const baseline = new Map((defaultOrder.get(host.sources) || []).map((id, index) => [id, index]));
-  combined.sort((a,b) => (rank.get(a.id) ?? 1e6) - (rank.get(b.id) ?? 1e6) || (baseline.get(a.id) ?? 1e6) - (baseline.get(b.id) ?? 1e6));
+  // The manual Sky StreamFree is the main source, even if an older saved
+  // Race Control order predates it. Preserve the order of all other sources.
+  const mainRank = (source: StreamSource) => !payload?.autoStreams && source.id === 'sky-strmfree' ? 0 : 1;
+  combined.sort((a,b) => mainRank(a) - mainRank(b) || (rank.get(a.id) ?? 1e6) - (rank.get(b.id) ?? 1e6) || (baseline.get(a.id) ?? 1e6) - (baseline.get(b.id) ?? 1e6));
   host.sources.splice(0, host.sources.length, ...combined);
   const index = combined.findIndex(source => source.id === previousId);
   host.setCurrent(index);

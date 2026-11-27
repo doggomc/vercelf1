@@ -89,3 +89,17 @@ it('preserves RacingLap session information and direct same-feed backup players'
   expect(sources[0].eventStart).toBe(123456789);
   expect(sources[0].links.map(link=>link.url)).toEqual([url,backup]);
 });
+
+it('pins manual StreamFree first even when an older saved order places it last', () => {
+  const sources: StreamSource[] = [
+    {id:'sky-strmfree',label:'Sky',stripped:true,sandboxDirect:true,links:[{provider:'strmfree',url:'https://strmfree.st/embed/racing/skyf11080p'}]},
+    {id:'emb-one',label:'EMB',links:[{provider:'embdlol',url:'https://embdlol.st/embed/test'}]},
+    {id:'ppv',label:'PPV',links:[{provider:'ppv',url:'https://example.test'}]},
+  ];
+  let current=1, reloads=0;
+  const host={sources,current:()=>current,setCurrent:(i:number)=>{current=i},usable:(s:StreamSource|undefined)=>!!s&&!s.hidden,normalize:()=>{current=sources.findIndex(s=>!s.hidden)},render:()=>{},reload:()=>{reloads++}};
+  applySourceConfig({autoStreams:false,disabled:[],order:['ppv','emb-one','sky-strmfree']},host);
+  expect(sources.map(s=>s.id)).toEqual(['sky-strmfree','ppv','emb-one']);
+  expect(sources[current].id).toBe('emb-one');
+  expect(reloads).toBe(0);
+});
