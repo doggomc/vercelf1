@@ -2493,9 +2493,9 @@ async function refreshAutoStreams() {
     autoWindowState = window.active ? 'active' : window.reason === 'schedule-unavailable' ? 'unavailable' : 'closed';
     autoWindowStart = Number.isFinite(window.start) ? window.start : null;
     if (window.active) {
-      const hosts: Record<string, string[]> = { weelo: ['weellz.live'], ppv: ['taifood-blog.asia'], strmfree: ['strmfree.st', 'streamfree.top'], embdlol: ['embdlol.st'], bintv: ['bintv-sources.pages.dev'], cdnlive: ['cdnlivetv.tv'], wikisport: ['siempreon.shop', 'taifood-blog.asia', 'embedsports.me', 'tvpclive.com'] };
+      const hosts: Record<string, string[]> = { weelo: ['weellz.live'], ppv: ['taifood-blog.asia'], strmfree: ['strmfree.st', 'streamfree.top'], embdlol: ['embdlol.st'], bintv: ['bintv-sources.pages.dev'], timstreams: ['shoewiki.click'], cdnlive: ['cdnlivetv.tv'], wikisport: ['siempreon.shop', 'taifood-blog.asia', 'embedsports.me', 'tvpclive.com'] };
       const nextEntries = (Array.isArray(json.streams) ? json.streams : []).slice(0, 200).filter((row: any) => {
-        if (!row || !/^auto-(weelo|ppv|strmfree|embdlol|bintv|cdnlive|wikisport)-[a-f0-9]{16}$/.test(row.id) || typeof row.label !== 'string' || !hosts[row.provider]) return false;
+        if (!row || !/^auto-(weelo|ppv|strmfree|embdlol|bintv|timstreams|cdnlive|wikisport)-[a-f0-9]{16}$/.test(row.id) || typeof row.label !== 'string' || !hosts[row.provider]) return false;
         try {
           const url = new URL(row.url);
           if (url.protocol !== 'https:' || url.username || url.password || url.port || !hosts[row.provider].includes(url.hostname)) return false;
@@ -2507,6 +2507,7 @@ async function refreshAutoStreams() {
             const player = new URL(decoded);
             return player.protocol === 'https:' && ['ehgembxe.cfd', 'shoewiki.click'].includes(player.hostname) && !player.username && !player.password && !player.port && !player.search && !player.hash && /^\/bintv\/[a-z0-9-]{1,160}$/i.test(player.pathname);
           }
+          if (row.provider === 'timstreams') return !url.search && !url.hash && /^\/[a-z0-9-]{1,160}$/i.test(url.pathname);
           if (row.provider === 'cdnlive') return url.pathname === '/api/v1/channels/player/' && ['Sky Sports F1 FHD UK', 'DAZN F1 FHD'].includes(url.searchParams.get('name') || '');
           if (row.provider === 'wikisport') return (url.hostname === 'siempreon.shop' && url.pathname === '/fslivepro.php') || (url.hostname === 'taifood-blog.asia' && /^\/embed\/[a-z0-9_/%-]+$/i.test(url.pathname)) || (url.hostname === 'embedsports.me' && /^\/streams\/[a-z0-9_-]+$/i.test(url.pathname)) || (url.hostname === 'tvpclive.com' && /^\/embed\/stream-[0-9]+\.php$/i.test(url.pathname));
           return true;
