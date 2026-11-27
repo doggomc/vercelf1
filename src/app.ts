@@ -1562,10 +1562,11 @@ async function handleResetRequest() {
   location.replace(clean);
 }
 
-/* A chip only counts as English when it says so; anything unlabelled shows under All, where no
-   language is promised. */
-/* An unlabelled chip is English by default; only a chip that says 'other' leaves the tab. */
-const inTab = (s: StreamSource, tab = sourceTab) => tab === 'all' || (s.lang || 'en') === (tab === 'en' ? 'en' : 'other');
+// RacingLap's onboard audio is described as 'Team Radio', not a language. Keep these
+// cameras visible in both language tabs without asserting what language their radio uses.
+const inTab = (s: StreamSource, tab = sourceTab) => tab === 'all' ||
+  (s.managedAuto && s.autoProvider === 'weelo' && s.special === 'onboard') ||
+  (s.lang || 'en') === (tab === 'en' ? 'en' : 'other');
 
 /* weelo says 'online' or 'soon' for a feed worth opening; 'offline' and 'dark' are not. */
 /* weelo's event feed names the live ids for the current race; its status map is a stale cache that

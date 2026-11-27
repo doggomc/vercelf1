@@ -29,6 +29,19 @@ describe('auto discovery schedule',()=>{
     expect(ctx.accepted).toHaveLength(1);
     expect(ctx.accepted[0].label).toBe('Sky Sports F1');
   });
+  it('shows RacingLap team-radio onboards in both language tabs without changing their metadata',()=>{
+    const start=app.indexOf('const inTab = (s: StreamSource');
+    const end=app.indexOf('\n',app.indexOf("(s.lang || 'en') ===",start));
+    const block=app.slice(start,end);
+    const ctx:any={sourceTab:'en'};
+    runInNewContext(ts.transpile(block+';globalThis.inTab=inTab;', {target:ts.ScriptTarget.ES2022}),ctx);
+    const onboard={managedAuto:true,autoProvider:'weelo',special:'onboard',lang:'other'};
+    expect(ctx.inTab(onboard,'en')).toBe(true);
+    expect(ctx.inTab(onboard,'other')).toBe(true);
+    expect(onboard.lang).toBe('other');
+    expect(ctx.inTab({managedAuto:true,autoProvider:'weelo',lang:'other'},'en')).toBe(false);
+    expect(ctx.inTab({managedAuto:true,autoProvider:'embdlol',special:'onboard',lang:'other'},'en')).toBe(false);
+  });
   it('keeps hidden manual feeds out of the multiviewer',()=>{
     expect(mv).toContain('(s.weelo || s.weellzUrls?.length) && !s.hidden');
   });
