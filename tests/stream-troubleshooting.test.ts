@@ -18,3 +18,9 @@ describe('stream troubleshooting guide', () => {
     expect(help).toContain('DO NOT OPEN IT AND GO TO OUR WEBSITE');
   });
 });
+
+it('smoothly scrolls help-page links while respecting reduced motion', () => {
+  const css = readFileSync(new URL('../src/styles/help.css', import.meta.url), 'utf8');
+  expect(css).toMatch(/html\s*\{\s*scroll-behavior:\s*smooth/);
+  expect(css).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*?html\s*\{\s*scroll-behavior:\s*auto/);
+});

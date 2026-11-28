@@ -1249,3 +1249,7 @@ body[data-page="help"] .help-footer-note { margin:14px 8px 0; }
 @media (max-width:900px) { body[data-page="help"] .help-main { grid-template-columns:minmax(0,1fr); max-width:760px; } .help-hero { min-height:240px; } .help-hero-art { width:30%; } }
 @media (max-width:600px) { body[data-page="help"] .help-main { gap:14px; margin-top:20px; padding-inline:14px; } .help-hero { min-height:0; padding:27px 23px 25px; border-radius:18px; } .help-hero h1 { font-size:39px; } .help-hero-art { display:none; } .help-hero-actions a { flex:1 1 auto; } body[data-page="help"] .stream-guide, body[data-page="help"] .help-card { border-radius:16px; padding:22px 18px; } body[data-page="help"] .stream-guide-quick > div { min-height:0; } }
 @media (prefers-reduced-motion:reduce) { .help-hero-actions a { transition:none; } }
+
+/* Animate in-page jumps, unless the visitor asks for reduced motion. */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
