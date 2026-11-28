@@ -7064,3 +7064,21 @@ body[data-page="cockpit"] #watch .side-others-links a span { color:#a4a6af; }
 .source-quality-switch button { border: 0; border-radius: 6px; padding: 6px 8px; color: #c8cbd2; background: transparent; font: 700 10px Inter, system-ui, sans-serif; cursor: pointer; }
 .source-quality-switch button[aria-pressed="true"] { color: #fff; background: #ffffff30; }
 .source-quality-switch button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* Keep a stream and its quality controls together when the source list wraps. */
+.wsource-list .source-choice { display: inline-flex; align-items: center; max-width: 100%; min-width: 0; gap: 4px; padding: 3px; border-radius: 12px; background: #ffffff08; box-shadow: inset 0 0 0 1px #ffffff16; }
+.wsource-list .source-choice > button.chip { min-width: 0; flex: 0 1 auto; overflow: hidden; }
+.wsource-list .source-choice .src-pill-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.wsource-list .source-choice .source-quality-switch { flex: 0 0 auto; background: transparent; padding: 2px; }
+
+/* Match the ordinary cockpit chip styles inside the paired quality control. */
+body[data-page="cockpit"] #watch .wsource-list .source-choice > button.chip {
+  display: inline-flex; align-items: center; gap: 7px; width: auto; min-height: 38px; height: auto;
+  padding: 6px 13px; border: 0; border-radius: 10px; background: #ffffff08;
+  box-shadow: inset 0 0 0 1px #ffffff19; color: var(--rr-fg);
+  font: 600 13px/1.15 'Inter', system-ui, sans-serif; letter-spacing: 0; text-transform: none; text-align: left; white-space: nowrap;
+  transition: background-color .18s var(--ease), color .18s var(--ease), box-shadow .18s var(--ease);
+}
+body[data-page="cockpit"] #watch .wsource-list .source-choice > button.chip:hover { background: #ffffff13; color: #fff; box-shadow: inset 0 0 0 1px #ffffff38; }
+body[data-page="cockpit"] #watch .wsource-list .source-choice > button.chip.active { background: color-mix(in srgb, var(--team, #e10600) 15%, #1a1b1e); color: #fff; box-shadow: inset 0 0 0 1px var(--team, #e10600); }
+body[data-page="cockpit"] #watch .wsource-list .source-choice > button.chip::after { display: none; }

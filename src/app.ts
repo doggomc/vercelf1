@@ -1710,7 +1710,7 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     }
 
 
-    if (display.quality) {
+    if (display.quality && !s.sdUrl) {
       const subSpan = document.createElement('span');
       subSpan.className = 'src-pill-sub';
       subSpan.textContent = display.quality;
@@ -1747,8 +1747,10 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
 
   const appendSource = (i: number) => {
     const source = sources[i];
-    linksEl.appendChild(chipFor(source, i));
-    if (!source.sdUrl) return;
+    if (!source.sdUrl) { linksEl.appendChild(chipFor(source, i)); return; }
+    const choice = document.createElement('div');
+    choice.className = 'source-choice';
+    choice.appendChild(chipFor(source, i));
     const group = document.createElement('span');
     group.className = 'source-quality-switch';
     group.setAttribute('role', 'group');
@@ -1769,7 +1771,8 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
       };
       group.appendChild(button);
     }
-    linksEl.appendChild(group);
+    choice.appendChild(group);
+    linksEl.appendChild(choice);
   };
 
   const main = visible.filter(i => !sources[i].special && sourceTier(sources[i]) === 'main');
