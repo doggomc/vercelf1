@@ -54,6 +54,19 @@
   </nav>
 
   <main class="help-main" id="main">
+    <header class="help-hero">
+      <div class="help-hero-copy">
+        <div class="help-hero-kicker"><span></span> FREEF1 / SUPPORT CENTRE</div>
+        <h1>Let’s get you<br><em>back on track.</em></h1>
+        <p>Quick fixes, helpful answers, and a direct line to our team when you need it.</p>
+        <div class="help-hero-actions"><a class="help-hero-primary" href="#streams-help">Troubleshoot a stream <span aria-hidden="true">↘</span></a><a class="help-hero-secondary" href="#help-desk">Contact support <span aria-hidden="true">↘</span></a></div>
+      </div>
+      <div class="help-hero-art" aria-hidden="true">
+        <div class="help-hero-grid"></div>
+        <svg viewBox="0 0 380 200" fill="none"><path d="M26 149h40c14 0 16-7 23-19l27-47c8-14 14-18 32-18h35c16 0 20 6 25 19l8 23c5 14 12 20 26 20h31c15 0 19-6 26-18l28-48c6-11 12-15 25-15h10" stroke="currentColor" stroke-width="2" opacity=".42"/><path d="M26 149h40c14 0 16-7 23-19l27-47c8-14 14-18 32-18h35" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><circle cx="183" cy="65" r="6" fill="currentColor"/><circle cx="183" cy="65" r="13" stroke="currentColor" opacity=".3"/></svg>
+        <span class="help-art-label">SUPPORT / 01 <b>●</b> READY TO HELP</span>
+      </div>
+    </header>
     <section class="stream-guide" id="streams-help" aria-labelledby="streamGuideTitle">
       <div class="stream-guide-kicker"><span aria-hidden="true"></span> PLAYBACK SUPPORT</div>
       <h2 id="streamGuideTitle">Streams not working?</h2>
@@ -128,11 +141,12 @@
         </details>
         <details>
           <summary>Still not working? Contact support</summary>
-          <div class="guide-answer"><p>Use the support form below and choose <strong>Playback issue</strong>. Tell us the event and session, source name, whether you chose HD or SD, device, browser, approximate time, the error or symptoms, and what you tried. Mention whether another source or network works.</p><p>Do not send passwords, VPN credentials, payment details, cookies, IP addresses or private/signed stream URLs. The optional diagnostics checkbox in the form explains exactly what basic device information is sent.</p><a class="guide-contact" href="#helpTitle">Open the support form ↓</a></div>
+          <div class="guide-answer"><p>Use the support form below and choose <strong>Playback issue</strong>. Tell us the event and session, source name, whether you chose HD or SD, device, browser, approximate time, the error or symptoms, and what you tried. Mention whether another source or network works.</p><p>Do not send passwords, VPN credentials, payment details, cookies, IP addresses or private/signed stream URLs. The optional diagnostics checkbox in the form explains exactly what basic device information is sent.</p><a class="guide-contact" href="#help-desk">Open the support form ↓</a></div>
         </details>
       </div>
       <p class="stream-guide-foot">Third-party streams can go offline or change without notice. A working internet connection or VPN cannot guarantee a stream is available.</p>
     </section>
+    <div class="help-desk" id="help-desk">
     <section class="help-card" id="helpRequestPanel" aria-labelledby="helpTitle">
       <div class="help-top">
         <div class="help-pill">
@@ -142,7 +156,7 @@
         <span class="help-badge">PRIVATE TICKET</span>
       </div>
 
-      <h1 id="helpTitle">Support &amp; Help Desk</h1>
+      <h2 class="help-card-title" id="helpTitle">Talk to our team.</h2>
       <p class="help-intro">Report a playback, timing, or website issue directly to the FreeF1 team. Your request opens a private support ticket and you can follow replies right on this page.</p>
 
       <div class="help-status" id="helpStatus" role="status" aria-live="polite">Checking support availability…</div>
@@ -207,7 +221,7 @@
             <span class="help-pill-dot" aria-hidden="true"></span>
             <span>Ticket control · Private chat</span>
           </div>
-          <h1 class="ticket-heading" id="ticketHeading">Your support ticket</h1>
+          <h2 class="ticket-heading" id="ticketHeading">Your support ticket</h2>
         </div>
         <span class="ticket-state" id="ticketState">OPEN</span>
       </div>
@@ -241,6 +255,7 @@
     </section>
 
     <p class="help-footer-note">Ticket drafts are saved locally in this browser. If the support service is offline, the rest of FreeF1 and stream playback remain available.</p>
+    </div>
   </main>
 
   <footer class="footer">

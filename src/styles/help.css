@@ -1203,3 +1203,49 @@ body > .nav { view-transition-name: site-nav; }
 .stream-ads-tip a { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
 .stream-ads-tip a:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 .ads-tip-note { margin: 11px 0 0; color: #9a9da5; font-size: 12px; line-height: 1.6; }
+
+/* Help centre / cockpit-inspired layout */
+body[data-page="help"] { background: #0b0c0f; }
+body[data-page="help"] .help-main { width:min(100%,1240px); display:grid; grid-template-columns:minmax(0,1.16fr) minmax(320px,.84fr); gap:20px; align-items:start; margin:clamp(26px,4vw,52px) auto 70px; padding-inline:clamp(18px,4vw,32px); }
+.help-hero { position:relative; grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; min-height:268px; overflow:hidden; padding:clamp(28px,4vw,48px); border:1px solid #ffffff13; border-radius:24px; background:radial-gradient(ellipse 60% 115% at 100% 0%,#8c0b0b2c,transparent 75%),linear-gradient(125deg,#1a1b20,#101114 65%); }
+.help-hero::before { content:''; position:absolute; left:0; top:36px; width:3px; height:62px; background:#e10600; border-radius:0 3px 3px 0; }
+.help-hero-copy { position:relative; z-index:1; max-width:590px; }
+.help-hero-kicker { display:flex; align-items:center; gap:9px; margin-bottom:15px; color:#aaacb4; font:700 10px/1.2 'JetBrains Mono',monospace; letter-spacing:.11em; }
+.help-hero-kicker span { width:7px; height:7px; border-radius:50%; background:#e10600; box-shadow:0 0 14px #e10600b0; }
+.help-hero h1 { margin:0; font:800 clamp(38px,5vw,60px)/.99 Archivo,Inter,sans-serif; letter-spacing:-.055em; color:#f8f8f9; }
+.help-hero h1 em { color:#a6a8b0; font-style:normal; }
+.help-hero-copy > p { margin:15px 0 0; max-width:46ch; color:#a9abb2; font-size:14px; line-height:1.65; }
+.help-hero-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:21px; }
+.help-hero-actions a { display:inline-flex; align-items:center; justify-content:center; gap:12px; min-height:38px; padding:9px 13px; border:1px solid #ffffff1c; border-radius:9px; color:#f5f5f6; font-size:12px; font-weight:700; transition:background .18s,border-color .18s,transform .18s; }
+.help-hero-actions .help-hero-primary { background:#f4f4f5; border-color:#f4f4f5; color:#18191d; }
+.help-hero-actions a:hover { transform:translateY(-2px); border-color:#ffffff70; }
+.help-hero-actions .help-hero-secondary:hover { background:#ffffff0c; }
+.help-hero-actions a:focus-visible { outline:2px solid #fff; outline-offset:4px; }
+.help-hero-art { position:relative; width:34%; max-width:360px; height:180px; flex:none; color:#e43b36; }
+.help-hero-art svg { position:absolute; inset:0; width:100%; height:100%; }
+.help-hero-grid { position:absolute; inset:0; opacity:.4; background-image:linear-gradient(#ffffff0c 1px,transparent 1px),linear-gradient(90deg,#ffffff0c 1px,transparent 1px); background-size:32px 32px; mask-image:linear-gradient(to right,transparent,#000 25%,#000 85%,transparent); }
+.help-art-label { position:absolute; right:8px; bottom:0; color:#8e7476; font:700 9px 'JetBrains Mono',monospace; letter-spacing:.08em; }
+.help-art-label b { margin-left:8px; color:#e43b36; font-size:8px; }
+body[data-page="help"] .stream-guide, body[data-page="help"] .help-card { margin:0; padding:clamp(22px,3vw,32px); border:1px solid #ffffff14; border-radius:20px; background:#15161a; box-shadow:inset 0 1px #ffffff08,0 16px 48px #0003; }
+body[data-page="help"] .stream-guide { min-width:0; scroll-margin-top:86px; }
+body[data-page="help"] .stream-guide h2, .help-card-title, body[data-page="help"] .ticket-heading { margin:0 0 10px; font:750 clamp(24px,2.6vw,31px)/1.1 Archivo,Inter,sans-serif; letter-spacing:-.035em; color:#f7f7f8; }
+body[data-page="help"] .stream-guide-kicker { color:#ed8b87; }
+body[data-page="help"] .stream-guide-quick { gap:9px; margin:22px 0; }
+body[data-page="help"] .stream-guide-quick > div { min-height:86px; padding:14px 12px; background:#1d1e23; border-color:#ffffff0d; }
+body[data-page="help"] .stream-ads-tip { border:1px solid #ffffff14; background:#1b1b20; }
+body[data-page="help"] .stream-guide-details { border:0; display:grid; gap:8px; }
+body[data-page="help"] .stream-guide-details details { border:1px solid #ffffff10; border-radius:12px; background:#1b1c21; overflow:hidden; }
+body[data-page="help"] .stream-guide-details summary { padding:16px 43px 16px 16px; }
+body[data-page="help"] .stream-guide-details summary::after { right:17px; top:12px; }
+body[data-page="help"] .guide-answer { padding:0 16px 18px; }
+body[data-page="help"] .help-desk { min-width:0; scroll-margin-top:86px; }
+body[data-page="help"] .help-top { margin-bottom:20px; }
+body[data-page="help"] .help-pill { background:#e1060014; border-color:#e1060038; }
+body[data-page="help"] .help-intro { color:#a9abb2; font-size:13px; }
+body[data-page="help"] .help-status { border-radius:10px; }
+body[data-page="help"] .help-field input, body[data-page="help"] .help-field select, body[data-page="help"] .help-field textarea, body[data-page="help"] #chatMessage, body[data-page="help"] .select-trigger { border-radius:10px; background:#101115; border-color:#ffffff1c; }
+body[data-page="help"] .help-submit { border-radius:10px; }
+body[data-page="help"] .help-footer-note { margin:14px 8px 0; }
+@media (max-width:900px) { body[data-page="help"] .help-main { grid-template-columns:minmax(0,1fr); max-width:760px; } .help-hero { min-height:240px; } .help-hero-art { width:30%; } }
+@media (max-width:600px) { body[data-page="help"] .help-main { gap:14px; margin-top:20px; padding-inline:14px; } .help-hero { min-height:0; padding:27px 23px 25px; border-radius:18px; } .help-hero h1 { font-size:39px; } .help-hero-art { display:none; } .help-hero-actions a { flex:1 1 auto; } body[data-page="help"] .stream-guide, body[data-page="help"] .help-card { border-radius:16px; padding:22px 18px; } body[data-page="help"] .stream-guide-quick > div { min-height:0; } }
+@media (prefers-reduced-motion:reduce) { .help-hero-actions a { transition:none; } }
