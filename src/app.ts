@@ -1,5 +1,5 @@
 import { isDirectStreamfreeSkyUrl } from './lib/direct-streamfree';
-import { isRacingLapDirect, clearRacingLapIntro, playRacingLapIntro } from './features/racinglap-intro';
+import { requestPlayerAutoplay } from './features/player-autoplay';
 import { sourceChipDisplay, sourceSpecialBadge } from './features/auto-label';
 import { syncSourceSelection } from './features/source-selection';
 import { setCounterContext } from './features/counter-context';
@@ -847,7 +847,6 @@ const freshMints = new Set<string>();
 let currentSource = sources.findIndex((s) => s.id === DEFAULT_SOURCE_ID);
 let activeView = 'home';
 let playerLoadToken = 0;
-let racingLapIntroToken = -1;
 let sessionWindowBlocked = false;
 
 /* Resolve a link to an absolute address for the current session, or '' when it cannot be served.
@@ -1994,7 +1993,6 @@ function switchToNextSource() {
 }
 
 function showNoStream(opts: { blocked?: boolean; title?: string; text?: string; hijack?: boolean; keepFrame?: boolean } = {}) {
-  clearRacingLapIntro(stageBox);
   /* Blocked is the default: the auto-cycling "no session" panel is the one case that opts out. */
   const blocked = opts.blocked !== false;
   const hijack = Boolean(opts && opts.hijack);
@@ -2178,7 +2176,7 @@ function attemptSource(token, order, idx, startedAt, linkIdx = 0, triedDynamic =
   const targetUrl = pool[linkIdx];
   setLoaderText(!idx && !linkIdx ? "Establishing feed…" : idx === order.length - 1 && linkIdx === pool.length - 1 ? "Every feed is unreachable…" : "Switching link…");
 
-  const f = makeStreamIframe(targetUrl, sources[sourceIndex].rp, Boolean(sources[sourceIndex].sandboxDirect), Boolean(sources[sourceIndex].sandboxDirect && sources[sourceIndex].stripped));
+  const f = makeStreamIframe(requestPlayerAutoplay(targetUrl), sources[sourceIndex].rp, Boolean(sources[sourceIndex].sandboxDirect), Boolean(sources[sourceIndex].sandboxDirect && sources[sourceIndex].stripped));
   if (isHakunaCleanPlayer(targetUrl)) f.dataset.hakunaClean = 'true';
   let settled = false;
 
@@ -2245,16 +2243,11 @@ function attemptSource(token, order, idx, startedAt, linkIdx = 0, triedDynamic =
   }, NAV_TIMEOUT_MS);
 
   stageBox?.appendChild(f);
-  // Play at most once per source load; retrying a RacingLap backup keeps the same intro.
-  if (isRacingLapDirect(candidate, targetUrl)) {
-    if (racingLapIntroToken !== token) { racingLapIntroToken = token; playRacingLapIntro(stageBox); }
-  } else clearRacingLapIntro(stageBox);
   resizeHakunaFrame();
   setStreamOnScreen(true);
 }
 
 function load() {
-  clearRacingLapIntro(stageBox);
   const card = $('nowPlayingCard');
   if (card) card.hidden = true;
   const token = ++playerLoadToken;

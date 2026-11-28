@@ -1,4 +1,5 @@
-import { isRacingLapReplay, clearRacingLapIntro, playRacingLapIntro } from '../features/racinglap-intro';
+import { isRacingLapReplay } from '../features/racinglap-intro';
+import { requestPlayerAutoplay } from '../features/player-autoplay';
 import '../interaction-guard';
 import { initShell } from '../ui/shell';
 import { initPageGate } from '../features/page-gate';
@@ -52,9 +53,8 @@ function display(animateGroup?: 'session' | 'feed', restoreFocus = false) {
   $('watchSessionCountdown').textContent=seriesNames[event.series]; $('watchSessionMeta').textContent=`${event.season} · ${event.circuit}`;
   $('loader').hidden=true; $('noStream').classList.remove('visible');
   window.clearTimeout(helpTimer); $('replayHelp').hidden=true;
-  clearRacingLapIntro($('stageBox'));
   $('stageBox').querySelector('iframe')?.remove();
-  if(url){const frame=document.createElement('iframe'); const playerUrl=new URL(url); if (!isRacingLapReplay(url)) playerUrl.searchParams.set('autoplay','1'); frame.src=isRacingLapReplay(url) ? url : playerUrl.href; frame.loading='eager';frame.title=`${event.country} Grand Prix ${session.name}`;frame.allow='autoplay; fullscreen; picture-in-picture; encrypted-media';frame.allowFullscreen=true;frame.referrerPolicy='origin';frame.className='is-ready';$('stageBox').append(frame); if (isRacingLapReplay(url)) playRacingLapIntro($('stageBox')); helpTimer=window.setTimeout(()=>{if(frame.isConnected&&!document.getElementById('partialOutageStage')) $('replayHelp').hidden=false;},12000);}
+  if(url){const frame=document.createElement('iframe'); frame.src=requestPlayerAutoplay(url); frame.loading='eager';frame.title=`${event.country} Grand Prix ${session.name}`;frame.allow='autoplay; fullscreen; picture-in-picture; encrypted-media';frame.allowFullscreen=true;frame.referrerPolicy='origin';frame.className='is-ready';$('stageBox').append(frame); helpTimer=window.setTimeout(()=>{if(frame.isConnected&&!document.getElementById('partialOutageStage')) $('replayHelp').hidden=false;},12000);}
   const controls = $('replayControls');
   const makeGroup = (title: string) => {
     const div = document.createElement('div'); const h = document.createElement('h2'); h.textContent = title;
