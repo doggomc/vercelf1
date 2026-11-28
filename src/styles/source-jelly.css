@@ -2,8 +2,9 @@
    the selected pill's spring from covering adjacent controls on small screens. */
 #watch .wsource-list { gap: 14px; padding: 5px 9px; }
 #watch .wsource-list .special-row { gap: 14px; padding-inline: 9px; }
-#watch .wsource-list > button.chip, #watch .wsource-list .special-row button.chip { border-radius: 18px; }
+#watch .wsource-list > button.chip, #watch .wsource-list .source-choice > button.chip, #watch .wsource-list .special-row button.chip { border-radius: 18px; }
 body[data-page="cockpit"] #watch #links > button.chip.active,
+body[data-page="cockpit"] #watch #links .source-choice > button.chip.active,
 body[data-page="cockpit"] #watch #links .special-row button.chip.active {
   background: #f5f5f5; color: #18181b; box-shadow: none; scale: 1.08;
 }

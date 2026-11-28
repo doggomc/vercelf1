@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { validSdUrl } from '../src/features/source-quality';
 describe('published SD variants', () => {
   it('accepts only same-player PPV 540p variants', () => {
@@ -12,4 +13,9 @@ describe('published SD variants', () => {
     expect(validSdUrl('embdlol','https://embdlol.st/embed/hd','https://evil.test/embed/sd')).toBe('');
     expect(validSdUrl('embdlol','https://embdlol.st/embed/hd','https://embdlol.st/embed/sd?x=1')).toBe('');
   });
+});
+
+it('uses the same white selected source style inside the quality control', () => {
+  const css = readFileSync(new URL('../src/styles/source-jelly.css', import.meta.url), 'utf8');
+  expect(css).toMatch(/#links \.source-choice > button\.chip\.active,[\s\S]*?background:\s*#f5f5f5;\s*color:\s*#18181b/);
 });
