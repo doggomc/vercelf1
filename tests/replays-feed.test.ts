@@ -24,6 +24,12 @@ describe('replays feed', () => {
     expect(qatar.country).toBe('Qatar');
     expect(qatar.sessions.map(s => s.key)).toEqual(expect.arrayContaining(['fp1', 'fp2']));
     expect(qatar.sessions.filter(s => ['fp1','fp2'].includes(s.key)).every(s => s.replay.sources.some(p => p.url.startsWith('https://ok.ru/videoembed/')))).toBe(true);
+    const merged = mergeRacingLap([qatar], archive.racinglap)[0];
+    for (const key of ['fp1', 'fp2']) {
+      const sources = merged.sessions.find(s => s.key === key)!.replay.sources;
+      expect(sources.map(s => s.label)).toEqual(['RacingLap · International Feed', 'RacingLap · F1 TV', 'OK.ru 1080p']);
+    }
+
   });
   it('merges Weellz into matching sessions without duplicates and adds missing sessions', () => {
     const existing = fullRacesEvents([{slug:'race-f1-2026-mexico-city-grand-prix',season:2026,sessionKey:'race',event:'Mexico City',date:'2026-11-01',players:[{provider:'SkySports',url:'https://ok.ru/videoembed/123'}]}]);

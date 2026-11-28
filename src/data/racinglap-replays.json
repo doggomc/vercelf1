@@ -3,6 +3,38 @@
   "items": [
     {
       "season": 2026,
+      "round": 22,
+      "key": "fp2",
+      "id": "6eQDbachxhY",
+      "sources": [
+        {
+          "label": "RacingLap · International Feed",
+          "url": "https://weellz.live/replay?id=6eQDbachxhY"
+        },
+        {
+          "label": "RacingLap · F1 TV",
+          "url": "https://weellz.live/replay?id=6eQDbachxhY-f1tv"
+        }
+      ]
+    },
+    {
+      "season": 2026,
+      "round": 22,
+      "key": "fp1",
+      "id": "ryQhP28jzLf",
+      "sources": [
+        {
+          "label": "RacingLap · International Feed",
+          "url": "https://weellz.live/replay?id=ryQhP28jzLf"
+        },
+        {
+          "label": "RacingLap · F1 TV",
+          "url": "https://weellz.live/replay?id=ryQhP28jzLf-f1tv"
+        }
+      ]
+    },
+    {
+      "season": 2026,
       "round": 21,
       "key": "race",
       "id": "o3zJYS4R97q",

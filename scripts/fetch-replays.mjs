@@ -88,6 +88,33 @@ async function get(url) {
   return response.text();
 }
 
+// Update RacingLap alongside FullRaces, retaining known feeds if its API is unavailable
+// or temporarily omits an older session.
+async function refreshRacingLap() {
+  const path = resolve(here, '../src/data/racinglap-replays.json');
+  const source = 'https://racinglap.net/api/v1/replays.json';
+  try {
+    const data = JSON.parse(await get(source));
+    if (!Array.isArray(data.replays) || !data.replays.length) throw new Error('empty or invalid catalogue');
+    const previous = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')).items : [];
+    const entries = new Map(previous.map(item => [`${item.season}:${item.round}:${item.key}`, item]));
+    const keys = new Set(['fp1', 'fp2', 'fp3', 'sprint-qualifying', 'sprint', 'qualifying', 'race']);
+    for (const replay of data.replays) {
+      if (replay.series?.key !== 'f1' || replay.year !== 2026 || !Number.isInteger(replay.round) || !keys.has(replay.type) || !/^[\w-]+$/.test(replay.id || '') || !Array.isArray(replay.feeds)) continue;
+      const sources = replay.feeds.flatMap(feed => {
+        try {
+          const url = new URL(feed.embed);
+          if (url.protocol !== 'https:' || url.hostname !== 'weellz.live' || url.port || url.username || url.password || url.hash || url.pathname !== '/replay' || !/^[\w-]+$/.test(url.searchParams.get('id') || '')) return [];
+          return [{ label: `RacingLap · ${String(feed.name || 'International Feed').slice(0, 60)}`, url: url.href }];
+        } catch { return []; }
+      });
+      if (sources.length) entries.set(`${replay.year}:${replay.round}:${replay.type}`, {season:replay.year, round:replay.round, key:replay.type, id:replay.id, sources});
+    }
+    writeFileSync(path, JSON.stringify({source, items:[...entries.values()].sort((a,b) => b.season-a.season || b.round-a.round)}, null, 2) + '\n');
+    console.log(`RacingLap: ${entries.size} sessions indexed`);
+  } catch (error) { console.warn(`RacingLap refresh failed; keeping existing index: ${error.message}`); }
+}
+
 function dateFromSlug(slug) {
   const match = slug.match(/-([a-z]+)-(\d{1,2})-(\d{4})-(?:formula|f1)/) || slug.match(/-([a-z]+)-(\d{1,2})-(\d{4})$/);
   if (!match) return null;
@@ -321,6 +348,7 @@ async function main() {
     items
   };
   mkdirSync(dirname(OUT), { recursive: true });
+  await refreshRacingLap();
   writeBrowserIndex(items);
   if (JSON.stringify(items) === JSON.stringify(existing.items || [])) { console.log('No changes to replay index'); return; }
   writeFileSync(OUT, JSON.stringify(payload, null, 1) + '\n');
