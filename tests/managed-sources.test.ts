@@ -112,3 +112,14 @@ it('places discovered Driver Tracker with onboard and pit-wall feeds', () => {
   applySourceConfig({autoStreams:true,autoEntries:[{id:'auto-weelo-abc123',provider:'weelo',label:'Driver Tracker',url:'https://weellz.live/beta?stream=tracker',tab:'en'}]},host);
   expect(sources[0].special).toBe('feed');
 });
+
+
+it('retains only validated SD alternatives for discovered feeds', () => {
+  const sources: StreamSource[] = []; let index = -1;
+  const host = {sources,current:()=>index,setCurrent:(i:number)=>{index=i},usable:(s:StreamSource|undefined)=>!!s,normalize:()=>{index=0},render:()=>{},reload:()=>{}};
+  const item = {id:'auto-ppv-0123456789abcdef',provider:'ppv',label:'F1 Race',url:'https://taifood-blog.asia/embed/f1/race',sdUrl:'https://taifood-blog.asia/embed/f1/race_540p',tab:'en'};
+  applySourceConfig({autoStreams:true,autoEntries:[item]},host);
+  expect(sources[0].sdUrl).toBe(item.sdUrl);
+  applySourceConfig({autoStreams:true,autoEntries:[{...item,sdUrl:'https://evil.test/embed/f1/race_540p'}]},host);
+  expect(sources[0].sdUrl).toBeUndefined();
+});

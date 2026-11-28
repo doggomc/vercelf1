@@ -2,7 +2,7 @@
 type ChipSource = {
   id: string; label: string; managedAuto?: boolean; autoProvider?: string; autoTag?: string;
   special?: string; embdlol?: string; weelo?: string; gated?: boolean; stripped?: boolean;
-  custom?: boolean; managedCustom?: boolean; embDisplayName?: string;
+  custom?: boolean; managedCustom?: boolean; embDisplayName?: string; quality?: 'SD';
   links?: Array<{ provider?: string; quality?: number }>;
 };
 const providers: Record<string, string> = {
@@ -22,7 +22,7 @@ export function sourceChipDisplay(source: ChipSource): {provider: string; title:
   let title = String(source.label || '').trim() || '-';
   let quality = '';
   if (source.managedAuto && providerId === 'ppv') {
-    const match = String(source.autoTag || '').trim().match(/^(HD|FHD|UHD|4K)\s*\|\s*(.+)$/i);
+    const match = String(source.autoTag || '').trim().match(/^(SD|HD|FHD|UHD|4K)\s*\|\s*(.+)$/i);
     if (match) {
       quality = match[1].toUpperCase();
       title = match[2].replace(/^sky sport f1(?=\s*(?:·|$))/i, 'Sky Sports F1').trim();
@@ -41,6 +41,7 @@ export function sourceChipDisplay(source: ChipSource): {provider: string; title:
   }
   // Remove only known provider suffixes; keep real broadcaster details such as (F1TV).
   title = title.replace(/\s*\((?:weelo|racinglap|emb|ppv|streamfree|strmfree|bintv|ehg)\)\s*$/i, '').trim();
+  if (source.quality === 'SD') quality = 'SD';
   const tag = String(source.autoTag || '').trim();
   if (!quality && /^(?:HD|FHD|UHD|4K)$/i.test(tag)) quality = tag.toUpperCase();
   if (!quality && !source.managedAuto) {

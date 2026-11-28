@@ -10,5 +10,6 @@ export interface StreamSource {
   /* Race Control pasted an address for this chip; it is played exactly as given. */
   custom?: boolean;
   managedCustom?: boolean;
+  sdUrl?: string; quality?: 'SD';
   managedAuto?: boolean; autoProvider?: string; autoTag?: string; eventSession?: string; eventStart?: number;
 }

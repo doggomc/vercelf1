@@ -2,6 +2,7 @@
    Loaded the first time a site snapshot arrives, so the editing path costs the startup bundle
    nothing: most visitors never see a snapshot field they would use. */
 import type { StreamSource } from './chip-types';
+import { validSdUrl } from './source-quality';
 import { isStreamRelayUrl } from '../lib/stream-relays';
 import { isDirectStreamfreeSkyUrl } from '../lib/direct-streamfree';
 
@@ -63,6 +64,7 @@ export function applySourceConfig(payload: any, host: {
     const original: StreamSource = {
     id: item.id, label: item.label, lang: item.tab === 'other' ? 'other' : 'en',
     managedAuto: true, autoProvider: item.provider, autoTag: item.tag,
+    sdUrl: validSdUrl(item.provider, item.url, item.sdUrl) || undefined, quality: item.quality === 'SD' ? 'SD' : undefined,
     eventSession: ['bintv','weelo'].includes(item.provider) && typeof item.eventSession === 'string' ? item.eventSession.slice(0,120) : undefined,
     eventStart: item.provider === 'weelo' && Number.isFinite(item.eventStart) ? item.eventStart : undefined,
     weelo: item.provider === 'weelo' ? new URL(item.url).searchParams.get('stream') || undefined : undefined,

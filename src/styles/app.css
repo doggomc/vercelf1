@@ -7056,3 +7056,11 @@ body[data-page="cockpit"] #watch .side-others-links a span { color:#a4a6af; }
   body[data-page="cockpit"] #watch .wplayer-actions-main { flex-wrap:wrap; padding:10px 16px 12px; }
 }
 @media(prefers-reduced-motion:reduce) { body[data-page="cockpit"] #watch .side-others-links a { transition:none; } }
+
+/* Provider headings keep the source list scannable within Main streams. */
+.wsource-list .source-provider-heading { flex-basis: 100%; margin: 10px 0 0; color: var(--rr-fg-3); font: 700 11px Inter, system-ui, sans-serif; letter-spacing: .07em; }
+
+.source-quality-switch { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border-radius: 9px; background: #ffffff0d; }
+.source-quality-switch button { border: 0; border-radius: 6px; padding: 6px 8px; color: #c8cbd2; background: transparent; font: 700 10px Inter, system-ui, sans-serif; cursor: pointer; }
+.source-quality-switch button[aria-pressed="true"] { color: #fff; background: #ffffff30; }
+.source-quality-switch button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }

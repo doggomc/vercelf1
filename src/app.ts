@@ -485,6 +485,7 @@ interface StreamSource {
   /* Race Control's own view of the chip: the shipped name and pool, and the live state. */
   base?: { label: string; links: StreamLink[] };
   hidden?: boolean;
+  sdUrl?: string; quality?: 'SD';
   managedAuto?: boolean; autoProvider?: string; autoTag?: string; eventSession?: string; eventStart?: number;
   custom?: boolean;             // Race Control pasted an address: play it as given, never judge it
 }
@@ -1042,9 +1043,12 @@ function syncWeeloSourcesFromFeed(): boolean {
   return weeloPillSignature() !== before;
 }
 
+const selectedQuality = new Map<string, 'HD' | 'SD'>();
+
 function linkPool(index: number): string[] {
   const source = sources[index];
   if (!source || !sourceEnabled(source)) return [];
+  if (source.sdUrl && selectedQuality.get(source.id) === 'SD') return [source.sdUrl];
   /* A pasted link is the feed; the catalogue below must not overwrite it. */
   const custom = source.links[0]?.provider === 'custom';
   source.custom = custom;
@@ -1741,6 +1745,33 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     return b;
   };
 
+  const appendSource = (i: number) => {
+    const source = sources[i];
+    linksEl.appendChild(chipFor(source, i));
+    if (!source.sdUrl) return;
+    const group = document.createElement('span');
+    group.className = 'source-quality-switch';
+    group.setAttribute('role', 'group');
+    group.setAttribute('aria-label', `${displaySource(source).title} quality`);
+    for (const quality of ['HD', 'SD'] as const) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = quality;
+      button.setAttribute('aria-pressed', String((selectedQuality.get(source.id) || 'HD') === quality));
+      button.onclick = () => {
+        const changed = currentSource !== i || (selectedQuality.get(source.id) || 'HD') !== quality;
+        selectedQuality.set(source.id, quality);
+        if (!changed) return;
+        currentSource = i;
+        renderButtons({quiet: true});
+        updateHeader();
+        load();
+      };
+      group.appendChild(button);
+    }
+    linksEl.appendChild(group);
+  };
+
   const main = visible.filter(i => !sources[i].special && sourceTier(sources[i]) === 'main');
   const specials = visible.filter(i => sources[i].special && sourceTier(sources[i]) === 'main');
   const custom = visible.filter(i => sourceTier(sources[i]) === 'custom');
@@ -1751,7 +1782,22 @@ function renderButtons({ quiet = false }: { quiet?: boolean } = {}) {
     heading.textContent = text;
     linksEl.appendChild(heading);
   };
-  if (main.length) { addHeading('Main streams'); main.forEach(i => linksEl.appendChild(chipFor(sources[i], i))); }
+  if (main.length) {
+    addHeading('Main streams');
+    const providers = ['STREAMFREE', 'PPV', 'RACINGLAP', 'EMB', 'BINTV', 'TIMSTREAMS', 'ZLIVE'];
+    const remaining = main.slice();
+    for (const provider of providers) {
+      const group = remaining.filter(i => displaySource(sources[i]).provider === provider);
+      if (!group.length) continue;
+      const heading = document.createElement('div');
+      heading.className = 'source-provider-heading';
+      heading.textContent = provider === 'TIMSTREAMS' ? 'Timstreams' : provider;
+      linksEl.appendChild(heading);
+      group.forEach(appendSource);
+      for (const i of group) remaining.splice(remaining.indexOf(i), 1);
+    }
+    remaining.forEach(appendSource);
+  }
   if (specials.length) {
     const block = document.createElement('div');
     block.className = 'special-row';
