@@ -15,9 +15,15 @@ describe('replays feed', () => {
   });
   it('includes every indexed 2026 round through 20 and recognises FullRaces practice spellings', () => {
     const events = fullRacesEvents(archive.items);
-    expect(events.filter(e => e.season === 2026).map(e => e.round).sort((a,b) => a-b)).toEqual(Array.from({length:20}, (_, i) => i+1));
+    expect(events.filter(e => e.season === 2026).map(e => e.round)).toEqual(expect.arrayContaining(Array.from({length:20}, (_, i) => i+1)));
     const china = events.find(e => e.season === 2026 && e.round === 2)!;
     expect(china.sessions.map(s => s.key)).toEqual(expect.arrayContaining(['fp1', 'sprint-qualifying']));
+  });
+  it('shows the two published Qatar practice replays in the Qatar weekend', () => {
+    const qatar = fullRacesEvents(archive.items).find(e => e.season === 2026 && e.round === 22)!;
+    expect(qatar.country).toBe('Qatar');
+    expect(qatar.sessions.map(s => s.key)).toEqual(expect.arrayContaining(['fp1', 'fp2']));
+    expect(qatar.sessions.filter(s => ['fp1','fp2'].includes(s.key)).every(s => s.replay.sources.some(p => p.url.startsWith('https://ok.ru/videoembed/')))).toBe(true);
   });
   it('merges Weellz into matching sessions without duplicates and adds missing sessions', () => {
     const existing = fullRacesEvents([{slug:'race-f1-2026-mexico-city-grand-prix',season:2026,sessionKey:'race',event:'Mexico City',date:'2026-11-01',players:[{provider:'SkySports',url:'https://ok.ru/videoembed/123'}]}]);
