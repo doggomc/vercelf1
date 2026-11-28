@@ -19,3 +19,11 @@ it('uses the same white selected source style inside the quality control', () =>
   const css = readFileSync(new URL('../src/styles/source-jelly.css', import.meta.url), 'utf8');
   expect(css).toMatch(/#links \.source-choice > button\.chip\.active,[\s\S]*?background:\s*#f5f5f5;\s*color:\s*#18181b/);
 });
+
+
+it('shows the source dot on standard 4K buttons as well', () => {
+  const css = readFileSync(new URL('../src/styles/app.css', import.meta.url), 'utf8');
+  const jelly = readFileSync(new URL('../src/styles/source-jelly.css', import.meta.url), 'utf8');
+  expect(css).toContain('.wsource-list button.chip:not(.chip-special)::before');
+  expect(jelly).toContain('.wsource-list button.chip.active:not(.chip-special)::before');
+});

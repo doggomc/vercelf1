@@ -5434,7 +5434,7 @@ body[data-page="cockpit"] footer.footer { margin-top: 0; }
 }
 
 /* A quiet lead dot on standard broadcaster pills, lit in the active team accent when playing. */
-.wsource-list button.chip:not(.chip-special):not(.has-tag)::before {
+.wsource-list button.chip:not(.chip-special)::before {
   content: '';
   flex: none;
   width: 6px;
@@ -5444,7 +5444,7 @@ body[data-page="cockpit"] footer.footer { margin-top: 0; }
   transition: background-color .2s var(--ease), box-shadow .2s var(--ease);
 }
 
-.wsource-list button.chip.active:not(.chip-special):not(.has-tag)::before {
+.wsource-list button.chip.active:not(.chip-special)::before {
   background: var(--team, #e10600);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--team, #e10600) 28%, transparent);
 }
