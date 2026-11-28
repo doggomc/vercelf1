@@ -13,5 +13,8 @@ describe('stream troubleshooting guide', () => {
     expect(help).toContain('7 Mbps'); expect(help).toContain('14 Mbps');
     expect(help).toContain('not guaranteed'); expect(help).toContain('Stripped StreamFree');
     expect(help).toContain('locally stored support-ticket access key');
+    expect(help).toContain('https://brave.com/download/');
+    expect(help).toContain('HOW TO NOT REMOVE THEM');
+    expect(help).toContain('DO NOT OPEN IT AND GO TO OUR WEBSITE');
   });
 });

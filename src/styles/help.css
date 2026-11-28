@@ -1191,3 +1191,15 @@ body > .nav { view-transition-name: site-nav; }
 .guide-contact { margin-top:14px; }
 .stream-guide-foot { margin:16px 0 0; color:#8f929b; font-size:12px; line-height:1.6; }
 @media(max-width:600px) { .stream-guide-quick { grid-template-columns:1fr; } .stream-guide-quick > div { padding:10px 12px; } .stream-guide-quick small { margin-top:2px; } }
+
+/* A playful note without promising that every third-party ad can be blocked. */
+.stream-ads-tip { margin: 0 0 22px; padding: 19px 20px; border: 1px solid #ffffff1a; border-radius: 14px; background: linear-gradient(120deg,#ffffff0b,#ffffff04); }
+.ads-tip-label { color: #ff8b86; font: 700 10px 'JetBrains Mono',monospace; letter-spacing: .1em; }
+.stream-ads-tip h3 { margin: 8px 0 4px; color: #fff; font: 700 19px/1.2 Archivo,Inter,sans-serif; letter-spacing: -.02em; }
+.ads-tip-subtitle { color: #c4c5cb; font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+.stream-ads-tip ol { margin: 13px 0 0; padding-left: 20px; color: #e9e9ec; font-size: 12px; line-height: 1.7; }
+.stream-ads-tip li + li { margin-top: 5px; }
+.stream-ads-tip li::marker { color: #f07873; font-weight: 800; }
+.stream-ads-tip a { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.stream-ads-tip a:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.ads-tip-note { margin: 11px 0 0; color: #9a9da5; font-size: 12px; line-height: 1.6; }
