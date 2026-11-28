@@ -3,6 +3,8 @@ import { BACKEND_API } from './config';
 import './interaction-guard';
 import type { HelpResponse } from "./types/help";
 import { $ } from './services/dom';
+import { initHelpAccordions } from './features/help-accordions';
+initHelpAccordions();
 (() => {
   'use strict';
 

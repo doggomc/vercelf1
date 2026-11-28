@@ -24,3 +24,12 @@ it('smoothly scrolls help-page links while respecting reduced motion', () => {
   expect(css).toMatch(/html\s*\{\s*scroll-behavior:\s*smooth/);
   expect(css).toMatch(/prefers-reduced-motion:\s*reduce[\s\S]*?html\s*\{\s*scroll-behavior:\s*auto/);
 });
+
+it('keeps native disclosure controls and respects reduced motion when animating', () => {
+  const animation = readFileSync(new URL('../src/features/help-accordions.ts', import.meta.url), 'utf8');
+  expect(animation).toContain("prefers-reduced-motion: reduce");
+  expect(animation).toContain('details.animate');
+  expect(animation).toContain('details.open = targetOpen');
+  expect(help).toContain('<details open>');
+  expect(help).toContain('class="diagnostics-details"');
+});
