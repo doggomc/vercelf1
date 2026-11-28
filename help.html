@@ -54,6 +54,75 @@
   </nav>
 
   <main class="help-main" id="main">
+    <section class="stream-guide" id="streams-help" aria-labelledby="streamGuideTitle">
+      <div class="stream-guide-kicker"><span aria-hidden="true"></span> PLAYBACK SUPPORT</div>
+      <h2 id="streamGuideTitle">Streams not working?</h2>
+      <p class="stream-guide-lead">A blank player, buffering or missing sound? Start here. Streams come from independent providers, so the cause can be your connection, your device, or the provider itself.</p>
+      <div class="stream-guide-quick" aria-label="Quick checks">
+        <div><b>01</b><span><strong>Try another source</strong><small>The provider may be offline.</small></span></div>
+        <div><b>02</b><span><strong>Check your connection</strong><small>Try another network or WARP.</small></span></div>
+        <div><b>03</b><span><strong>Use HD or SD</strong><small>Choose SD if the connection struggles.</small></span></div>
+      </div>
+      <div class="stream-guide-details">
+        <details open>
+          <summary>Blank or white player? Try WARP</summary>
+          <div class="guide-answer">
+            <p>A white or blank player can mean your network, ISP, DNS, browser or an extension cannot reach the stream provider. It can also be an unavailable provider or an incompatible player. First try another source, then switch between Wi-Fi and mobile data if you can.</p>
+            <p><strong>Cloudflare WARP</strong> is a free connection option that may help with some network or routing issues. It is not guaranteed to fix playback, and it does not let you choose a country like many VPNs. A trusted VPN is another option; try disconnecting an existing VPN as well, since it can sometimes cause problems.</p>
+            <ol><li>Install WARP from an official link below.</li><li>Open the app, complete setup and allow the VPN/connection permission when prompted.</li><li>Choose <strong>WARP</strong> mode and connect. DNS-only 1.1.1.1 mode is not the same as WARP.</li><li>Return to FreeF1, refresh the page and try your stream again. If it gets worse, disconnect and compare.</li></ol>
+            <div class="warp-links" aria-label="Official Cloudflare WARP downloads">
+              <a href="https://1111-releases.cloudflareclient.com/win/latest" target="_blank" rel="noopener noreferrer">Windows <span aria-hidden="true">↗</span></a>
+              <a href="https://1111-releases.cloudflareclient.com/mac/latest" target="_blank" rel="noopener noreferrer">macOS <span aria-hidden="true">↗</span></a>
+              <a href="https://play.google.com/store/apps/details?id=com.cloudflare.onedotonedotonedotone" target="_blank" rel="noopener noreferrer">Android <span aria-hidden="true">↗</span></a>
+              <a href="https://apps.apple.com/us/app/id1423538627" target="_blank" rel="noopener noreferrer">iPhone &amp; iPad <span aria-hidden="true">↗</span></a>
+              <a href="https://pkg.cloudflareclient.com/" target="_blank" rel="noopener noreferrer">Linux <span aria-hidden="true">↗</span></a>
+            </div>
+            <p class="guide-note">Official downloads from Cloudflare and the app stores. Device support and availability vary; see <a href="https://developers.cloudflare.com/warp-client/get-started/" target="_blank" rel="noopener noreferrer">Cloudflare’s requirements</a>. On a work, school or public network, follow its policies; you may need to sign in to Wi-Fi before connecting.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Buffering, freezing or poor quality</summary>
+          <div class="guide-answer">
+            <p>As a practical starting point, aim for a steady <strong>7 Mbps download for HD</strong> and <strong>14 Mbps for UHD / 4K</strong>, per stream. Actual needs vary by provider and bitrate; allow extra headroom, especially for multiple screens or other people using your connection.</p>
+            <ol><li>Run a <a href="https://speed.cloudflare.com/" target="_blank" rel="noopener noreferrer">connection speed test</a> on the device you are watching on. A high peak speed does not guarantee a stable connection.</li><li>Choose <strong>SD</strong> if the source offers an HD/SD switch. Close unused streams or multiview tiles and pause large downloads.</li><li>Move closer to your router, try Ethernet where possible, or switch between Wi-Fi and mobile data. Restart the router if appropriate.</li><li>Try another provider. A stream can buffer because its source is overloaded even when your connection is fast.</li></ol>
+            <p class="guide-note">Mobile data can use a lot of bandwidth and may incur charges. 4K and multiple streams use more data.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Player loads, but there is no picture or sound</summary>
+          <div class="guide-answer"><ol>
+            <li>Tap or click the player’s play button. Browsers may block autoplay until you interact with the page.</li>
+            <li>Check the player volume and mute button, your device volume, the browser tab’s mute state, and the selected speakers or headphones.</li>
+            <li>Reload the page once, wait for the player to initialise, then try a different source. Check that the selected session is live or close to its start.</li>
+            <li>Update your browser and operating system. Try a current browser on another device; some streams use formats or players your device may not support.</li>
+            <li>For UHD / 4K, your device and browser may need HEVC support. Try an HD or SD source instead. The separate <strong>Stripped StreamFree</strong> option does not work in desktop Chrome; select normal StreamFree instead.</li>
+          </ol></div>
+        </details>
+        <details>
+          <summary>Browser, extensions and privacy settings</summary>
+          <div class="guide-answer"><ol>
+            <li>Try a private/incognito window or a different up-to-date browser. If it works there, an extension or a saved setting may be interfering.</li>
+            <li>Temporarily pause extensions that block scripts, content or requests for the affected site, then reload; re-enable them afterwards. Don’t disable antivirus or device security protections.</li>
+            <li>Strict browser privacy settings, blocked cookies or JavaScript may prevent a third-party player from loading. Review site-specific permissions, and restore your preferred settings afterwards.</li>
+            <li>Clear cached site data only if needed. <strong>Important:</strong> clearing FreeF1’s site data can remove your locally stored support-ticket access key and settings.</li>
+          </ol><p class="guide-note">Third-party player pop-ups and ads are outside FreeF1’s control. Never enter payment details or install software advertised by a stream player to make it work.</p></div>
+        </details>
+        <details>
+          <summary>Phone, TV or multiview issues</summary>
+          <div class="guide-answer"><ol>
+            <li>On a phone or tablet, try rotating the device, unmute the player and disable battery/data-saving restrictions temporarily if they interrupt playback.</li>
+            <li>On a smart TV or console, the built-in browser may not support every provider or codec. Try an up-to-date browser on a phone or computer, or a supported casting method.</li>
+            <li>In multiview, start with one working source, then add streams one at a time. Each tile needs bandwidth and device resources; some providers may restrict simultaneous players.</li>
+            <li>Use normal StreamFree if the Stripped version fails on desktop Chrome. Some fullscreen and playback controls depend on the provider and device.</li>
+          </ol></div>
+        </details>
+        <details>
+          <summary>Still not working? Contact support</summary>
+          <div class="guide-answer"><p>Use the support form below and choose <strong>Playback issue</strong>. Tell us the event and session, source name, whether you chose HD or SD, device, browser, approximate time, the error or symptoms, and what you tried. Mention whether another source or network works.</p><p>Do not send passwords, VPN credentials, payment details, cookies, IP addresses or private/signed stream URLs. The optional diagnostics checkbox in the form explains exactly what basic device information is sent.</p><a class="guide-contact" href="#helpTitle">Open the support form ↓</a></div>
+        </details>
+      </div>
+      <p class="stream-guide-foot">Third-party streams can go offline or change without notice. A working internet connection or VPN cannot guarantee a stream is available.</p>
+    </section>
     <section class="help-card" id="helpRequestPanel" aria-labelledby="helpTitle">
       <div class="help-top">
         <div class="help-pill">
